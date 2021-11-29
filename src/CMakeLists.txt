@@ -1,16 +1,16 @@
 include(FetchContent)
 FetchContent_Declare(
-  eigen
-  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-  GIT_TAG        master
+  guass_utils
+  GIT_REPOSITORY https://github.com/andreacasalino/Gaussian-Utils.git
+  GIT_TAG        main
 )
-FetchContent_MakeAvailable(eigen)
-find_package (Eigen3 REQUIRED NO_MODULE)
+FetchContent_MakeAvailable(guass_utils)
 
-set(PROJECT_SHORTNAME "GaussianProcess")
+set(PROJECT_SHORTNAME GaussianProcess)
 
 MakeLibrary(${PROJECT_SHORTNAME} header)
-target_link_libraries (${PROJECT_SHORTNAME}
-PUBLIC 
-	Eigen3::Eigen
+
+target_link_libraries(${PROJECT_SHORTNAME} PUBLIC
+GaussianUtils
 )
+

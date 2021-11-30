@@ -10,11 +10,13 @@
 #include <GaussianUtils/TrainSet.h>
 
 namespace gauss::gp {
-    class GaussianProcessTrainSet {
+    class TrainSet {
     public:
 
-        const TrainSet& GetSamplesInput() const { return input; };
-        const TrainSet& GetSamplesOutput() const { return output; };
+        void push(const Eigen::VectorXd& input_sample, const Eigen::VectorXd& output_sample);
+
+        const gauss::TrainSet& GetSamplesInput() const { return input; };
+        const gauss::TrainSet& GetSamplesOutput() const { return output; };
 
     private:
         gauss::TrainSet input;

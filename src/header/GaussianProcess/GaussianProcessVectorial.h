@@ -11,9 +11,9 @@
 #include <GaussianUtils/GaussianDistribution.h>
 
 namespace gauss::gp {
-	class GaussianProcess
-        : public KernelAware {
+	class GaussianProcessVectorial
+		: public KernelAware {
 	public:
-		gauss::GaussianDistribution predict(const Eigen::VectorXd& point) const;
+		std::vector<gauss::GaussianDistribution> predict(const Eigen::VectorXd& point) const;
 	};
 }

@@ -15,7 +15,7 @@ namespace gauss::gp {
 	public:
 		virtual ~KernelFunction() = default;
 
-		virtual double evaluate(const Eigen::VectorXd& a, const Eigen::VectorXd& b) = 0;
+		virtual double evaluate(const Eigen::VectorXd& a, const Eigen::VectorXd& b) const= 0;
 
 	protected:
 		KernelFunction() = default;

@@ -14,3 +14,6 @@ target_link_libraries(${PROJECT_SHORTNAME} PUBLIC
 GaussianUtils
 )
 
+target_include_directories(${PROJECT_SHORTNAME} PRIVATE
+${CMAKE_CURRENT_SOURCE_DIR}/src
+)

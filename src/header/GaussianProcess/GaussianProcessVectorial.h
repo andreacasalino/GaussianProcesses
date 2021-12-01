@@ -7,13 +7,15 @@
 
 #pragma once
 
-#include <GaussianProcess/KernelAware.h>
+#include <GaussianProcess/components/GaussianProcessBase.h>
 #include <GaussianUtils/GaussianDistribution.h>
 
 namespace gauss::gp {
-	class GaussianProcessVectorial
-		: public KernelAware {
-	public:
-		std::vector<gauss::GaussianDistribution> predict(const Eigen::VectorXd& point) const;
-	};
+    class GaussianProcessVectorial
+        : public GaussianProcessBase {
+    public:
+        GaussianProcessVectorial(KernelFunctionPtr kernel, const std::size_t input_space_size, const std::size_t output_space_size);
+
+        std::vector<gauss::GaussianDistribution> predict(const Eigen::VectorXd& point) const;
+    };
 }

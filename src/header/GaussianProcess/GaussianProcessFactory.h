@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <GaussianProcess/GausssianProcessVectorial.h>
 #include <GaussianProcess/components/InputOutputSizeAware.h>
 #include <GaussianProcess/kernel/KernelFunction.h>
 #include <GaussianUtils/components/RandomModelFactory.h>

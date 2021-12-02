@@ -11,14 +11,17 @@
 #include <memory>
 
 namespace gauss::gp {
-	class KernelFunction {
-	public:
-		virtual ~KernelFunction() = default;
+class KernelFunction {
+public:
+  virtual ~KernelFunction() = default;
 
-		virtual double evaluate(const Eigen::VectorXd& a, const Eigen::VectorXd& b) const= 0;
+  virtual double evaluate(const Eigen::VectorXd &a,
+                          const Eigen::VectorXd &b) const = 0;
 
-	protected:
-		KernelFunction() = default;
-	};
-	using KernelFunctionPtr = std::unique_ptr<KernelFunction>;
-}
+  virtual std::unique_ptr<KernelFunction> copy() const = 0;
+
+protected:
+  KernelFunction() = default;
+};
+using KernelFunctionPtr = std::unique_ptr<KernelFunction>;
+} // namespace gauss::gp

@@ -7,17 +7,23 @@
 
 #pragma once
 
-#include <GaussianProcess/kernel/KernelFunction.h>
 #include <GaussianProcess/components/TrainSetAware.h>
+#include <GaussianProcess/kernel/KernelFunction.h>
+#include <GaussianUtils/components/CoviarianceAware.h>
 
 namespace gauss::gp {
-class KernelAware : virtual public TrainSetAware {
-protected:
-    KernelAware(const KernelAware&);
-    KernelAware& operator=(const KernelAware&);
+class KernelAware : virtual public TrainSetAware, public CovarianceAware {
+public:
+  Eigen::MatrixXd getCovariance() const { return *kernel; };
+  Eigen::MatrixXd getCovarianceInv() const { return *kernel_inverse; };
+  double getCovarianceDeterminant() const override;
 
-    KernelAware(KernelAware&&);
-    KernelAware& operator=(KernelAware&&);
+protected:
+  KernelAware(const KernelAware &);
+  KernelAware &operator=(const KernelAware &);
+
+  KernelAware(KernelAware &&);
+  KernelAware &operator=(KernelAware &&);
 
   KernelAware(KernelFunctionPtr new_kernel);
 

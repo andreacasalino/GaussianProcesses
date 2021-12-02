@@ -8,14 +8,14 @@
 #pragma once
 
 #include <GaussianProcess/Error.h>
+#include <GaussianProcess/components/InputOutputSizeAware.h>
 #include <GaussianProcess/components/KernelAware.h>
 #include <GaussianProcess/components/OutputSetMatrixAware.h>
-#include <GaussianUtils/components/StateSpaceSizeAware.h>
 
 namespace gauss::gp {
 class GaussianProcessBase : public StateSpaceSizeAware,
                             public KernelAware,
-                            public OutputSetMatrixAware {
+                            public InputOutputSizeAware {
 public:
   void updateKernelFunction(KernelFunctionPtr new_kernel);
 
@@ -37,12 +37,6 @@ public:
   };
   void clearSamples();
 
-  std::size_t getStateSpaceSize() const override {
-    return getInputStateSpaceSize();
-  }
-  std::size_t getInputStateSpaceSize() const { return input_space_size; }
-  std::size_t getOutputStateSpaceSize() const { return output_space_size; }
-
 protected:
   GaussianProcessBase(const GaussianProcessBase &);
   GaussianProcessBase &operator=(const GaussianProcessBase &);
@@ -60,9 +54,6 @@ protected:
                double &covariance) const;
 
 private:
-  std::size_t input_space_size;
-  std::size_t output_space_size;
-
   void pushSample_(const Eigen::VectorXd &input_sample,
                    const Eigen::VectorXd &output_sample);
 };

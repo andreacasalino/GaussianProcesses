@@ -15,16 +15,16 @@ public:
   std::size_t getStateSpaceSize() const override {
     return getInputStateSpaceSize();
   }
-  std::size_t getInputStateSpaceSize() const { return input_space_size; }
-  std::size_t getOutputStateSpaceSize() const { return output_space_size; }
+  virtual std::size_t getInputStateSpaceSize() const = 0;
+  virtual std::size_t getOutputStateSpaceSize() const = 0;
 
-protected:
-  InputOutputSizeAware(const std::size_t input_space_size,
-                       const std::size_t output_space_size)
-      : input_space_size(input_space_size),
-        output_space_size(output_space_size){};
-
-  std::size_t input_space_size;
-  std::size_t output_space_size;
+//protected:
+//  InputOutputSizeAware(const std::size_t input_space_size,
+//                       const std::size_t output_space_size)
+//      : input_space_size(input_space_size),
+//        output_space_size(output_space_size){};
+//
+//  std::size_t input_space_size;
+//  std::size_t output_space_size;
 };
 } // namespace gauss::gp

@@ -7,23 +7,22 @@
 
 #pragma once
 
-#include <GaussianProcess/components/InputOutputSizeAware.h>
-#include <GaussianProcess/kernel/KernelFunction.h>
+#include <GaussianProcess/GaussianProcessVectorial.h>
 #include <GaussianUtils/components/RandomModelFactory.h>
 
 namespace gauss::gp {
 class GaussianProcessFactory
-    : public RandomModelFactory<GausssianProcessVectorial>,
-      public InputOutputSizeAware {
+    : public RandomModelFactory<GaussianProcessVectorial>,
+      public InputOutputSizeAwareBase {
 public:
-  GaussianDistributionFactory(const std::size_t input_space_size,
+    GaussianProcessFactory(const std::size_t input_space_size,
                               const std::size_t output_space_size);
 
-  GaussianDistributionFactory(const std::size_t input_space_size,
+    GaussianProcessFactory(const std::size_t input_space_size,
                               const std::size_t output_space_size,
                               KernelFunctionPtr kernel_function);
 
-  std::unique_ptr<GausssianProcessVectorial> makeRandomModel() const override;
+  std::unique_ptr<GaussianProcessVectorial> makeRandomModel() const override;
 
   void setInputMeanCenter(const Eigen::VectorXd &center);
   void setInputMeanScale(const Eigen::VectorXd &scale);

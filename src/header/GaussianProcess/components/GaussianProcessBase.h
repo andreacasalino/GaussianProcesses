@@ -13,9 +13,9 @@
 #include <GaussianProcess/components/OutputSetMatrixAware.h>
 
 namespace gauss::gp {
-class GaussianProcessBase : public StateSpaceSizeAware,
+class GaussianProcessBase : public InputOutputSizeAwareBase,
                             public KernelAware,
-                            public InputOutputSizeAware {
+                            public OutputSetMatrixAware {
 public:
   void updateKernelFunction(KernelFunctionPtr new_kernel);
 
@@ -38,12 +38,6 @@ public:
   void clearSamples();
 
 protected:
-  GaussianProcessBase(const GaussianProcessBase &);
-  GaussianProcessBase &operator=(const GaussianProcessBase &);
-
-  GaussianProcessBase(GaussianProcessBase &&);
-  GaussianProcessBase &operator=(GaussianProcessBase &&);
-
   GaussianProcessBase(KernelFunctionPtr kernel,
                       const std::size_t input_space_size,
                       const std::size_t output_space_size);
@@ -53,8 +47,12 @@ protected:
   void predict(const Eigen::VectorXd &point, Eigen::VectorXd &mean,
                double &covariance) const;
 
+  const TrainSet* getTrainSet() const override { return samples.get(); };
+
 private:
   void pushSample_(const Eigen::VectorXd &input_sample,
                    const Eigen::VectorXd &output_sample);
+
+  std::unique_ptr<gauss::gp::TrainSet> samples;
 };
 } // namespace gauss::gp

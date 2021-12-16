@@ -11,12 +11,8 @@ namespace gauss::gp {
 GaussianProcessBase::GaussianProcessBase(KernelFunctionPtr kernel,
                                          const std::size_t input_space_size,
                                          const std::size_t output_space_size)
-    : KernelAware(std::move(kernel)) {
-  if ((0 == input_space_size) || (0 == output_space_size)) {
-    throw Error("invalid space size");
-  }
-  this->input_space_size = input_space_size;
-  this->output_space_size = output_space_size;
+    : InputOutputSizeAwareBase(input_space_size, output_space_size)
+    , KernelAware(std::move(kernel)) {
 }
 
 void GaussianProcessBase::pushSample_(const Eigen::VectorXd &input_sample,
@@ -26,10 +22,10 @@ void GaussianProcessBase::pushSample_(const Eigen::VectorXd &input_sample,
         std::make_unique<gauss::gp::TrainSet>(input_sample, output_sample);
     return;
   }
-  if (input_sample.size() != input_space_size) {
+  if (input_sample.size() != getInputStateSpaceSize()) {
     throw Error("invalid size of input sample");
   }
-  if (output_sample.size() != output_space_size) {
+  if (output_sample.size() != getOutputStateSpaceSize()) {
     throw Error("invalid size of output sample");
   }
   samples->addSample(input_sample, output_sample);

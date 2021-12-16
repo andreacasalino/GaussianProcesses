@@ -18,6 +18,6 @@ public:
 protected:
   TrainSetAware() = default;
 
-  std::unique_ptr<TrainSet> samples;
+  virtual const TrainSet* getTrainSet() const = 0;
 };
 } // namespace gauss::gp

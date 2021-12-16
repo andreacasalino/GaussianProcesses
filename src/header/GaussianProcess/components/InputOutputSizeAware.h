@@ -17,14 +17,21 @@ public:
   }
   virtual std::size_t getInputStateSpaceSize() const = 0;
   virtual std::size_t getOutputStateSpaceSize() const = 0;
+};
 
-//protected:
-//  InputOutputSizeAware(const std::size_t input_space_size,
-//                       const std::size_t output_space_size)
-//      : input_space_size(input_space_size),
-//        output_space_size(output_space_size){};
-//
-//  std::size_t input_space_size;
-//  std::size_t output_space_size;
+
+class InputOutputSizeAwareBase : public InputOutputSizeAware {
+public:
+    std::size_t getInputStateSpaceSize() const final { return input_space_size; };
+    std::size_t getOutputStateSpaceSize() const final { return output_space_size; };
+
+protected:
+    InputOutputSizeAwareBase(
+        const std::size_t input_space_size,
+        const std::size_t output_space_size);
+
+private:
+    std::size_t input_space_size;
+    std::size_t output_space_size;
 };
 } // namespace gauss::gp

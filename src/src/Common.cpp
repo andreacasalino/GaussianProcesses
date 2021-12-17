@@ -8,6 +8,10 @@
 #include <Common.h>
 
 namespace gauss::gp {
+    bool MatrixIndices::operator==(const MatrixIndices& o) const {
+        return (this->start == o.start) && (this->end == o.end);
+    }
+
     void set_matrix_portion(Eigen::MatrixXd& recipient, const Eigen::MatrixXd& portion,
         const MatrixIndices& portion_rows, const MatrixIndices& portion_cols) {
         recipient.block(portion_rows.start, portion_cols.start,

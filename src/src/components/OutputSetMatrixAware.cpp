@@ -14,8 +14,9 @@ namespace gauss::gp {
             Eigen::MatrixXd  result(indices.end - indices.start, samples.front().size());
             auto it_sample = samples.begin();
             std::advance(it_sample, static_cast<std::size_t>(indices.start));
-            for (Eigen::Index i = indices.start; i < indices.end; ++i, ++it_sample) {
-                result.row(i) = *it_sample;
+            Eigen::Index pos = 0;
+            for (Eigen::Index i = indices.start; i < indices.end; ++i, ++it_sample, ++pos) {
+                result.row(pos) = *it_sample;
             }
             return result;
         }

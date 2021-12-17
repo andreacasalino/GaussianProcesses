@@ -21,14 +21,36 @@ KernelAware::KernelAware(KernelFunctionPtr new_kernel) {
 
 namespace {
 Eigen::MatrixXd
+    compute_kernel_portion(const std::vector<Eigen::VectorXd>& samples,
+        const KernelFunction& function,
+        const MatrixIndices& indices) {
+    Eigen::MatrixXd result(indices.end - indices.start, indices.end - indices.start);
+    Eigen::Index c;
+    Eigen::Index pos_row = 0, pos_col;
+    for (Eigen::Index r = indices.start; r < indices.end; ++r, ++pos_row) {
+        pos_col = 0;
+        for (c = r; c < indices.end; ++c, ++pos_col) {
+            result(pos_row, pos_col) = function.evaluate(samples[static_cast<std::size_t>(r)], samples[static_cast<std::size_t>(c)]);
+            result(pos_col, pos_row) = result(pos_row, pos_col);
+        }
+    }
+    return result;
+}
+
+Eigen::MatrixXd
 compute_kernel_portion(const std::vector<Eigen::VectorXd> &samples,
                        const KernelFunction &function,
                        const MatrixIndices &rows, const MatrixIndices &cols) {
+    if (rows == cols) {
+        return compute_kernel_portion(samples, function, rows);
+    }
   Eigen::MatrixXd result(rows.end - rows.start, cols.end - cols.start);
   Eigen::Index c;
-  for (Eigen::Index r = rows.start; r < rows.end; ++r) {
-    for (c = cols.start; c < cols.end; ++c) {
-      result(r, c) = function.evaluate(samples[static_cast<std::size_t>(r)], samples[static_cast<std::size_t>(c)]);
+  Eigen::Index pos_row = 0, pos_col;
+  for (Eigen::Index r = rows.start; r < rows.end; ++r, ++pos_row) {
+    pos_col = 0;
+    for (c = cols.start; c < cols.end; ++c, ++pos_col) {
+      result(pos_row, pos_col) = function.evaluate(samples[static_cast<std::size_t>(r)], samples[static_cast<std::size_t>(c)]);
     }
   }
   return result;

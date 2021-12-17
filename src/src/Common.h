@@ -13,6 +13,8 @@ namespace gauss::gp {
     struct MatrixIndices {
         const Eigen::Index start;
         const Eigen::Index end;
+
+        bool operator==(const MatrixIndices& o) const;
     };
 
     void set_matrix_portion(Eigen::MatrixXd& recipient, const Eigen::MatrixXd& portion, 

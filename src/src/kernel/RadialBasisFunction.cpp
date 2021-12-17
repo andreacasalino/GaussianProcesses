@@ -8,7 +8,7 @@
 #include <GaussianProcess/kernel/RadialBasisFunction.h>
 
 namespace gauss::gp {
-    RadialBasisFunction::RadialBasisFunction(const RadialFunction& radial_function = EXP_RADIAL_FUNCTION) 
+    RadialBasisFunction::RadialBasisFunction(const RadialFunction& radial_function) 
         : radial_function(radial_function) {};
 
     double RadialBasisFunction::evaluate(const Eigen::VectorXd& a,

@@ -25,12 +25,12 @@ namespace gauss::gp {
     void OutputSetMatrixAware::updateSamplesOutputMatrix() {
         const auto& output_samples = getTrainSet()->GetSamplesOutput().GetSamples();
         if (nullptr == samples_output_matrix) {
-            samples_output_matrix = std::make_unique<Eigen::MatrixXd>(compute_output_matrix_portion(output_samples, MatrixIndices{0, output_samples .size()}));
+            samples_output_matrix = std::make_unique<Eigen::MatrixXd>(compute_output_matrix_portion(output_samples, MatrixIndices{0, static_cast<Eigen::Index>(output_samples .size()) }));
         }
         else {
             auto new_output_matrix = std::make_unique<Eigen::MatrixXd>(output_samples.size(), output_samples.front().size());
             MatrixIndices old_indices = MatrixIndices{ 0, samples_output_matrix->rows() };
-            MatrixIndices new_indices = MatrixIndices{ samples_output_matrix->rows(), output_samples.size() };
+            MatrixIndices new_indices = MatrixIndices{ samples_output_matrix->rows(), static_cast<Eigen::Index>(output_samples.size()) };
             set_matrix_portion(*new_output_matrix, *samples_output_matrix, old_indices, MatrixIndices{ 0, samples_output_matrix->cols() });
             set_matrix_portion(*new_output_matrix, compute_output_matrix_portion(output_samples, new_indices)
                                                  , new_indices, MatrixIndices{ 0, samples_output_matrix->cols() });

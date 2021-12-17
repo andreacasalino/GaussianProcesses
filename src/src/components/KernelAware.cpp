@@ -61,12 +61,12 @@ void KernelAware::updateKernel() {
   const auto &input_samples = getTrainSet()->GetSamplesInput().GetSamples();
   if (nullptr == kernel) {
     kernel = std::make_unique<Eigen::MatrixXd>(compute_kernel_portion(
-        input_samples, *kernelFunction, MatrixIndices{0, input_samples.size()},
-        MatrixIndices{0, input_samples.size()}));
+        input_samples, *kernelFunction, MatrixIndices{0, static_cast<Eigen::Index>(input_samples.size()) },
+        MatrixIndices{0, static_cast<Eigen::Index>(input_samples.size()) }));
   } else {
     MatrixIndices old_indices = MatrixIndices{0, kernel->rows()};
     MatrixIndices new_indices =
-        MatrixIndices{kernel->rows(), input_samples.size()};
+        MatrixIndices{kernel->rows(), static_cast<Eigen::Index>(input_samples.size()) };
 
     Eigen::MatrixXd K_old_new = compute_kernel_portion(
         input_samples, *kernelFunction, old_indices, new_indices);

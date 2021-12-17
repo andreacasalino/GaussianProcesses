@@ -28,10 +28,12 @@ Eigen::MatrixXd
     Eigen::Index c;
     Eigen::Index pos_row = 0, pos_col;
     for (Eigen::Index r = indices.start; r < indices.end; ++r, ++pos_row) {
-        pos_col = 0;
+        pos_col = pos_row;
         for (c = r; c < indices.end; ++c, ++pos_col) {
             result(pos_row, pos_col) = function.evaluate(samples[static_cast<std::size_t>(r)], samples[static_cast<std::size_t>(c)]);
-            result(pos_col, pos_row) = result(pos_row, pos_col);
+            if (pos_row != pos_col) {
+                result(pos_col, pos_row) = result(pos_row, pos_col);
+            }
         }
     }
     return result;

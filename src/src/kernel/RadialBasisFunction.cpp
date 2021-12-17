@@ -15,6 +15,7 @@ namespace gauss::gp {
         const Eigen::VectorXd& b) const {
         auto diff = a - b;
         return radial_function(diff.squaredNorm());
+        throw 0; //todo add exponential weight
     };
 
     std::unique_ptr<KernelFunction> RadialBasisFunction::copy() const {

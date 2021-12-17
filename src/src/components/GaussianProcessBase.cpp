@@ -15,6 +15,13 @@ GaussianProcessBase::GaussianProcessBase(KernelFunctionPtr kernel,
     , KernelAware(std::move(kernel)) {
 }
 
+GaussianProcessBase::GaussianProcessBase(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set)
+    : GaussianProcessBase(std::move(kernel), train_set.getInputStateSpaceSize(), train_set.getOutputStateSpaceSize()) {
+    this->samples = std::make_unique<gauss::gp::TrainSet>(std::move(train_set));
+    updateKernel();
+    updateSamplesOutputMatrix();
+}
+
 void GaussianProcessBase::pushSample_(const Eigen::VectorXd &input_sample,
                                       const Eigen::VectorXd &output_sample) {
   if (input_sample.size() != getInputStateSpaceSize()) {
@@ -58,8 +65,8 @@ void GaussianProcessBase::updateKernelFunction(KernelFunctionPtr new_kernel) {
 void GaussianProcessBase::predict(const Eigen::VectorXd &point,
                                   Eigen::VectorXd &mean,
                                   double &covariance) const {
-  const auto Kx = getKx(point);
-  const auto Kx_trasp = Kx.transpose();
+  const auto Kx_trasp = getKx(point);
+  const auto Kx = Kx_trasp.transpose();
   covariance = (Kx * getKernelInverse() * Kx_trasp)(0, 0);
   covariance *= -1.0;
   covariance += kernelFunction->evaluate(point, point);

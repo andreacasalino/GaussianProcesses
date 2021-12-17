@@ -16,6 +16,8 @@ namespace gauss::gp {
     public:
         GaussianProcessVectorial(KernelFunctionPtr kernel, const std::size_t input_space_size, const std::size_t output_space_size);
 
+        GaussianProcessVectorial(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set);
+
         std::vector<gauss::GaussianDistribution> predict(const Eigen::VectorXd& point) const;
     };
 }

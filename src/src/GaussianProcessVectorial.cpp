@@ -12,6 +12,10 @@ namespace gauss::gp {
         : GaussianProcessBase(std::move(kernel), input_space_size, output_space_size) {
     }
 
+    GaussianProcessVectorial::GaussianProcessVectorial(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set)
+        : GaussianProcessBase(std::move(kernel), std::move(train_set)) {
+    }
+
     std::vector<gauss::GaussianDistribution> GaussianProcessVectorial::predict(const Eigen::VectorXd& point) const {
         Eigen::VectorXd prediction_mean;
         double prediction_covariance;

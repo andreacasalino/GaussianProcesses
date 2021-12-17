@@ -12,6 +12,13 @@ namespace gauss::gp {
         : GaussianProcessBase(std::move(kernel), input_space_size, 1) {
     }
 
+    GaussianProcess::GaussianProcess(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set)
+        : GaussianProcessBase(std::move(kernel), std::move(train_set)) {
+        if (getOutputStateSpaceSize() != 1) {
+            throw gauss::gp::Error("Invalid output samples");
+        }
+    }
+
     gauss::GaussianDistribution GaussianProcess::predict(const Eigen::VectorXd& point) const {
         Eigen::VectorXd prediction_mean;
         double prediction_covariance;

@@ -22,7 +22,7 @@ namespace gauss::gp {
 
     TrainSet::TrainSet(const std::string& file_to_read, const std::size_t input_space_size) {
         gauss::TrainSet temp(file_to_read);
-        if (temp.GetSamples().front().size() < input_space_size) {
+        if (static_cast<std::size_t>(temp.GetSamples().front().size()) < input_space_size) {
             throw gauss::gp::Error("Invalid size of samples in parsed files");
         }
         auto it = temp.GetSamples().begin();
@@ -33,6 +33,11 @@ namespace gauss::gp {
             *input += get_slice(*it, 0, input_space_size);
             *output += get_slice(*it, input_space_size + 1, it->size());
         }
+    }
+
+    TrainSet::TrainSet(gauss::TrainSet input_samples, gauss::TrainSet output_samples) {
+        this->input = std::make_unique<gauss::TrainSet>(std::move(input_samples));
+        this->output = std::make_unique<gauss::TrainSet>(std::move(output_samples));
     }
 
     void TrainSet::operator+=(const Eigen::VectorXd& sample) {

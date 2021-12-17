@@ -20,6 +20,8 @@ public:
   TrainSet(TrainSet &&o) = default;
   TrainSet &operator=(TrainSet &&o) = default;
 
+  TrainSet(gauss::TrainSet input_samples, gauss::TrainSet output_samples);
+
   TrainSet(const std::string &file_to_read, const std::size_t input_space_size);
 
   template <typename CollectionInput, typename CollectionOutput>

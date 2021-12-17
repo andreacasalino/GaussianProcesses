@@ -40,6 +40,8 @@ public:
   // row wise
   Eigen::VectorXd getKx(const Eigen::VectorXd& point) const;
 
+  const TrainSet* getTrainSet() const override { return samples.get(); };
+
 protected:
     GaussianProcessBase(const GaussianProcessBase&);
     GaussianProcessBase& operator=(const GaussianProcessBase&);
@@ -51,7 +53,7 @@ protected:
                       const std::size_t input_space_size,
                       const std::size_t output_space_size);
 
-  const TrainSet* getTrainSet() const override { return samples.get(); };
+  GaussianProcessBase(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set);
 
   void predict(const Eigen::VectorXd& point, Eigen::VectorXd& mean,
       double& covariance) const;

@@ -15,6 +15,7 @@ class KernelFunction {
 public:
   virtual ~KernelFunction() = default;
 
+  // evaluation should be reflexive: evaluate(a,b) = evaluate(b,a)
   virtual double evaluate(const Eigen::VectorXd &a,
                           const Eigen::VectorXd &b) const = 0;
 

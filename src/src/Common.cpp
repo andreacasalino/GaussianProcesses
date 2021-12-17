@@ -13,6 +13,4 @@ namespace gauss::gp {
         recipient.block(portion_rows.start, portion_cols.start,
             portion_rows.end - portion_rows.start, portion_cols.end -  portion_cols.start) = portion;
     }
-
-
 }

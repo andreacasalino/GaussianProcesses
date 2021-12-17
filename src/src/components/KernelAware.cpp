@@ -25,10 +25,10 @@ compute_kernel_portion(const std::vector<Eigen::VectorXd> &samples,
                        const KernelFunction &function,
                        const MatrixIndices &rows, const MatrixIndices &cols) {
   Eigen::MatrixXd result(rows.end - rows.start, cols.end - cols.start);
-  std::size_t c;
-  for (std::size_t r = rows.start; r < rows.end; ++r) {
+  Eigen::Index c;
+  for (Eigen::Index r = rows.start; r < rows.end; ++r) {
     for (c = cols.start; c < cols.end; ++c) {
-      result(r, c) = function.evaluate(samples[r], samples[c]);
+      result(r, c) = function.evaluate(samples[static_cast<std::size_t>(r)], samples[static_cast<std::size_t>(c)]);
     }
   }
   return result;
@@ -36,7 +36,7 @@ compute_kernel_portion(const std::vector<Eigen::VectorXd> &samples,
 } // namespace
 
 void KernelAware::updateKernel() {
-  const auto &input_samples = samples->GetSamplesInput().GetSamples();
+  const auto &input_samples = getTrainSet()->GetSamplesInput().GetSamples();
   if (nullptr == kernel) {
     kernel = std::make_unique<Eigen::MatrixXd>(compute_kernel_portion(
         input_samples, *kernelFunction, MatrixIndices{0, input_samples.size()},
@@ -45,12 +45,16 @@ void KernelAware::updateKernel() {
     MatrixIndices old_indices = MatrixIndices{0, kernel->rows()};
     MatrixIndices new_indices =
         MatrixIndices{kernel->rows(), input_samples.size()};
+
     Eigen::MatrixXd K_old_new = compute_kernel_portion(
         input_samples, *kernelFunction, old_indices, new_indices);
+
     Eigen::MatrixXd K_new_new = compute_kernel_portion(
         input_samples, *kernelFunction, new_indices, new_indices);
+
     auto new_kernel = std::make_unique<Eigen::MatrixXd>(input_samples.size(),
                                                         input_samples.size());
+
     set_matrix_portion(*new_kernel, *kernel, old_indices, old_indices);
     set_matrix_portion(*new_kernel, K_old_new, old_indices, new_indices);
     set_matrix_portion(*new_kernel, K_old_new.transpose(), new_indices,

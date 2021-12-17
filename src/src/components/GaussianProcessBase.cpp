@@ -17,16 +17,16 @@ GaussianProcessBase::GaussianProcessBase(KernelFunctionPtr kernel,
 
 void GaussianProcessBase::pushSample_(const Eigen::VectorXd &input_sample,
                                       const Eigen::VectorXd &output_sample) {
-  if (nullptr == samples) {
-    samples =
-        std::make_unique<gauss::gp::TrainSet>(input_sample, output_sample);
-    return;
-  }
   if (input_sample.size() != getInputStateSpaceSize()) {
-    throw Error("invalid size of input sample");
+    throw Error("Invalid size for input sample");
   }
   if (output_sample.size() != getOutputStateSpaceSize()) {
-    throw Error("invalid size of output sample");
+    throw Error("Invalid size for output sample");
+  }
+  if (nullptr == samples) {
+      samples =
+          std::make_unique<gauss::gp::TrainSet>(input_sample, output_sample);
+      return;
   }
   samples->addSample(input_sample, output_sample);
 }
@@ -50,7 +50,9 @@ void GaussianProcessBase::updateKernelFunction(KernelFunctionPtr new_kernel) {
   }
   kernelFunction = std::move(new_kernel);
   resetKernel();
-  updateKernel();
+  if (nullptr != samples) {
+      updateKernel();
+  }
 }
 
 void GaussianProcessBase::predict(const Eigen::VectorXd &point,
@@ -62,5 +64,16 @@ void GaussianProcessBase::predict(const Eigen::VectorXd &point,
   covariance *= -1.0;
   covariance += kernelFunction->evaluate(point, point);
   mean = Kx * getKernelInverse() * getSamplesOutputMatrix();
+}
+
+Eigen::VectorXd GaussianProcessBase::getKx(const Eigen::VectorXd& point) const {
+    const auto& input_samples = getTrainSet()->GetSamplesInput().GetSamples();
+    Eigen::VectorXd Kx(input_samples.size());
+    Eigen::Index pos = 0;
+    for (const auto& sample : input_samples) {
+        Kx(pos) = kernelFunction->evaluate(point, sample);
+        ++pos;
+    }
+    return Kx;
 }
 } // namespace gauss::gp

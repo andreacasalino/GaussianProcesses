@@ -14,17 +14,11 @@
 namespace gauss::gp {
 class KernelAware : virtual public TrainSetAware, public CovarianceAware {
 public:
-  Eigen::MatrixXd getCovariance() const { return *kernel; };
-  Eigen::MatrixXd getCovarianceInv() const { return *kernel_inverse; };
+  Eigen::MatrixXd getCovariance() const override { return *kernel; };
+  Eigen::MatrixXd getCovarianceInv() const override { return *kernel_inverse; };
   double getCovarianceDeterminant() const override;
 
 protected:
-  KernelAware(const KernelAware &);
-  KernelAware &operator=(const KernelAware &);
-
-  KernelAware(KernelAware &&);
-  KernelAware &operator=(KernelAware &&);
-
   KernelAware(KernelFunctionPtr new_kernel);
 
   void updateKernel();

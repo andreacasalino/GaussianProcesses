@@ -122,19 +122,40 @@ double GaussianProcessBase::getLikelihood() const {
   return result;
 }
 
+namespace {
+Eigen::MatrixXd
+compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
+                        const std::vector<Eigen::VectorXd> &samples) {
+  Eigen::MatrixXd result(samples.size(), samples.size());
+  Eigen::Index row = 0, col;
+  for (auto it = samples.begin(); it != samples.end(); ++it, ++row) {
+    auto it2 = it;
+    col = row;
+    for (it2; it2 != samples.end(); ++it2, ++col) {
+      result(row, col) = handler.evaluate_gradient(*it, *it2);
+      result(col, row) = result(row, col);
+    }
+  }
+  return result;
+}
+} // namespace
+
 Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
   auto Y_x_Y = getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
   Eigen::VectorXd result(parameters.size());
   Eigen::Index i = 0;
   result.setZero();
+  auto kernel_inv = getKernelInverse();
+  const auto &samples_input = samples->GetSamplesInput().GetSamples();
   for (auto &parameter : this->parameters) {
-    Eigen::MatrixXd kernel_gradient = ;
+    auto kernel_gradient = compute_kernel_gradient(*parameter, samples_input);
     result(i) -= (0.5 / getCovarianceDeterminant()) *
                  samples->GetSamplesInput().GetSamples().size() *
                  getInputStateSpaceSize() *
-                 (getCovarianceInv() * kernel_gradient).trace();
-    result(i) +=
-        0.5 * Y_x_Y * getCovarianceInv() * kernel_gradient * getCovarianceInv();
+                 (kernel_inv * kernel_gradient).trace();
+    result(i) -=
+        0.5 *
+        (Y_x_Y.transpose() * kernel_inv * kernel_gradient * kernel_inv).trace();
     ++i;
   }
   return result;

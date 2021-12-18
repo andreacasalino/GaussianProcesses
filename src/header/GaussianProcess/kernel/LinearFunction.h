@@ -8,23 +8,21 @@
 #pragma once
 
 #include <GaussianProcess/kernel/KernelFunction.h>
-#include <functional>
 
 namespace gauss::gp {
-    using RadialFunction = std::function<double(const double)>;
-
-    class RadialBasisFunction : public KernelFunction {
+    class LinearFunction : public KernelFunction {
     public:
-        static const RadialFunction EXP_RADIAL_FUNCTION;
-
-        RadialBasisFunction(const RadialFunction& radial_function = EXP_RADIAL_FUNCTION);
+        LinearFunction(const double teta0, const double teta1);
 
         double evaluate(const Eigen::VectorXd& a,
             const Eigen::VectorXd& b) const override;
 
         std::unique_ptr<KernelFunction> copy() const override;
 
+        std::vector<ParameterHandlerPtr> getParameters() const override;
+
     private:
-        const RadialFunction radial_function;
+        Parameter teta0;
+        Parameter teta1;
     };
 } // namespace gauss::gp

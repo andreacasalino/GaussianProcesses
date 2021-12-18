@@ -1,6 +1,6 @@
 #include <GaussianProcess/GaussianProcess.h>
 #include <GaussianUtils/GaussianDistributionFactory.h>
-#include <GaussianProcess/kernel/RadialBasisFunction.h>
+#include <GaussianProcess/kernel/ExponentialRBF.h>
 #include <iostream>
 
 int main() {
@@ -9,8 +9,7 @@ int main() {
 	auto output_generator = gauss::GaussianDistributionFactory{ 1 }.makeRandomModel();
 	gauss::gp::TrainSet samples(input_generator->drawSamples(samples_numb), output_generator->drawSamples(samples_numb));
 
-	gauss::gp::GaussianProcess process(std::make_unique<gauss::gp::RadialBasisFunction>(),
-										std::move(samples));
+	gauss::gp::GaussianProcess process(std::make_unique<gauss::gp::ExponentialRBF>(), std::move(samples));
 
 	std::cout << process.getCovariance() << std::endl << std::endl << std::endl;
 	std::cout << process.getCovarianceInv() << std::endl << std::endl << std::endl;

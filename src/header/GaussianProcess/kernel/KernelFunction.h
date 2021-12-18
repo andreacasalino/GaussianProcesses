@@ -7,8 +7,7 @@
 
 #pragma once
 
-#include <Eigen/Core>
-#include <memory>
+#include <GaussianProcess/kernel/ParameterHandler.h>
 
 namespace gauss::gp {
 class KernelFunction {
@@ -20,6 +19,8 @@ public:
                           const Eigen::VectorXd &b) const = 0;
 
   virtual std::unique_ptr<KernelFunction> copy() const = 0;
+
+  virtual std::vector<ParameterHandlerPtr> getParameters() const = 0;
 
 protected:
   KernelFunction() = default;

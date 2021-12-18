@@ -20,3 +20,4 @@ namespace gauss::gp {
     void set_matrix_portion(Eigen::MatrixXd& recipient, const Eigen::MatrixXd& portion, 
                             const MatrixIndices& portion_rows, const MatrixIndices& portion_cols);
 }
+

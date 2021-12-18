@@ -16,7 +16,11 @@ class KernelAware : virtual public TrainSetAware, public CovarianceAware {
 public:
   Eigen::MatrixXd getCovariance() const override { return *kernel; };
   Eigen::MatrixXd getCovarianceInv() const override { return *kernel_inverse; };
-  double getCovarianceDeterminant() const override;
+  double getCovarianceDeterminant() const override {
+    return *kernel_determinant;
+  };
+
+  const KernelFunction &getKernelFunction() const { return *kernelFunction; }
 
 protected:
   KernelAware(KernelFunctionPtr new_kernel);
@@ -31,5 +35,6 @@ protected:
 private:
   std::unique_ptr<const Eigen::MatrixXd> kernel;
   std::unique_ptr<const Eigen::MatrixXd> kernel_inverse;
+  std::unique_ptr<double> kernel_determinant;
 };
 } // namespace gauss::gp

@@ -38,16 +38,22 @@ public:
   void clearSamples();
 
   // row wise
-  Eigen::VectorXd getKx(const Eigen::VectorXd& point) const;
+  Eigen::VectorXd getKx(const Eigen::VectorXd &point) const;
 
-  const TrainSet* getTrainSet() const override { return samples.get(); };
+  const TrainSet *getTrainSet() const override { return samples.get(); };
+
+  Eigen::VectorXd getParameters() const;
+  void setParameters(const Eigen::VectorXd &parameters);
+
+  double getLikelihood() const;
+  Eigen::VectorXd getParametersGradient() const;
 
 protected:
-    GaussianProcessBase(const GaussianProcessBase&);
-    GaussianProcessBase& operator=(const GaussianProcessBase&);
+  GaussianProcessBase(const GaussianProcessBase &);
+  GaussianProcessBase &operator=(const GaussianProcessBase &);
 
-    GaussianProcessBase(GaussianProcessBase&&);
-    GaussianProcessBase& operator=(GaussianProcessBase&&);
+  GaussianProcessBase(GaussianProcessBase &&);
+  GaussianProcessBase &operator=(GaussianProcessBase &&);
 
   GaussianProcessBase(KernelFunctionPtr kernel,
                       const std::size_t input_space_size,
@@ -55,13 +61,14 @@ protected:
 
   GaussianProcessBase(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set);
 
-  void predict(const Eigen::VectorXd& point, Eigen::VectorXd& mean,
-      double& covariance) const;
+  void predict(const Eigen::VectorXd &point, Eigen::VectorXd &mean,
+               double &covariance) const;
 
 private:
   void pushSample_(const Eigen::VectorXd &input_sample,
                    const Eigen::VectorXd &output_sample);
 
   std::unique_ptr<gauss::gp::TrainSet> samples;
+  std::vector<ParameterHandlerPtr> parameters;
 };
 } // namespace gauss::gp

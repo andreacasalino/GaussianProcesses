@@ -48,7 +48,7 @@ namespace gauss::gp {
         std::vector<ParameterHandlerPtr> result;
         result.reserve(2);
         result.emplace_back(std::make_unique<Teta0Handler>(teta0));
-        result.emplace_back(std::make_unique<Teta0Handler>(teta1));
+        result.emplace_back(std::make_unique<Teta1Handler>(teta1));
         return result;
     };
 }

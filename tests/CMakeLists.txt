@@ -21,4 +21,7 @@ PUBLIC
 install(TARGETS ${NAME})
 endfunction()
 
-MakeTest(Test01-reset-update)
+MakeTest(Test01-construction)
+MakeTest(Test02-reset-update)
+MakeTest(Test03-predict)
+MakeTest(Test04-train)

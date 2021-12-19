@@ -6,3 +6,12 @@ if(BUILD_SAMPLE_01)
     # add_custom_command(TARGET Sample01 PRE_BUILD
 	    # COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Visualize01.py ${CMAKE_CURRENT_BINARY_DIR}/Visualize01.py)
 endif()
+
+option(BUILD_SAMPLE_02 "Build Sample_02" ON)
+if(BUILD_SAMPLE_02)
+    add_executable(Sample02 02-Prediction-2d.cpp Utils.h)
+    target_link_libraries(Sample02 PUBLIC GaussianProcess)	
+
+    # add_custom_command(TARGET Sample01 PRE_BUILD
+	    # COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Visualize01.py ${CMAKE_CURRENT_BINARY_DIR}/Visualize01.py)
+endif()

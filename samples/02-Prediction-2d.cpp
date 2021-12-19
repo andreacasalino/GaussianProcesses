@@ -6,7 +6,7 @@
 const std::function<Eigen::VectorXd(const Eigen::VectorXd &)>
     function_to_approximate = [](const Eigen::VectorXd &point) {
       Eigen::VectorXd result(1);
-      const auto &point_val = point(0);
+      const auto &point_val = point.norm();
       result << -5.0 + 0.01 * pow(point_val, 4.0) + 0.25 * cos(point_val);
       return result;
     };
@@ -19,7 +19,8 @@ int main() {
 
   // generate samples from the real function
   auto input_space_samples =
-      get_input_samples(interval_min, interval_max, samples_in_train_set);
+      get_input_samples(interval_min, interval_max, interval_min, interval_max,
+                        samples_in_train_set);
   auto output_space_samples =
       get_output_samples(input_space_samples, function_to_approximate);
   std::cout << "samples generated" << std::endl;
@@ -32,12 +33,13 @@ int main() {
 
   // generate the predictions
   auto predictions_input =
-      get_input_samples(interval_min, interval_max, samples_for_prediction);
+      get_input_samples(interval_min, interval_max, interval_min, interval_max,
+                        samples_for_prediction);
   auto predictions = get_predictions(predictions_input, process);
   std::cout << "predictions generated" << std::endl;
 
   // log the predictions
-  log_predictions(predictions_input, predictions, "predictions_1d.txt");
+  log_predictions(predictions_input, predictions, "predictions_2d.txt");
 
   // tune parameters to get better predictions
   gauss::gp::train(process, 20);
@@ -48,10 +50,10 @@ int main() {
   std::cout << "predictions generated again" << std::endl;
 
   // log new predictions
-  log_predictions(predictions_input, predictions, "predictions_1d_tuned.txt");
+  log_predictions(predictions_input, predictions, "predictions_2d_tuned.txt");
 
   std::cout
-      << "Luanch the python script Visualize-1d.py to visualize the results"
+      << "Luanch the python script Visualize-2d.py to visualize the results"
       << std::endl;
 
   return EXIT_SUCCESS;

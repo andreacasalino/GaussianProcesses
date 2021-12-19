@@ -33,10 +33,25 @@ std::vector<Eigen::VectorXd> get_input_samples(const double interval_min,
   return result;
 }
 
-// std::vector<Eigen::VectorXd>
-// get_input_samples(const double interval_min_x, const double interval_max_x,
-//                   const double interval_min_y, const double interval_max_y,
-//                   const std::size_t points_along_each_axis) {}
+std::vector<Eigen::VectorXd>
+get_input_samples(const double interval_min_x, const double interval_max_x,
+                  const double interval_min_y, const double interval_max_y,
+                  const std::size_t points_along_each_axis) {
+  auto samples_along_x =
+      get_input_samples(interval_min_x, interval_max_x, points_along_each_axis);
+  auto samples_along_y =
+      get_input_samples(interval_min_y, interval_max_y, points_along_each_axis);
+  std::vector<Eigen::VectorXd> result;
+  result.reserve(points_along_each_axis * points_along_each_axis);
+  for (const auto &sample_y : samples_along_y) {
+    for (const auto &sample_x : samples_along_x) {
+      Eigen::VectorXd temp(2);
+      temp << sample_x(0), sample_y(0);
+      result.emplace_back(temp);
+    }
+  }
+  return result;
+}
 
 std::vector<Eigen::VectorXd> get_output_samples(
     const std::vector<Eigen::VectorXd> &input_samples,

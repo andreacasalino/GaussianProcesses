@@ -21,4 +21,4 @@ PUBLIC
 install(TARGETS ${NAME})
 endfunction()
 
-MakeTest(Test01-METTERE-nome)
+MakeTest(Test01-reset-update)

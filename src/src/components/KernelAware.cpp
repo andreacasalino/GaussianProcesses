@@ -101,4 +101,25 @@ void KernelAware::resetKernel() {
   kernel_inverse.reset();
   kernel_determinant.reset();
 }
+
+Eigen::MatrixXd KernelAware::getCovariance() const {
+  if (nullptr == kernel) {
+    throw gauss::gp::Error("Trying to access null kernel covariance");
+  }
+  return *kernel;
+};
+
+Eigen::MatrixXd KernelAware::getCovarianceInv() const {
+  if (nullptr == kernel_inverse) {
+    throw gauss::gp::Error("Trying to access null inverse kernel covariance");
+  }
+  return *kernel_inverse;
+};
+
+double KernelAware::getCovarianceDeterminant() const {
+  if (nullptr == kernel_determinant) {
+    throw gauss::gp::Error("Trying to access null kernel determinant");
+  }
+  return *kernel_determinant;
+};
 } // namespace gauss::gp

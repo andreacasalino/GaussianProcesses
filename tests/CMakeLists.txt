@@ -10,7 +10,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 function(MakeTest NAME)
-add_executable(${NAME} ${NAME}.cpp)
+add_executable(${NAME} ${NAME}.cpp Utils.h)
 
 target_link_libraries(${NAME}
 PUBLIC

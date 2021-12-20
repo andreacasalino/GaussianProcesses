@@ -10,18 +10,15 @@
 #include <GaussianProcess/components/TrainSetAware.h>
 
 namespace gauss::gp {
-    class OutputSetMatrixAware
-        : virtual public TrainSetAware {
-    protected:
-        OutputSetMatrixAware() = default;
+class OutputSetMatrixAware : virtual public TrainSetAware {
+protected:
+  OutputSetMatrixAware() = default;
 
-        const Eigen::MatrixXd& getSamplesOutputMatrix() const {
-            return *samples_output_matrix;
-        };
-        void updateSamplesOutputMatrix();
-        void resetSamplesOutputMatrix() { samples_output_matrix.reset(); };
+  const Eigen::MatrixXd &getSamplesOutputMatrix() const;
+  void updateSamplesOutputMatrix();
+  void resetSamplesOutputMatrix() { samples_output_matrix.reset(); };
 
-    private:
-        std::unique_ptr<const Eigen::MatrixXd> samples_output_matrix;
-    };
+private:
+  std::unique_ptr<const Eigen::MatrixXd> samples_output_matrix;
+};
 } // namespace gauss::gp

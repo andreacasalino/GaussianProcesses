@@ -22,8 +22,8 @@ public:
   void pushSample(const Eigen::VectorXd &input_sample,
                   const Eigen::VectorXd &output_sample);
   template <typename IterableT>
-  void pushSample(const IterableT &input_samples,
-                  const IterableT &output_samples) {
+  void pushSamples(const IterableT &input_samples,
+                   const IterableT &output_samples) {
     if (input_samples.size() != output_samples.size()) {
       throw Error("Invalid new sets of samples");
     }

@@ -88,15 +88,19 @@ protected:
   void check_update_multiple_samples() {
     const std::size_t samples_numb = 5;
 
-    this->pushSamples(this->make_samples(samples_numb),
-                      this->make_samples(samples_numb));
+    auto samples1 = this->make_samples(samples_numb);
+
+    this->pushSamples(samples1.GetSamplesInput().GetSamples(),
+                      samples1.GetSamplesOutput().GetSamples());
     EXPECT_EQ(this->getCovariance().rows(), samples_numb);
     EXPECT_EQ(this->getCovariance().cols(), samples_numb);
     this->check_kernel_matrix();
     this->check_output_samples_matrix();
 
-    this->pushSamples(this->make_samples(samples_numb),
-                      this->make_samples(samples_numb));
+    auto samples2 = this->make_samples(samples_numb);
+
+    this->pushSamples(samples1.GetSamplesInput().GetSamples(),
+                      samples1.GetSamplesOutput().GetSamples());
     EXPECT_EQ(this->getCovariance().rows(), 2 * samples_numb);
     EXPECT_EQ(this->getCovariance().cols(), 2 * samples_numb);
     this->check_kernel_matrix();

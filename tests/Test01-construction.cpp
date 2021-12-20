@@ -1,17 +1,28 @@
 #include <GaussianProcess/GaussianProcess.h>
-#include <GaussianProcess/GaussianProcessVectorial.h>
 #include <GaussianProcess/kernel/LinearFunction.h>
 
 #include <gtest/gtest.h>
 
-#define EXPECT_CTOR_THROW(ProcessT, __VA_ARGS__)                               \
-  try {                                                                        \
-    ProcessT{__VA_ARGS__};                                                     \
-  } catch (gauss::gp::Error) {                                                 \
-    return;                                                                    \
-  } catch (const std::exception &e) {                                          \
-    throw std::runtime_error("Invalid thrown exception type");                 \
+template <typename ProcessT, typename... Args>
+void expect_ctor_throw(Args... args) {
+  try {
+    ProcessT{std::forward<Args>(args)...};
+  } catch (gauss::gp::Error) {
+    return;
+  } catch (const std::exception &e) {
+    throw std::runtime_error("Invalid thrown exception type");
   }
+}
+
+gauss::gp::TrainSet make_train_set(const std::size_t out_size) {
+  Eigen::VectorXd input(2);
+  input << 1, 1;
+  Eigen::VectorXd output(out_size);
+  for (std::size_t o = 0; o < out_size; ++o) {
+    output(o) = 1;
+  }
+  return gauss::gp::TrainSet{input, output};
+}
 
 TEST(Construction, GaussianProcess) {
   gauss::gp::GaussianProcess(std::make_unique<gauss::gp::LinearFunction>(0, 1),
@@ -20,14 +31,18 @@ TEST(Construction, GaussianProcess) {
   gauss::gp::GaussianProcess(std::make_unique<gauss::gp::LinearFunction>(0, 1),
                              static_cast<std::size_t>(5));
 
-  EXPECT_CTOR_THROW(gauss::gp::GaussianProcess, nullptr,
-                    static_cast<std::size_t>(1));
+  expect_ctor_throw<gauss::gp::GaussianProcess>(nullptr,
+                                                static_cast<std::size_t>(1));
 
-  //   {
-  //     std::unique_ptr<gauss::gp::KernelFunction> function =
-  //         std::make_unique<gauss::gp::LinearFunction>(0, 1);
-  //     expect_ctor_throw(std::move(function), static_cast<std::size_t>(0));
-  //   }
+  expect_ctor_throw<gauss::gp::GaussianProcess>(
+      std::make_unique<gauss::gp::LinearFunction>(0, 1),
+      static_cast<std::size_t>(0));
+
+  gauss::gp::GaussianProcess(std::make_unique<gauss::gp::LinearFunction>(0, 1),
+                             make_train_set(1));
+
+  expect_ctor_throw<gauss::gp::GaussianProcess>(
+      std::make_unique<gauss::gp::LinearFunction>(0, 1), make_train_set(2));
 }
 
 int main(int argc, char *argv[]) {

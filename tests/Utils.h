@@ -10,6 +10,10 @@ public:
       : GaussianProcessBase(std::make_unique<LinearFunction>(1, 1), InputSize,
                             OutputSize){};
 
+  GaussianProcessTest(KernelFunctionPtr kernel_function)
+      : GaussianProcessBase(std::move(kernel_function), InputSize,
+                            OutputSize){};
+
 protected:
   Eigen::VectorXd make_sample_input() const {
     Eigen::VectorXd result(InputSize);

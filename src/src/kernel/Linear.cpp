@@ -53,7 +53,7 @@ public:
 
   double evaluate_gradient(const Eigen::VectorXd &a,
                            const Eigen::VectorXd &b) const override {
-    return *teta1 * *teta1 * (*mean_i - a(i_pos) - b(i_pos));
+    return *teta1 * *teta1 * (2.0 * *mean_i - a(i_pos) - b(i_pos));
   };
 
 private:
@@ -65,7 +65,7 @@ private:
 
 namespace {
 Eigen::VectorXd null_mean(const Eigen::Index &size) {
-  Eigen::VectorXd result;
+  Eigen::VectorXd result(size);
   result.setZero();
   return result;
 }

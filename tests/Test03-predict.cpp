@@ -1,5 +1,5 @@
 #include "Utils.h"
-#include <GaussianProcess/kernel/ExponentialRBF.h>
+#include <GaussianProcess/kernel/SquaredExponential.h>
 #include <gtest/gtest.h>
 
 namespace gauss::gp::test {
@@ -9,7 +9,7 @@ class GaussianProcessPredictTest
 public:
   GaussianProcessPredictTest()
       : GaussianProcessTest<InputSize, OutputSize>(
-            std::make_unique<ExponentialRBF>(0.1, 0.02)){};
+            std::make_unique<SquaredExponential>(0.1, 0.02)){};
 
   void SetUp() {
     auto samples = this->make_samples(5);

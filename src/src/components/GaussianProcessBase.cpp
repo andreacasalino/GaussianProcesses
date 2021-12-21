@@ -71,10 +71,11 @@ void GaussianProcessBase::predict(const Eigen::VectorXd &point,
                                   double &covariance) const {
   const auto Kx_trasp = getKx(point);
   const auto Kx = Kx_trasp.transpose();
-  covariance = (Kx * getKernelInverse() * Kx_trasp)(0, 0);
+  auto K_inverse = getKernelInverse();
+  covariance = (Kx * K_inverse * Kx_trasp)(0, 0);
   covariance *= -1.0;
   covariance += kernelFunction->evaluate(point, point);
-  mean = Kx * getKernelInverse() * getSamplesOutputMatrix();
+  mean = Kx * K_inverse * getSamplesOutputMatrix();
 }
 
 Eigen::VectorXd GaussianProcessBase::getKx(const Eigen::VectorXd &point) const {

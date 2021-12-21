@@ -10,6 +10,9 @@
 #include <GaussianProcess/kernel/ParameterHandler.h>
 
 namespace gauss::gp {
+
+// https : // www.cs.toronto.edu/~duvenaud/cookbook/
+
 class KernelFunction {
 public:
   virtual ~KernelFunction() = default;

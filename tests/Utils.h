@@ -1,5 +1,5 @@
 #include <GaussianProcess/components/GaussianProcessBase.h>
-#include <GaussianProcess/kernel/LinearFunction.h>
+#include <GaussianProcess/kernel/Linear.h>
 #include <gtest/gtest.h>
 
 namespace gauss::gp::test {

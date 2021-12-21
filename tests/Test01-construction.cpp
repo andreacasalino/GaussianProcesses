@@ -1,5 +1,5 @@
 #include <GaussianProcess/GaussianProcess.h>
-#include <GaussianProcess/kernel/LinearFunction.h>
+#include <GaussianProcess/kernel/SquaredExponential.h>
 
 #include <gtest/gtest.h>
 
@@ -25,24 +25,26 @@ gauss::gp::TrainSet make_train_set(const std::size_t out_size) {
 }
 
 TEST(Construction, GaussianProcess) {
-  gauss::gp::GaussianProcess(std::make_unique<gauss::gp::LinearFunction>(0, 1),
-                             static_cast<std::size_t>(1));
+  gauss::gp::GaussianProcess(
+      std::make_unique<gauss::gp::SquaredExponential>(0, 1),
+      static_cast<std::size_t>(1));
 
-  gauss::gp::GaussianProcess(std::make_unique<gauss::gp::LinearFunction>(0, 1),
-                             static_cast<std::size_t>(5));
+  gauss::gp::GaussianProcess(
+      std::make_unique<gauss::gp::SquaredExponential>(0, 1),
+      static_cast<std::size_t>(5));
 
   expect_ctor_throw<gauss::gp::GaussianProcess>(nullptr,
                                                 static_cast<std::size_t>(1));
 
   expect_ctor_throw<gauss::gp::GaussianProcess>(
-      std::make_unique<gauss::gp::LinearFunction>(0, 1),
+      std::make_unique<gauss::gp::SquaredExponential>(0, 1),
       static_cast<std::size_t>(0));
 
-  gauss::gp::GaussianProcess(std::make_unique<gauss::gp::LinearFunction>(0, 1),
-                             make_train_set(1));
+  gauss::gp::GaussianProcess(
+      std::make_unique<gauss::gp::SquaredExponential>(0, 1), make_train_set(1));
 
   expect_ctor_throw<gauss::gp::GaussianProcess>(
-      std::make_unique<gauss::gp::LinearFunction>(0, 1), make_train_set(2));
+      std::make_unique<gauss::gp::SquaredExponential>(0, 1), make_train_set(2));
 }
 
 int main(int argc, char *argv[]) {

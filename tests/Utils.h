@@ -7,8 +7,8 @@ template <std::size_t InputSize, std::size_t OutputSize>
 class GaussianProcessTest : public GaussianProcessBase, public ::testing::Test {
 public:
   GaussianProcessTest()
-      : GaussianProcessBase(std::make_unique<LinearFunction>(1, 1), InputSize,
-                            OutputSize){};
+      : GaussianProcessBase(std::make_unique<LinearFunction>(1, 1, InputSize),
+                            InputSize, OutputSize){};
 
   GaussianProcessTest(KernelFunctionPtr kernel_function)
       : GaussianProcessBase(std::move(kernel_function), InputSize,

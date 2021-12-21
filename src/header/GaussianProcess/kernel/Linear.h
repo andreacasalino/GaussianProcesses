@@ -8,21 +8,29 @@
 #pragma once
 
 #include <GaussianProcess/kernel/KernelFunction.h>
+#include <vector>
 
 namespace gauss::gp {
-    class LinearFunction : public KernelFunction {
-    public:
-        LinearFunction(const double teta0, const double teta1);
+class LinearFunction : public KernelFunction {
+public:
+  LinearFunction(const double teta0, const double teta1,
+                 const std::size_t space_size);
+  LinearFunction(const double teta0, const double teta1,
+                 const Eigen::VectorXd &mean);
 
-        double evaluate(const Eigen::VectorXd& a,
-            const Eigen::VectorXd& b) const override;
+  double evaluate(const Eigen::VectorXd &a,
+                  const Eigen::VectorXd &b) const override;
 
-        std::unique_ptr<KernelFunction> copy() const override;
+  std::unique_ptr<KernelFunction> copy() const override;
 
-        std::vector<ParameterHandlerPtr> getParameters() const override;
+  std::vector<ParameterHandlerPtr> getParameters() const override;
 
-    private:
-        Parameter teta0;
-        Parameter teta1;
-    };
+protected:
+  LinearFunction(const LinearFunction &o);
+
+private:
+  Parameter teta0;
+  Parameter teta1;
+  std::vector<Parameter> mean;
+};
 } // namespace gauss::gp

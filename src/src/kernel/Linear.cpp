@@ -9,13 +9,22 @@
 
 namespace gauss::gp {
 namespace {
+Eigen::VectorXd delta(const std::vector<Parameter> &mean,
+                      const Eigen::VectorXd &x) {
+  Eigen::VectorXd result(x.size());
+  for (std::size_t k = 0; k < mean.size(); ++k) {
+    result(k) = *mean[k] - x(static_cast<Eigen::Index>(k));
+  }
+  return result;
+};
+
 class Teta0Handler : public ParameterHandler {
 public:
   Teta0Handler(const Parameter &teta0) : ParameterHandler(teta0){};
 
   double evaluate_gradient(const Eigen::VectorXd &a,
                            const Eigen::VectorXd &b) const override {
-    return 1.0;
+    return 2.0 * getParameter();
   };
 };
 
@@ -25,30 +34,89 @@ public:
 
   double evaluate_gradient(const Eigen::VectorXd &a,
                            const Eigen::VectorXd &b) const override {
-    return a.dot(b);
+    auto delta_a = delta(mean, a);
+    auto delta_b = delta(mean, b);
+    return 2.0 * getParameter() * delta_a.dot(delta_b);
   };
+
+private:
+  std::vector<Parameter> mean;
+};
+
+class MeanHandler : public ParameterHandler {
+public:
+  MeanHandler(const Parameter &teta1, const Parameter &mean_i,
+              const Eigen::Index i_pos)
+      : ParameterHandler(teta1), i_pos(i_pos) {
+    this->mean_i = mean_i;
+  };
+
+  double evaluate_gradient(const Eigen::VectorXd &a,
+                           const Eigen::VectorXd &b) const override {
+    return *teta1 * *teta1 * (*mean_i - a(i_pos) - b(i_pos));
+  };
+
+private:
+  Parameter teta1;
+  const Eigen::Index i_pos;
+  Parameter mean_i;
 };
 } // namespace
 
-LinearFunction::LinearFunction(const double teta0, const double teta1) {
+namespace {
+Eigen::VectorXd null_mean(const Eigen::Index &size) {
+  Eigen::VectorXd result;
+  result.setZero();
+  return result;
+}
+} // namespace
+
+LinearFunction::LinearFunction(const double teta0, const double teta1,
+                               const std::size_t space_size)
+    : LinearFunction(teta0, teta1,
+                     null_mean(static_cast<Eigen::Index>(space_size))) {}
+
+LinearFunction::LinearFunction(const double teta0, const double teta1,
+                               const Eigen::VectorXd &mean) {
   this->teta0 = std::make_shared<double>(teta0);
   this->teta1 = std::make_shared<double>(teta1);
+  this->mean.reserve(mean.size());
+  for (Eigen::Index i = 0; i < mean.size(); ++i) {
+    this->mean.push_back(std::make_shared<double>(mean(i)));
+  }
+}
+
+LinearFunction::LinearFunction(const LinearFunction &o) {
+  this->teta0 = std::make_shared<double>(*o.teta0);
+  this->teta1 = std::make_shared<double>(*o.teta1);
+  this->mean.reserve(mean.size());
+  for (const auto &mean_val : mean) {
+    this->mean.push_back(std::make_shared<double>(*mean_val));
+  }
 }
 
 double LinearFunction::evaluate(const Eigen::VectorXd &a,
                                 const Eigen::VectorXd &b) const {
-  return *teta0 + *teta1 * a.dot(b);
+  auto delta_a = delta(mean, a);
+  auto delta_b = delta(mean, b);
+  return *teta0 * *teta0 + *teta1 * *teta1 * delta_a.dot(delta_b);
 };
 
 std::unique_ptr<KernelFunction> LinearFunction::copy() const {
-  return std::make_unique<LinearFunction>(*teta0, *teta1);
+  std::unique_ptr<LinearFunction> result;
+  result.reset(new LinearFunction(*this));
+  return result;
 };
 
 std::vector<ParameterHandlerPtr> LinearFunction::getParameters() const {
   std::vector<ParameterHandlerPtr> result;
-  result.reserve(2);
+  result.reserve(2 + mean.size());
   result.emplace_back(std::make_unique<Teta0Handler>(teta0));
   result.emplace_back(std::make_unique<Teta1Handler>(teta1));
+  Eigen::Index i_pos = 0;
+  for (std::size_t k = 0; k < mean.size(); ++k, ++i_pos) {
+    result.emplace_back(std::make_unique<MeanHandler>(teta1, mean[k], i_pos));
+  }
   return result;
 };
 } // namespace gauss::gp

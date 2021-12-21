@@ -9,14 +9,6 @@
 
 namespace gauss::gp {
 namespace {
-double evaluate_exp(const Eigen::VectorXd &a, const Eigen::VectorXd &b,
-                    const double teta1) {
-  auto delta = a;
-  delta -= b;
-  double result = exp(-teta1 * delta.squaredNorm());
-  return result;
-};
-
 class Teta0Handler : public ParameterHandler {
 public:
   Teta0Handler(const Parameter &teta0, const Parameter &teta1)
@@ -26,7 +18,9 @@ public:
 
   double evaluate_gradient(const Eigen::VectorXd &a,
                            const Eigen::VectorXd &b) const override {
-    return evaluate_exp(a, b, *teta1);
+    double teta1_sq = (*teta1) * (*teta1);
+    double distance = (a - b).squaredNorm();
+    return 2.0 * getParameter() * exp(-teta1_sq * distance);
   };
 
 private:
@@ -42,7 +36,11 @@ public:
 
   double evaluate_gradient(const Eigen::VectorXd &a,
                            const Eigen::VectorXd &b) const override {
-    return -*teta0 * evaluate_exp(a, b, getParameter()) * (a - b).squaredNorm();
+    double teta0_sq = (*teta0) * (*teta0);
+    double teta1_sq = getParameter() * getParameter();
+    double distance = (a - b).squaredNorm();
+    return -teta0_sq * exp(-teta1_sq * distance) * 2.0 * getParameter() *
+           distance;
   };
 
 private:
@@ -57,7 +55,10 @@ SquaredExponential::SquaredExponential(const double teta0, const double teta1) {
 
 double SquaredExponential::evaluate(const Eigen::VectorXd &a,
                                     const Eigen::VectorXd &b) const {
-  return *teta0 * evaluate_exp(a, b, *teta1);
+  double teta0_sq = (*teta0) * (*teta0);
+  double teta1_sq = (*teta1) * (*teta1);
+  double distance = (a - b).squaredNorm();
+  return teta0_sq * exp(-teta1_sq * distance);
 };
 
 std::unique_ptr<KernelFunction> SquaredExponential::copy() const {

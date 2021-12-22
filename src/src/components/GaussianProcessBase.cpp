@@ -115,11 +115,12 @@ void GaussianProcessBase::setParameters(const Eigen::VectorXd &parameters) {
 };
 
 double GaussianProcessBase::getLikelihood() const {
-  auto Y_x_Y = getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
+  auto Y_Ytras =
+      getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
   double result = 0.0;
   result -= 0.5 * samples->GetSamplesInput().GetSamples().size() *
-            getInputStateSpaceSize() * log(getCovarianceDeterminant());
-  result -= 0.5 * (getCovarianceInv() * Y_x_Y).trace();
+            log(getCovarianceDeterminant());
+  result -= 0.5 * (getCovarianceInv() * Y_Ytras).trace();
   return result;
 }
 
@@ -130,9 +131,8 @@ compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
   Eigen::MatrixXd result(samples.size(), samples.size());
   Eigen::Index row = 0, col;
   for (auto it = samples.begin(); it != samples.end(); ++it, ++row) {
-    auto it2 = it;
     col = row;
-    for (it2; it2 != samples.end(); ++it2, ++col) {
+    for (auto it2 = it; it2 != samples.end(); ++it2, ++col) {
       result(row, col) = handler.evaluate_gradient(*it, *it2);
       result(col, row) = result(row, col);
     }
@@ -142,21 +142,18 @@ compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
 } // namespace
 
 Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
-  auto Y_x_Y = getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
+  auto Y_Ytras =
+      getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
   Eigen::VectorXd result(parameters.size());
   Eigen::Index i = 0;
-  result.setZero();
   auto kernel_inv = getKernelInverse();
   const auto &samples_input = samples->GetSamplesInput().GetSamples();
   for (auto &parameter : this->parameters) {
     auto kernel_gradient = compute_kernel_gradient(*parameter, samples_input);
-    result(i) -= (0.5 / getCovarianceDeterminant()) *
-                 samples->GetSamplesInput().GetSamples().size() *
-                 getInputStateSpaceSize() *
-                 (kernel_inv * kernel_gradient).trace();
-    result(i) -=
-        0.5 *
-        (Y_x_Y.transpose() * kernel_inv * kernel_gradient * kernel_inv).trace();
+    result(i) = -samples->GetSamplesInput().GetSamples().size() *
+                (kernel_inv * kernel_gradient).trace();
+    result(i) += (kernel_inv * kernel_gradient * kernel_inv * Y_Ytras).trace();
+    result(i) *= 0.5;
     ++i;
   }
   return result;

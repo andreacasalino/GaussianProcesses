@@ -10,10 +10,10 @@
 namespace gauss::gp {
 void train(GaussianProcessBase &process, const std::size_t iterations) {
   for (std::size_t k = 0; k < iterations; ++k) {
-    auto parameter = process.getParameters();
+    auto parameters = process.getParameters();
     auto grad = 0.1 * process.getParametersGradient();
-    parameter += grad;
-    process.setParameters(parameter);
+    parameters += grad;
+    process.setParameters(parameters);
   }
 }
 } // namespace gauss::gp

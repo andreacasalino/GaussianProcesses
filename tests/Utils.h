@@ -26,16 +26,29 @@ protected:
     return result;
   };
 
-  TrainSet make_samples(const std::size_t samples_numb) const {
+  std::vector<Eigen::VectorXd>
+  make_samples_input(const std::size_t samples_numb) const {
     std::vector<Eigen::VectorXd> input_samples;
     input_samples.reserve(samples_numb);
+    for (std::size_t s = 0; s < samples_numb; ++s) {
+      input_samples.emplace_back(make_sample_input());
+    }
+    return input_samples;
+  };
+
+  std::vector<Eigen::VectorXd>
+  make_samples_output(const std::size_t samples_numb) const {
     std::vector<Eigen::VectorXd> output_samples;
     output_samples.reserve(samples_numb);
     for (std::size_t s = 0; s < samples_numb; ++s) {
-      input_samples.emplace_back(make_sample_input());
       output_samples.emplace_back(make_sample_output());
     }
-    return gauss::gp::TrainSet{input_samples, output_samples};
+    return output_samples;
+  };
+
+  TrainSet make_samples(const std::size_t samples_numb) const {
+    return gauss::gp::TrainSet{make_samples_input(samples_numb),
+                               make_samples_output(samples_numb)};
   };
 };
 } // namespace gauss::gp::test

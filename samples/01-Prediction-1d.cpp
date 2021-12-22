@@ -12,8 +12,8 @@ const std::function<Eigen::VectorXd(const Eigen::VectorXd &)>
     };
 
 int main() {
-  const std::size_t samples_in_train_set = 10;
-  const std::size_t samples_for_prediction = 50;
+  const std::size_t samples_in_train_set = 40;
+  const std::size_t samples_for_prediction = 100;
   const double interval_min = -2.0;
   const double interval_max = 2.0;
 
@@ -26,7 +26,7 @@ int main() {
 
   // generate the approximating gaussian process
   gauss::gp::GaussianProcess process(
-      std::make_unique<gauss::gp::SquaredExponential>(0.1, 0.05),
+      std::make_unique<gauss::gp::SquaredExponential>(0.1, 0.1),
       gauss::gp::TrainSet{input_space_samples, output_space_samples});
   std::cout << "Gaussian process generated" << std::endl;
 

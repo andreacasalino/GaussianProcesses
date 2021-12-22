@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 matrix = np.loadtxt('predictions_1d.txt')
-print(matrix)
 
 fig, ax = plt.subplots(1, 1)
 

@@ -37,7 +37,7 @@ public:
   };
   void clearSamples();
 
-  // row wise
+  // column wise
   Eigen::VectorXd getKx(const Eigen::VectorXd &point) const;
 
   const TrainSet *getTrainSet() const override { return samples.get(); };
@@ -61,8 +61,8 @@ protected:
 
   GaussianProcessBase(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set);
 
-  void predict(const Eigen::VectorXd &point, Eigen::VectorXd &mean,
-               double &covariance) const;
+  Eigen::VectorXd predict(const Eigen::VectorXd &point,
+                          double &covariance) const;
 
 private:
   void pushSample_(const Eigen::VectorXd &input_sample,

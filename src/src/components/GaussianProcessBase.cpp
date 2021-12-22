@@ -7,6 +7,8 @@
 
 #include <GaussianProcess/components/GaussianProcessBase.h>
 
+#include <iostream>
+
 namespace gauss::gp {
 GaussianProcessBase::GaussianProcessBase(KernelFunctionPtr kernel,
                                          const std::size_t input_space_size,
@@ -66,16 +68,16 @@ void GaussianProcessBase::updateKernelFunction(KernelFunctionPtr new_kernel) {
   }
 }
 
-void GaussianProcessBase::predict(const Eigen::VectorXd &point,
-                                  Eigen::VectorXd &mean,
-                                  double &covariance) const {
-  const auto Kx_trasp = getKx(point);
-  const auto Kx = Kx_trasp.transpose();
+Eigen::VectorXd GaussianProcessBase::predict(const Eigen::VectorXd &point,
+                                             double &covariance) const {
+  const auto Kx = getKx(point);
+  const auto Kx_trasp = Kx.transpose();
   auto K_inverse = getKernelInverse();
-  covariance = (Kx * K_inverse * Kx_trasp)(0, 0);
+  covariance = (Kx_trasp * K_inverse * Kx)(0, 0);
   covariance *= -1.0;
   covariance += kernelFunction->evaluate(point, point);
-  mean = Kx * K_inverse * getSamplesOutputMatrix();
+  covariance = abs(covariance);
+  return Kx_trasp * K_inverse * getSamplesOutputMatrix();
 }
 
 Eigen::VectorXd GaussianProcessBase::getKx(const Eigen::VectorXd &point) const {
@@ -137,6 +139,7 @@ compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
       result(col, row) = result(row, col);
     }
   }
+  std::cout << "kernel_grad:" << std::endl << result << std::endl << std::endl;
   return result;
 }
 } // namespace
@@ -144,9 +147,15 @@ compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
 Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
   auto Y_Ytras =
       getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
+
+  std::cout << "Y_Ytras:" << std::endl << Y_Ytras << std::endl << std::endl;
+
   Eigen::VectorXd result(parameters.size());
   Eigen::Index i = 0;
   auto kernel_inv = getKernelInverse();
+  std::cout << "kernel_inv:" << std::endl
+            << kernel_inv << std::endl
+            << std::endl;
   const auto &samples_input = samples->GetSamplesInput().GetSamples();
   for (auto &parameter : this->parameters) {
     auto kernel_gradient = compute_kernel_gradient(*parameter, samples_input);

@@ -8,23 +8,26 @@
 #include <GaussianProcess/GaussianProcess.h>
 
 namespace gauss::gp {
-    GaussianProcess::GaussianProcess(KernelFunctionPtr kernel, const std::size_t input_space_size)
-        : GaussianProcessBase(std::move(kernel), input_space_size, 1) {
-    }
+GaussianProcess::GaussianProcess(KernelFunctionPtr kernel,
+                                 const std::size_t input_space_size)
+    : GaussianProcessBase(std::move(kernel), input_space_size, 1) {}
 
-    GaussianProcess::GaussianProcess(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set)
-        : GaussianProcessBase(std::move(kernel), std::move(train_set)) {
-        if (getOutputStateSpaceSize() != 1) {
-            throw gauss::gp::Error("Invalid output samples");
-        }
-    }
-
-    gauss::GaussianDistribution GaussianProcess::predict(const Eigen::VectorXd& point) const {
-        Eigen::VectorXd prediction_mean;
-        double prediction_covariance;
-        GaussianProcessBase::predict(point, prediction_mean, prediction_covariance);
-        Eigen::MatrixXd prediction_covariance_mat(1, 1);
-        prediction_covariance_mat << prediction_covariance;
-        return gauss::GaussianDistribution(prediction_mean, prediction_covariance_mat);
-    }
+GaussianProcess::GaussianProcess(KernelFunctionPtr kernel,
+                                 gauss::gp::TrainSet train_set)
+    : GaussianProcessBase(std::move(kernel), std::move(train_set)) {
+  if (getOutputStateSpaceSize() != 1) {
+    throw gauss::gp::Error("Invalid output samples");
+  }
 }
+
+gauss::GaussianDistribution
+GaussianProcess::predict(const Eigen::VectorXd &point) const {
+  double prediction_covariance;
+  Eigen::VectorXd prediction_mean =
+      GaussianProcessBase::predict(point, prediction_covariance);
+  Eigen::MatrixXd prediction_covariance_mat(1, 1);
+  prediction_covariance_mat << prediction_covariance;
+  return gauss::GaussianDistribution(prediction_mean,
+                                     prediction_covariance_mat);
+}
+} // namespace gauss::gp

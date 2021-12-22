@@ -1,5 +1,5 @@
 #include "Utils.h"
-#include <GaussianProcess/kernel/ExponentialRBF.h>
+#include <GaussianProcess/kernel/SquaredExponential.h>
 #include <GaussianProcess/train/Trainer.h>
 #include <iostream>
 
@@ -26,7 +26,7 @@ int main() {
 
   // generate the approximating gaussian process
   gauss::gp::GaussianProcess process(
-      std::make_unique<gauss::gp::ExponentialRBF>(0.1, 0.01),
+      std::make_unique<gauss::gp::SquaredExponential>(0.1, 0.05),
       gauss::gp::TrainSet{input_space_samples, output_space_samples});
   std::cout << "Gaussian process generated" << std::endl;
 
@@ -37,21 +37,23 @@ int main() {
   std::cout << "predictions generated" << std::endl;
 
   // log the predictions
-  log_predictions(predictions_input, predictions, "predictions_1d.txt");
+  log_predictions(predictions_input, function_to_approximate, predictions,
+                  "predictions_1d.txt");
 
-  // tune parameters to get better predictions
-  gauss::gp::train(process, 20);
-  std::cout << "tuning of parameters done" << std::endl;
-
-  // generate the predictions with tuned model
-  predictions = get_predictions(predictions_input, process);
-  std::cout << "predictions generated again" << std::endl;
-
-  // log new predictions
-  log_predictions(predictions_input, predictions, "predictions_1d_tuned.txt");
+  //   // tune parameters to get better predictions
+  //   gauss::gp::train(process, 20);
+  //   std::cout << "tuning of parameters done" << std::endl;
+  //
+  //   // generate the predictions with tuned model
+  //   predictions = get_predictions(predictions_input, process);
+  //   std::cout << "predictions generated again" << std::endl;
+  //
+  //   // log new predictions
+  //   log_predictions(predictions_input, function_to_approximate, predictions,
+  //   "predictions_1d_tuned.txt");
 
   std::cout
-      << "Luanch the python script Visualize-1d.py to visualize the results"
+      << "Launch the python script Visualize-1d.py to visualize the results"
       << std::endl;
 
   return EXIT_SUCCESS;

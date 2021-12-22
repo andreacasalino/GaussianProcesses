@@ -1,5 +1,5 @@
 #include "Utils.h"
-#include <GaussianProcess/kernel/ExponentialRBF.h>
+#include <GaussianProcess/kernel/SquaredExponential.h>
 #include <GaussianProcess/train/Trainer.h>
 #include <iostream>
 
@@ -27,7 +27,7 @@ int main() {
 
   // generate the approximating gaussian process
   gauss::gp::GaussianProcess process(
-      std::make_unique<gauss::gp::ExponentialRBF>(0.1, 0.01),
+      std::make_unique<gauss::gp::SquaredExponential>(0.1, 0.01),
       gauss::gp::TrainSet{input_space_samples, output_space_samples});
   std::cout << "Gaussian process generated" << std::endl;
 
@@ -53,7 +53,7 @@ int main() {
   log_predictions(predictions_input, predictions, "predictions_2d_tuned.txt");
 
   std::cout
-      << "Luanch the python script Visualize-2d.py to visualize the results"
+      << "Launch the python script Visualize-2d.py to visualize the results"
       << std::endl;
 
   return EXIT_SUCCESS;

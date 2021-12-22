@@ -81,14 +81,16 @@ get_predictions(const std::vector<Eigen::VectorXd> &input_samples,
   return predictions;
 }
 
-void log_predictions(const std::vector<Eigen::VectorXd> &input_predictions,
-                     const std::vector<Prediction> &predictions,
-                     const std::string &file_name) {
+void log_predictions(
+    const std::vector<Eigen::VectorXd> &input_predictions,
+    const std::function<Eigen::VectorXd(const Eigen::VectorXd &)> real_function,
+    const std::vector<Prediction> &predictions, const std::string &file_name) {
   std::ofstream log(file_name);
   auto it_in = input_predictions.begin();
   for (auto it_out = predictions.begin(); it_out != predictions.end();
        ++it_out, ++it_in) {
-    log << it_in->transpose() << ' ' << it_out->mean.transpose() << ' '
+    log << it_in->transpose() << ' ' << real_function(*it_in).transpose() << ' '
+        << it_out->mean.transpose() << ' '
         << it_out->mean(0) - 2.5 * sqrt(it_out->covariance) << ' '
         << it_out->mean(0) + 2.5 * sqrt(it_out->covariance) << std::endl;
   }

@@ -6,12 +6,20 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(guass_utils)
 
+FetchContent_Declare(
+  trainers
+  GIT_REPOSITORY https://github.com/andreacasalino/TrainingTools.git
+  GIT_TAG        main
+)
+FetchContent_MakeAvailable(trainers)
+
 set(PROJECT_SHORTNAME GaussianProcess)
 
 MakeLibrary(${PROJECT_SHORTNAME} header)
 
 target_link_libraries(${PROJECT_SHORTNAME} PUBLIC
 GaussianUtils
+TrainingTools
 )
 
 target_include_directories(${PROJECT_SHORTNAME} PRIVATE

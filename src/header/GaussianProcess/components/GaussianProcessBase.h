@@ -12,10 +12,13 @@
 #include <GaussianProcess/components/KernelAware.h>
 #include <GaussianProcess/components/OutputSetMatrixAware.h>
 
+#include <TrainingTools/ParametersAware.h>
+
 namespace gauss::gp {
 class GaussianProcessBase : public InputOutputSizeAwareBase,
                             public KernelAware,
-                            public OutputSetMatrixAware {
+                            public OutputSetMatrixAware,
+                            public ::train::ParametersAware {
 public:
   void updateKernelFunction(KernelFunctionPtr new_kernel);
 
@@ -42,11 +45,14 @@ public:
 
   const TrainSet *getTrainSet() const override { return samples.get(); };
 
-  Eigen::VectorXd getParameters() const;
-  void setParameters(const Eigen::VectorXd &parameters);
+  Eigen::VectorXd getParameters() const override;
+  void setParameters(const Eigen::VectorXd &parameters) override;
 
   double getLikelihood() const;
   Eigen::VectorXd getParametersGradient() const;
+  ::train::Vect getGradient() const override {
+    return -getParametersGradient();
+  };
 
 protected:
   GaussianProcessBase(const GaussianProcessBase &);

@@ -1,6 +1,6 @@
 #include "Utils.h"
 #include <GaussianProcess/kernel/SquaredExponential.h>
-#include <GaussianProcess/train/Trainer.h>
+#include <TrainingTools/iterative/solvers/GradientDescend.h>
 #include <functional>
 #include <gtest/gtest.h>
 
@@ -87,7 +87,10 @@ TEST_F(Process5_3, gradient_likelihood_computation) {
 
 TEST_F(Process5_3, train) {
   auto initial_likelihood = getLikelihood();
-  gauss::gp::train(*this, 5);
+  {
+    train::GradientDescend solver;
+    solver.train(*this);
+  }
   auto new_likelihood = getLikelihood();
   EXPECT_LE(initial_likelihood, new_likelihood);
 }

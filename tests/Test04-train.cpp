@@ -77,12 +77,12 @@ TEST_F(Process5_3, set_parameters) {
 TEST_F(Process3_1, gradient_likelihood_computation) {
   auto grad = getParametersGradient();
   EXPECT_EQ(grad.size(), 2);
-  getLikelihood();
+  EXPECT_NO_THROW(getLikelihood());
 }
 TEST_F(Process5_3, gradient_likelihood_computation) {
   auto grad = getParametersGradient();
   EXPECT_EQ(grad.size(), 2);
-  getLikelihood();
+  EXPECT_NO_THROW(getLikelihood());
 }
 
 TEST_F(Process5_3, train) {

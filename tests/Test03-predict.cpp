@@ -22,10 +22,9 @@ protected:
   void check_prediction() const {
     const auto &samples = this->getTrainSet()->GetSamplesInput().GetSamples();
 
-    Eigen::VectorXd prediction;
     double prediction_covariance;
     for (const auto &sample : samples) {
-      this->predict(samples.front(), prediction, prediction_covariance);
+      this->predict(sample, prediction_covariance);
       auto prediction_covariance_low = prediction_covariance;
 
       auto point = sample;
@@ -35,7 +34,7 @@ protected:
         delta *= 0.05;
         point += delta;
       }
-      this->predict(point, prediction, prediction_covariance);
+      this->predict(point, prediction_covariance);
       EXPECT_LE(prediction_covariance_low, prediction_covariance);
     }
   };

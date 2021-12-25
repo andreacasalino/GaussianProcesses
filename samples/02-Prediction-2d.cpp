@@ -1,6 +1,6 @@
 #include "Utils.h"
 #include <GaussianProcess/kernel/SquaredExponential.h>
-#include <GaussianProcess/train/Trainer.h>
+#include <TrainingTools/iterative/solvers/GradientDescend.h>
 #include <iostream>
 
 const std::function<Eigen::VectorXd(const Eigen::VectorXd &)>
@@ -39,10 +39,11 @@ int main() {
   std::cout << "predictions generated" << std::endl;
 
   // log the predictions
-  log_predictions(predictions_input, predictions, "predictions_2d.txt");
+  log_predictions(predictions_input, function_to_approximate, predictions,
+                  "predictions_2d.txt");
 
   // tune parameters to get better predictions
-  gauss::gp::train(process, 20);
+  train::GradientDescend{}.train(process);
   std::cout << "tuning of parameters done" << std::endl;
 
   // generate the predictions with tuned model
@@ -50,7 +51,8 @@ int main() {
   std::cout << "predictions generated again" << std::endl;
 
   // log new predictions
-  log_predictions(predictions_input, predictions, "predictions_2d_tuned.txt");
+  log_predictions(predictions_input, function_to_approximate, predictions,
+                  "predictions_2d_tuned.txt");
 
   std::cout
       << "Launch the python script Visualize-2d.py to visualize the results"

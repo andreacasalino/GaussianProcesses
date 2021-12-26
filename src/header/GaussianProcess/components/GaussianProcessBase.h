@@ -24,6 +24,7 @@ public:
    * @brief replace the kernel function.
    *
    * @param new_kernel
+   * @throw passing a null kernel
    */
   void updateKernelFunction(KernelFunctionPtr new_kernel);
 
@@ -32,6 +33,8 @@ public:
    *
    * @param input_sample
    * @param output_sample
+   * @throw in case the size of the samples is not consistent with the input or
+   * the output space size of the process
    */
   void pushSample(const Eigen::VectorXd &input_sample,
                   const Eigen::VectorXd &output_sample);
@@ -41,6 +44,8 @@ public:
    * @tparam IterableT
    * @param input_samples
    * @param output_samples
+   * @throw in case the size of the samples is not consistent with the
+   * input or the output space size of the process
    */
   template <typename IterableT>
   void pushSamples(const IterableT &input_samples,
@@ -79,6 +84,7 @@ public:
   /**
    * @param parameters , the new set of tunable parameters for the kernel
    * function
+   * @throw in case the number of parameters is not consistent
    */
   void setParameters(const Eigen::VectorXd &parameters) override;
 

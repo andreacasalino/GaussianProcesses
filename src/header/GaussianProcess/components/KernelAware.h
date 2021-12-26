@@ -15,15 +15,24 @@ namespace gauss::gp {
 class KernelAware : virtual public TrainSetAware, public CovarianceAware {
 public:
   /**
-   * @return The kernel of the process
+   * @return The kernel of the process.
+   * The kernel is lazy computed, as is assumed equal to null before actually
+   * adding samples to the process.
+   * @throw In case the kernel was not computed as no samples are available
    */
   Eigen::MatrixXd getCovariance() const override;
   /**
    * @return The inverse of the kernel of the process
+   * The kernel is lazy computed, as is assumed equal to null before actually
+   * adding samples to the process.
+   * @throw In case the kernel was not computed as no samples are available
    */
   Eigen::MatrixXd getCovarianceInv() const override;
   /**
    * @return The determinant of the kernel of the process
+   * The kernel is lazy computed, as is assumed equal to null before actually
+   * adding samples to the process.
+   * @throw In case the kernel was not computed as no samples are available
    */
   double getCovarianceDeterminant() const override;
 

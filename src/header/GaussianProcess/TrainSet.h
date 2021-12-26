@@ -81,6 +81,13 @@ public:
     *output += o.GetSamplesOutput();
   };
 
+  /**
+   * @brief Add a new pair input-output sample.
+   * The values of the input part is assumed as the initial values of the passed
+   * vector, while the remaining values are assumed to make the output part.
+   *
+   * @param sample
+   */
   void operator+=(const Eigen::VectorXd &sample);
 
   void addSample(const Eigen::VectorXd &input_sample,
@@ -98,10 +105,12 @@ public:
 
   /**
    * @return the input realizations
+   * @throw when no samples are available
    */
   const gauss::TrainSet &GetSamplesInput() const;
   /**
    * @return the output realizations
+   * @throw when no samples are available
    */
   const gauss::TrainSet &GetSamplesOutput() const;
 

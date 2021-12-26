@@ -26,6 +26,8 @@ public:
    * @param input_space_size
    * @param output_space_size
    * @throw when passing a null kernel
+   * @throw when passsing input_space_size equal to 0
+   * @throw when passsing output_space_size equal to 0
    */
   GaussianProcessVectorial(KernelFunctionPtr kernel,
                            const std::size_t input_space_size,

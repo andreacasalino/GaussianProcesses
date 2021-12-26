@@ -25,6 +25,7 @@ public:
    * @param kernel
    * @param input_space_size
    * @throw when passing a null kernel
+   * @throw when passsing input_space_size equal to 0
    */
   GaussianProcess(KernelFunctionPtr kernel, const std::size_t input_space_size);
 
@@ -34,6 +35,7 @@ public:
    * @param kernel
    * @param train_set
    * @throw when passing a null kernel
+   * @throw passing a train set with output samples with a size different from 1
    */
   GaussianProcess(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set);
 

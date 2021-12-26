@@ -20,6 +20,7 @@ public:
 
   /**
    * @brief Add an additional kernel function to the composite
+   * @throw passing a null element
    */
   void push_function(KernelFunctionPtr element);
 

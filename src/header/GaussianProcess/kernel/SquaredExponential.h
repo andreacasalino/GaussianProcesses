@@ -11,6 +11,10 @@
 #include <GaussianProcess/kernel/ParameterHandler.h>
 
 namespace gauss::gp {
+/**
+ * @brief Kernel function k(x1, x2) assumed equal to:
+ * -teta0^2 * exp(-teta1^2 * (x1-x2).dot(x1-x2))
+ */
 class SquaredExponential : public KernelFunction {
 public:
   SquaredExponential(const double teta0, const double teta1);

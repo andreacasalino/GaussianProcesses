@@ -14,10 +14,22 @@
 namespace gauss::gp {
 class KernelAware : virtual public TrainSetAware, public CovarianceAware {
 public:
+  /**
+   * @return The kernel of the process
+   */
   Eigen::MatrixXd getCovariance() const override;
+  /**
+   * @return The inverse of the kernel of the process
+   */
   Eigen::MatrixXd getCovarianceInv() const override;
+  /**
+   * @return The determinant of the kernel of the process
+   */
   double getCovarianceDeterminant() const override;
 
+  /**
+   * @return The kernel function used to compute the kernel of the process
+   */
   const KernelFunction &getKernelFunction() const { return *kernelFunction; }
 
 protected:

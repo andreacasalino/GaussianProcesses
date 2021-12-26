@@ -13,20 +13,27 @@
 namespace gauss::gp {
 using Parameter = std::shared_ptr<double>;
 
+/**
+ * @brief Handler of a kernel tunable parameter.
+ *
+ */
 class ParameterHandler {
 public:
   virtual ~ParameterHandler() = default;
 
+  /**
+   * @param a
+   * @param b
+   * @return The gradient of the kernel activation function
+   */
   virtual double evaluate_gradient(const Eigen::VectorXd &a,
-                          const Eigen::VectorXd &b) const = 0;
+                                   const Eigen::VectorXd &b) const = 0;
 
   double getParameter() const { return *parameter; };
   void setParameter(const double value) { *parameter = value; };
 
 protected:
-  ParameterHandler(const Parameter& parameter) {
-      this->parameter = parameter;
-  };
+  ParameterHandler(const Parameter &parameter) { this->parameter = parameter; };
 
 private:
   Parameter parameter;

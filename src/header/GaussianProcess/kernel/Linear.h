@@ -11,6 +11,10 @@
 #include <vector>
 
 namespace gauss::gp {
+/**
+ * @brief Kernel function k(x1, x2) assumed equal to:
+ * teta0^2 + teta1^2 * x1.dot(x2)
+ */
 class LinearFunction : public KernelFunction {
 public:
   LinearFunction(const double teta0, const double teta1,

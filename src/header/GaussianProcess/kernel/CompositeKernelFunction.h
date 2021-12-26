@@ -10,15 +10,21 @@
 #include <GaussianProcess/kernel/KernelFunction.h>
 
 namespace gauss::gp {
+/**
+ * @brief The composite sums all the individual wrapped kernel functions.
+ *
+ */
 class CompositeKernelFunction : public KernelFunction {
 public:
   CompositeKernelFunction(KernelFunctionPtr initial_element);
 
+  /**
+   * @brief Add an additional kernel function to the composite
+   */
   void push_function(KernelFunctionPtr element);
 
-  // evaluation should be reflexive: evaluate(a,b) = evaluate(b,a)
   double evaluate(const Eigen::VectorXd &a,
-                          const Eigen::VectorXd &b) const override;
+                  const Eigen::VectorXd &b) const override;
 
   std::unique_ptr<KernelFunction> copy() const override;
 
@@ -27,4 +33,4 @@ public:
 protected:
   std::vector<KernelFunctionPtr> elements;
 };
-}
+} // namespace gauss::gp

@@ -10,19 +10,27 @@
 #include <GaussianProcess/kernel/ParameterHandler.h>
 
 namespace gauss::gp {
-
-// https : // www.cs.toronto.edu/~duvenaud/cookbook/
-
+/**
+ * @brief https : // www.cs.toronto.edu/~duvenaud/cookbook/
+ *
+ */
 class KernelFunction {
 public:
   virtual ~KernelFunction() = default;
 
-  // evaluation should be reflexive: evaluate(a,b) = evaluate(b,a)
+  /**
+   * @brief evaluation should be reflexive: evaluate(a,b) = evaluate(b,a)
+   *
+   */
   virtual double evaluate(const Eigen::VectorXd &a,
                           const Eigen::VectorXd &b) const = 0;
 
   virtual std::unique_ptr<KernelFunction> copy() const = 0;
 
+  /**
+   * @return the collection of tunable parameters, i.e. the ones that can be
+   * tuned through training.
+   */
   virtual std::vector<ParameterHandlerPtr> getParameters() const = 0;
 
 protected:

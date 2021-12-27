@@ -30,4 +30,12 @@ GaussianProcess::predict(const Eigen::VectorXd &point) const {
   return gauss::GaussianDistribution(prediction_mean,
                                      prediction_covariance_mat);
 }
+
+GaussianProcess::Prediction
+GaussianProcess::predict2(const Eigen::VectorXd &point) const {
+  double prediction_covariance;
+  Eigen::VectorXd prediction_mean =
+      GaussianProcessBase::predict(point, prediction_covariance);
+  return Prediction{prediction_mean(0), prediction_covariance};
+}
 } // namespace gauss::gp

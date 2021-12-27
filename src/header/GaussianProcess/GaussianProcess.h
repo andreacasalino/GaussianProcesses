@@ -41,9 +41,20 @@ public:
 
   /**
    * @param point
-   * @return The vectorial distribution describing the possible output of the
+   * @return The distribution describing the possible output of the
    * process w.r.t the passed input point.
    */
   gauss::GaussianDistribution predict(const Eigen::VectorXd &point) const;
+
+  struct Prediction {
+    double mean;
+    double covariance;
+  };
+  /**
+   * @param point
+   * @return The parameters distribution describing the possible output of the
+   * process w.r.t the passed input point.
+   */
+  Prediction predict2(const Eigen::VectorXd &point) const;
 };
 } // namespace gauss::gp

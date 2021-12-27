@@ -15,3 +15,6 @@ if(BUILD_SAMPLE_02)
     # add_custom_command(TARGET Sample01 PRE_BUILD
 	    # COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Visualize-2d.py ${CMAKE_CURRENT_BINARY_DIR}/Visualize-2d.py)
 endif()
+
+add_executable(Prova Prova.cpp Utils.h)
+target_link_libraries(Prova PUBLIC GaussianProcess)	

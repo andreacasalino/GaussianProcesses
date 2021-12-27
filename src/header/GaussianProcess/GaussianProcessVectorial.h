@@ -50,5 +50,16 @@ public:
    */
   std::vector<gauss::GaussianDistribution>
   predict(const Eigen::VectorXd &point) const;
+
+  struct Prediction {
+    Eigen::VectorXd mean;
+    double covariance;
+  };
+  /**
+   * @param point
+   * @return The vectorial distribution parameters describing the possible
+   * output of the process w.r.t the passed input point.
+   */
+  Prediction predict2(const Eigen::VectorXd &point) const;
 };
 } // namespace gauss::gp

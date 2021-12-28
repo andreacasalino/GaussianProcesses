@@ -19,7 +19,7 @@ public:
   double evaluate_gradient(const Eigen::VectorXd &a,
                            const Eigen::VectorXd &b) const override {
     double teta1_sq = (*teta1) * (*teta1);
-    double distance = (a - b).squaredNorm();
+    double distance = (a - b).dot(a - b);
     return 2.0 * getParameter() * exp(-teta1_sq * distance);
   };
 
@@ -38,7 +38,7 @@ public:
                            const Eigen::VectorXd &b) const override {
     double teta0_sq = (*teta0) * (*teta0);
     double teta1_sq = getParameter() * getParameter();
-    double distance = (a - b).squaredNorm();
+    double distance = (a - b).dot(a - b);
     return -teta0_sq * exp(-teta1_sq * distance) * 2.0 * getParameter() *
            distance;
   };
@@ -57,7 +57,7 @@ double SquaredExponential::evaluate(const Eigen::VectorXd &a,
                                     const Eigen::VectorXd &b) const {
   double teta0_sq = (*teta0) * (*teta0);
   double teta1_sq = (*teta1) * (*teta1);
-  double distance = (a - b).squaredNorm();
+  double distance = (a - b).dot(a - b);
   return teta0_sq * exp(-teta1_sq * distance);
 };
 

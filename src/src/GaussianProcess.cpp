@@ -24,7 +24,7 @@ gauss::GaussianDistribution
 GaussianProcess::predict(const Eigen::VectorXd &point) const {
   double prediction_covariance;
   Eigen::VectorXd prediction_mean =
-      GaussianProcessBase::predict(point, prediction_covariance);
+      GaussianProcessBase::predict(point, prediction_covariance).transpose();
   Eigen::MatrixXd prediction_covariance_mat(1, 1);
   prediction_covariance_mat << prediction_covariance;
   return gauss::GaussianDistribution(prediction_mean,

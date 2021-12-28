@@ -92,7 +92,9 @@ void KernelAware::updateKernel() {
     set_matrix_portion(*new_kernel, K_new_new, new_indices, new_indices);
     kernel = std::move(new_kernel);
   }
-  kernel_inverse.reset(new Eigen::MatrixXd(computeCovarianceInvert(*kernel)));
+  // kernel_inverse.reset(new
+  // Eigen::MatrixXd(computeCovarianceInvert(*kernel)));
+  kernel_inverse = std::make_unique<Eigen::MatrixXd>(this->kernel->inverse());
   kernel_determinant = std::make_unique<double>(kernel->determinant());
 }
 

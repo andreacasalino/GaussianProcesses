@@ -6,5 +6,5 @@ macro(MAKE_SAMPLE NAME SCRIPT)
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${SCRIPT}.py ${CMAKE_CURRENT_BINARY_DIR}/${SCRIPT}.py)    
 endmacro()
 
-MAKE_SAMPLE(Sample01-functionA Visualize)
-MAKE_SAMPLE(Sample02-functionB Visualize)
+MAKE_SAMPLE(Sample01-R1-function Visualize01)
+MAKE_SAMPLE(Sample02-R2-function Visualize02)

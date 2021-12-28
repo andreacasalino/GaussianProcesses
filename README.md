@@ -3,8 +3,9 @@
 
 This libary contains the functionalities required to train and handle **Gaussian Processes**, aka **GP**.
 If you believe to be not really familiar with this object, have a look at these useful tutorials:
--[Gaussian Processes](https://www.youtube.com/watch?v=UBDgSHPxVME&t=794s)
--[Easy introduction to gaussian process regression](https://www.youtube.com/watch?v=iDzaoEwd0N0)
+
+- [Gaussian Processes](https://www.youtube.com/watch?v=UBDgSHPxVME&t=794s)
+- [Easy introduction to gaussian process regression](https://www.youtube.com/watch?v=iDzaoEwd0N0)
 
 The **GP** hyperparameters can be trained with the gradient descend approaches that are part of this package.
 

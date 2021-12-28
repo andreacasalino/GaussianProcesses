@@ -161,6 +161,6 @@ Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
     result(i) *= 0.5;
     ++i;
   }
-  return result;
+  return -result;
 };
 } // namespace gauss::gp

@@ -1,6 +1,6 @@
 #include "Utils.h"
 #include <GaussianProcess/kernel/SquaredExponential.h>
-#include <TrainingTools/iterative/solvers/GradientDescend.h>
+#include <TrainingTools/iterative/solvers/QuasiNewton.h>
 #include <iostream>
 
 const std::function<double(const double &)> function_to_approximate =
@@ -55,9 +55,9 @@ int main() {
     logger.print("predictions.json");
   }
 
-  // // tune parameters to get better predictions
-  // train::GradientDescend{}.train(process);
-  // std::cout << "tuning of parameters done" << std::endl;
+  // tune parameters to get better predictions
+  train::QuasiNewton{}.train(process);
+  std::cout << "tuning of parameters done" << std::endl;
 
   // re-generate the predictions with tuned model
   prediction_means.clear();

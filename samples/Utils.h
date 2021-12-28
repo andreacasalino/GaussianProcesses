@@ -10,18 +10,8 @@
 #include <GaussianProcess/GaussianProcess.h>
 #include <fstream>
 #include <functional>
+#include <map>
 #include <sstream>
-
-std::vector<Eigen::VectorXd> get_input_samples(const double ray,
-                                               const std::size_t points) {
-  std::vector<Eigen::VectorXd> result;
-  for (std::size_t s = 0; s < points; ++s) {
-    result.emplace_back(2);
-    result.back().setRandom();
-    result.back() *= ray;
-  }
-  return result;
-};
 
 std::vector<Eigen::VectorXd> get_output_samples(
     const std::vector<Eigen::VectorXd> &input_samples,
@@ -50,136 +40,97 @@ std::vector<double> get_equispaced_samples(const double interval_min,
   return result;
 }
 
-// std::vector<std::vector<Eigen::VectorXd>>
-// get_equispaced_grid_samples(const double ray, const std::size_t points) {
-//   std::vector<std::vector<Eigen::VectorXd>> result;
-//   result.reserve(points);
-//   auto x_vals = get_equispaced_samples(-ray, ray, points);
-//   auto y_vals = get_equispaced_samples(-ray, ray, points);
-//   for (const auto &x : x_vals) {
-//     result.emplace_back();
-//     result.back().reserve(points);
-//     for (const auto &y : y_vals) {
-//       Eigen::VectorXd point(2);
-//       point << x, y;
-//       result.back().push_back(point);
-//     }
-//   }
-//   return result;
-// }
+Eigen::VectorXd convert(const double &value) {
+  Eigen::VectorXd result(1);
+  result << value;
+  return result;
+}
 
-// using LogPrediction = gauss::gp::GaussianProcess::Prediction;
-// std::vector<std::vector<LogPrediction>>
-// get_predictions(const std::vector<std::vector<Eigen::VectorXd>> &input_grid,
-//                 gauss::gp::GaussianProcess &process) {
-//   std::vector<std::vector<LogPrediction>> result;
-//   result.reserve(input_grid.size());
-//   for (const auto &samples : input_grid) {
-//     result.emplace_back();
-//     result.back().reserve(samples.size());
-//     for (const auto &sample : samples) {
-//       result.back().push_back(process.predict2(sample));
-//     }
-//   }
-//   return result;
-// }
+std::vector<Eigen::VectorXd> convert(const std::vector<double> &values) {
+  std::vector<Eigen::VectorXd> result;
+  result.reserve(values.size());
+  for (const auto &value : values) {
+    result.push_back(convert(value));
+  }
+  return result;
+}
 
-// class Logger {
-// public:
-//   void print(const std::string &file_name) const {
-//     std::stringstream stream;
-//     stream << '{';
-//     stream << "\"samples\":" << samples_json->str();
-//     stream << ",\"predictions\":" << predictions_json->str();
-//     stream << '}';
-//     std::ofstream file(file_name);
-//     file << stream.str();
-//   };
+std::string to_json(const std::vector<double> &data) {
+  std::stringstream stream;
+  stream << '[';
+  auto it = data.begin();
+  stream << *it;
+  ++it;
+  for (it; it != data.end(); ++it) {
+    stream << ',' << *it;
+  }
+  stream << ']';
+  return stream.str();
+}
 
-//   void log_samples(const std::vector<Eigen::VectorXd> &input_samples,
-//                    const std::vector<Eigen::VectorXd> &output_samples) {
-//     samples_json = std::make_unique<std::stringstream>();
-//     *samples_json << '{';
-//     *samples_json << "\"inputs\":";
-//     log_vector<Eigen::VectorXd>(*samples_json, input_samples);
-//     *samples_json << ",\"outputs\":";
-//     log_vector<Eigen::VectorXd>(*samples_json, output_samples);
-//     *samples_json << '}';
-//   };
+std::string to_json(const std::vector<std::vector<double>> &data) {
+  std::stringstream stream;
+  stream << '[';
+  auto it = data.begin();
+  stream << to_json(*it);
+  ++it;
+  for (it; it != data.end(); ++it) {
+    stream << ',' << to_json(*it);
+  }
+  stream << ']';
+  return stream.str();
+}
 
-//   void
-//   log_predictions(const std::vector<std::vector<Eigen::VectorXd>> &points,
-//                   const std::vector<std::vector<LogPrediction>> &predictions)
-//                   {
-//     predictions_json = std::make_unique<std::stringstream>();
-//     *predictions_json << '{';
-//     *predictions_json << "\"x_coord\":";
-//     log_matrix<Eigen::VectorXd>(*predictions_json, points, 0);
-//     *predictions_json << ",\"y_coord\":";
-//     log_matrix<Eigen::VectorXd>(*predictions_json, points, 1);
-//     *predictions_json << ",\"predictions\":";
-//     log_matrix<LogPrediction>(*predictions_json, predictions, true);
-//     *predictions_json << ",\"covariances\":";
-//     log_matrix<LogPrediction>(*predictions_json, predictions, false);
-//     *predictions_json << '}';
-//   }
+std::string to_json(const std::map<std::string, std::string> &fields) {
+  std::stringstream stream;
+  stream << '{';
+  std::size_t pos = 0;
+  for (const auto &[name, val] : fields) {
+    if (pos > 0) {
+      stream << ',';
+    }
+    stream << '\"' << name << '\"' << ':' << val;
+    ++pos;
+  }
+  stream << '}';
+  return stream.str();
+}
 
-// private:
-//   static void log_(std::stringstream &stream, const double &v) { stream << v;
-//   }
+class Logger {
+public:
+  void add_field(const std::vector<double> &data, const std::string &name) {
+    fields.emplace(name, to_json(data));
+  }
 
-//   static void log_(std::stringstream &stream, const Eigen::VectorXd &v) {
-//     stream << '[';
-//     stream << v(0);
-//     for (Eigen::Index i = 1; i < v.size(); ++i) {
-//       stream << ',' << v(i);
-//     }
-//     stream << ']';
-//   }
+  void print(const std::string &file_name) const {
+    std::ofstream stream(file_name);
+    stream << to_json(fields);
+  }
 
-//   static void log_(std::stringstream &stream, const Eigen::VectorXd &v,
-//                    const Eigen::Index i) {
-//     stream << v(i);
-//   }
+protected:
+  std::map<std::string, std::string> fields;
+};
 
-//   static void log_(std::stringstream &stream, const LogPrediction &p,
-//                    bool mean_or_cov) {
-//     if (mean_or_cov) {
-//       stream << p.mean;
-//     } else {
-//       stream << p.covariance;
-//     }
-//   }
+class LoggerExtra : public Logger {
+public:
+  void add_field(const std::vector<std::vector<double>> &data,
+                 const std::string &name) {
+    fields.emplace(name, to_json(data));
+  }
 
-//   template <typename T, typename... Args>
-//   static void log_vector(std::stringstream &stream,
-//                          const std::vector<T> &values, Args... args) {
-//     stream << '[';
-//     auto it = values.begin();
-//     log_(stream, *it, args...);
-//     ++it;
-//     for (it; it != values.end(); ++it) {
-//       stream << ',';
-//       log_(stream, *it, args...);
-//     }
-//     stream << ']';
-//   }
-
-//   template <typename T, typename... Args>
-//   static void log_matrix(std::stringstream &stream,
-//                          const std::vector<std::vector<T>> &values,
-//                          Args... args) {
-//     stream << '[';
-//     auto it = values.begin();
-//     log_vector(stream, *it, args...);
-//     ++it;
-//     for (it; it != values.end(); ++it) {
-//       stream << ',';
-//       log_vector(stream, *it, args...);
-//     }
-//     stream << ']';
-//   }
-
-//   std::unique_ptr<std::stringstream> samples_json;
-//   std::unique_ptr<std::stringstream> predictions_json;
-// };
+  void add_samples(const std::vector<Eigen::VectorXd> &input_samples,
+                   const std::vector<double> &output_samples) {
+    fields.emplace("output_samples", to_json(output_samples));
+    std::vector<double> temp;
+    temp.reserve(input_samples.size());
+    for (const auto &sample : input_samples) {
+      temp.push_back(sample(0));
+    }
+    fields.emplace("input_x_samples", to_json(temp));
+    temp.clear();
+    for (const auto &sample : input_samples) {
+      temp.push_back(sample(1));
+    }
+    fields.emplace("input_y_samples", to_json(temp));
+  }
+};

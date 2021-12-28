@@ -38,8 +38,19 @@ GaussianProcessVectorial::predict(const Eigen::VectorXd &point) const {
 GaussianProcessVectorial::Prediction
 GaussianProcessVectorial::predict2(const Eigen::VectorXd &point) const {
   double covariance;
-  Eigen::VectorXd mean =
-      GaussianProcessBase::predict(point, covariance).transpose();
+  Eigen::VectorXd mean = GaussianProcessBase::predict(point, covariance);
   return Prediction{mean, covariance};
+}
+
+GaussianDistribution
+GaussianProcessVectorial::predict3(const Eigen::VectorXd &point) const {
+  double covariance;
+  Eigen::VectorXd mean = GaussianProcessBase::predict(point, covariance);
+  Eigen::MatrixXd big_cov(mean.size(), mean.size());
+  big_cov.setZero();
+  for (Eigen::Index i = 0; i < big_cov.size(); ++i) {
+    big_cov(i, i) = covariance;
+  }
+  return GaussianDistribution{mean, big_cov};
 }
 } // namespace gauss::gp

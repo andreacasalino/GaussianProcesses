@@ -13,7 +13,7 @@
 namespace gauss::gp {
 /**
  * @brief Kernel function k(x1, x2) assumed equal to:
- * teta0^2 + teta1^2 * x1.dot(x2)
+ * teta0^2 + teta1^2 * (x1 - mean).dot( (x2 -mean) )
  */
 class LinearFunction : public KernelFunction {
 public:

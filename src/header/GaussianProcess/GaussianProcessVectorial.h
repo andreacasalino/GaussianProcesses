@@ -61,5 +61,7 @@ public:
    * output of the process w.r.t the passed input point.
    */
   Prediction predict2(const Eigen::VectorXd &point) const;
+
+  GaussianDistribution predict3(const Eigen::VectorXd &point) const;
 };
 } // namespace gauss::gp

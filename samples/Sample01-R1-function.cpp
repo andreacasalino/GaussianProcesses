@@ -6,20 +6,6 @@
 const std::function<double(const double &)> function_to_approximate =
     [](const double &point) { return sin(point); };
 
-Eigen::VectorXd convert(const double &sample);
-
-std::vector<Eigen::VectorXd> convert(const std::vector<double> &samples);
-
-class Logger {
-public:
-  void add_field(const std::vector<double> &data, const std::string &name);
-
-  void print(const std::string &file_name) const;
-
-private:
-  std::vector<std::string> fields;
-};
-
 int main() {
   const std::size_t samples_in_train_set = 6;
   const std::size_t samples_for_prediction = 200;
@@ -100,44 +86,3 @@ int main() {
 
   return EXIT_SUCCESS;
 }
-
-Eigen::VectorXd convert(const double &sample) {
-  Eigen::VectorXd result(1);
-  result << sample;
-  return result;
-}
-
-std::vector<Eigen::VectorXd> convert(const std::vector<double> &samples) {
-  std::vector<Eigen::VectorXd> result;
-  result.reserve(samples.size());
-  for (const auto &sample : samples) {
-    result.push_back(convert(sample));
-  }
-  return result;
-}
-
-void Logger::add_field(const std::vector<double> &data,
-                       const std::string &name) {
-  std::stringstream stream;
-  stream << '\"' << name << "\":[";
-  auto it = data.begin();
-  stream << *it;
-  ++it;
-  for (it; it != data.end(); ++it) {
-    stream << ',' << *it;
-  }
-  stream << ']';
-  fields.push_back(stream.str());
-};
-
-void Logger::print(const std::string &file_name) const {
-  std::ofstream stream(file_name);
-  stream << '{';
-  auto it = fields.begin();
-  stream << *it;
-  ++it;
-  for (it; it != fields.end(); ++it) {
-    stream << ',' << *it;
-  }
-  stream << '}';
-};

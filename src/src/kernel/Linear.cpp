@@ -34,8 +34,8 @@ public:
 
   double evaluate_gradient(const Eigen::VectorXd &a,
                            const Eigen::VectorXd &b) const override {
-    auto delta_a = delta(mean, a);
-    auto delta_b = delta(mean, b);
+    Eigen::VectorXd delta_a = delta(mean, a);
+    Eigen::VectorXd delta_b = delta(mean, b);
     return 2.0 * getParameter() * delta_a.dot(delta_b);
   };
 
@@ -47,19 +47,18 @@ class MeanHandler : public ParameterHandler {
 public:
   MeanHandler(const Parameter &teta1, const Parameter &mean_i,
               const Eigen::Index i_pos)
-      : ParameterHandler(teta1), i_pos(i_pos) {
-    this->mean_i = mean_i;
+      : ParameterHandler(mean_i), i_pos(i_pos) {
+    this->teta1 = teta1;
   };
 
   double evaluate_gradient(const Eigen::VectorXd &a,
                            const Eigen::VectorXd &b) const override {
-    return *teta1 * *teta1 * (2.0 * *mean_i - a(i_pos) - b(i_pos));
+    return *teta1 * *teta1 * (getParameter() - a(i_pos) - b(i_pos));
   };
 
 private:
   Parameter teta1;
   const Eigen::Index i_pos;
-  Parameter mean_i;
 };
 } // namespace
 
@@ -97,8 +96,8 @@ LinearFunction::LinearFunction(const LinearFunction &o) {
 
 double LinearFunction::evaluate(const Eigen::VectorXd &a,
                                 const Eigen::VectorXd &b) const {
-  auto delta_a = delta(mean, a);
-  auto delta_b = delta(mean, b);
+  Eigen::VectorXd delta_a = delta(mean, a);
+  Eigen::VectorXd delta_b = delta(mean, b);
   return *teta0 * *teta0 + *teta1 * *teta1 * delta_a.dot(delta_b);
 };
 

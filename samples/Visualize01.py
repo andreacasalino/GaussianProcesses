@@ -15,11 +15,16 @@ def plot_data(data_, axis):
     prediction_covariances = np.array(data_['prediction_covariances'])
     prediction_means = np.array(data_['prediction_means'])
 
-    axis.plot(input_predictions, data_['output_predictions'], color='blue')
-    axis.plot(input_predictions, prediction_means, color='red')
+    axis.plot(input_predictions, data_['output_predictions'], color='blue', label='real function')
+    axis.plot(input_predictions, prediction_means, color='red', label='GP predictions')
     axis.scatter(data_['input_samples'], data_['output_samples'], color='red', marker='o', label="train set")
 
+ax1.set_title('Predictions un-tuned hyperparameters')
 plot_data(data1, ax1)
+ax1.legend()
+
+ax2.set_title('Predictions tunining the hyperparameters')
 plot_data(data2, ax2)
+ax2.legend()
 
 plt.show()

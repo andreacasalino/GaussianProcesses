@@ -7,4 +7,5 @@ macro(MAKE_SAMPLE NAME SCRIPT)
 endmacro()
 
 MAKE_SAMPLE(Sample01-R1-function Visualize01)
-MAKE_SAMPLE(Sample02-R2-function Visualize02)
+MAKE_SAMPLE(Sample02-R2-functionA Visualize02)
+MAKE_SAMPLE(Sample03-R2-functionB Visualize02)

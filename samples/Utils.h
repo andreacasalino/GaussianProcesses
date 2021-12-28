@@ -96,6 +96,40 @@ std::string to_json(const std::map<std::string, std::string> &fields) {
   return stream.str();
 }
 
+std::vector<Eigen::VectorXd> get_input_samples(const double ray,
+                                               const std::size_t samples) {
+  std::vector<Eigen::VectorXd> result;
+  result.reserve(samples);
+  for (std::size_t s = 0; s < samples; ++s) {
+    result.emplace_back(2);
+    result.back().setRandom();
+    result.back() *= ray;
+  }
+  return result;
+};
+
+std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>>
+get_grid(const double ray, const std::size_t samples_along_axis) {
+  std::vector<std::vector<double>> x_coord, y_coord;
+  x_coord.reserve(samples_along_axis);
+  y_coord.reserve(samples_along_axis);
+  auto x_samples = get_equispaced_samples(-ray, ray, samples_along_axis);
+  auto y_samples = get_equispaced_samples(-ray, ray, samples_along_axis);
+  for (std::size_t r = 0; r < samples_along_axis; ++r) {
+    x_coord.emplace_back();
+    x_coord.back().reserve(samples_along_axis);
+    y_coord.emplace_back();
+    y_coord.back().reserve(samples_along_axis);
+    for (std::size_t c = 0; c < samples_along_axis; ++c) {
+      x_coord.back().push_back(x_samples[r]);
+      y_coord.back().push_back(y_samples[c]);
+    }
+  }
+  return std::make_pair<std::vector<std::vector<double>>,
+                        std::vector<std::vector<double>>>(std::move(x_coord),
+                                                          std::move(y_coord));
+}
+
 class Logger {
 public:
   void add_field(const std::vector<double> &data, const std::string &name) {

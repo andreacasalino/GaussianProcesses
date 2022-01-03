@@ -12,6 +12,39 @@
 #include <GaussianUtils/Utils.h>
 
 namespace gauss::gp {
+const Eigen::MatrixXd &Kernel::getKernelInv() const {
+  if (nullptr == kernel_inverse) {
+    init();
+    kernel_inverse = std::make_unique<Eigen::MatrixXd>(
+        decomposition->eigenVectors *
+        decomposition->eigenValues_inv.asDiagonal() *
+        decomposition->eigenVectors.transpose());
+  }
+  return *kernel_inverse;
+};
+
+const Kernel::Decomposition &Kernel::getDecomposition() const {
+  init();
+  return *this->decomposition;
+}
+
+void Kernel::init() const {
+  if (nullptr == decomposition) {
+    Eigen::EigenSolver<Eigen::MatrixXd> solver(kernel);
+    Eigen::MatrixXd eigvectors = solver.eigenvectors().real();
+    for (Eigen::Index c = 0; c < eigvectors.cols(); ++c) {
+      eigvectors.col(c) /= eigvectors.col(c).norm();
+    }
+    Eigen::VectorXd eigs = solver.eigenvalues().real();
+    Eigen::VectorXd eigs_inv = eigs;
+    for (auto &val : eigs_inv) {
+      val = 1.0 / val;
+    }
+    decomposition = std::make_unique<Decomposition>(
+        Decomposition{eigvectors, eigs, eigs_inv});
+  }
+}
+
 KernelAware::KernelAware(KernelFunctionPtr new_kernel) {
   if (nullptr == new_kernel) {
     throw Error("empty kernel function");
@@ -67,14 +100,15 @@ compute_kernel_portion(const std::vector<Eigen::VectorXd> &samples,
 void KernelAware::updateKernel() {
   const auto &input_samples = getTrainSet()->GetSamplesInput().GetSamples();
   if (nullptr == kernel) {
-    kernel = std::make_unique<Eigen::MatrixXd>(compute_kernel_portion(
+    kernel.reset(new Kernel{compute_kernel_portion(
         input_samples, *kernelFunction,
         MatrixIndices{0, static_cast<Eigen::Index>(input_samples.size())},
-        MatrixIndices{0, static_cast<Eigen::Index>(input_samples.size())}));
+        MatrixIndices{0, static_cast<Eigen::Index>(input_samples.size())})});
   } else {
-    MatrixIndices old_indices = MatrixIndices{0, kernel->rows()};
-    MatrixIndices new_indices = MatrixIndices{
-        kernel->rows(), static_cast<Eigen::Index>(input_samples.size())};
+    MatrixIndices old_indices = MatrixIndices{0, kernel->getKernel().rows()};
+    MatrixIndices new_indices =
+        MatrixIndices{kernel->getKernel().rows(),
+                      static_cast<Eigen::Index>(input_samples.size())};
 
     Eigen::MatrixXd K_old_new = compute_kernel_portion(
         input_samples, *kernelFunction, old_indices, new_indices);
@@ -82,46 +116,42 @@ void KernelAware::updateKernel() {
     Eigen::MatrixXd K_new_new = compute_kernel_portion(
         input_samples, *kernelFunction, new_indices, new_indices);
 
-    auto new_kernel = std::make_unique<Eigen::MatrixXd>(input_samples.size(),
-                                                        input_samples.size());
+    Eigen::MatrixXd new_kernel(input_samples.size(), input_samples.size());
 
-    set_matrix_portion(*new_kernel, *kernel, old_indices, old_indices);
-    set_matrix_portion(*new_kernel, K_old_new, old_indices, new_indices);
-    set_matrix_portion(*new_kernel, K_old_new.transpose(), new_indices,
+    set_matrix_portion(new_kernel, kernel->getKernel(), old_indices,
                        old_indices);
-    set_matrix_portion(*new_kernel, K_new_new, new_indices, new_indices);
-    kernel = std::move(new_kernel);
+    set_matrix_portion(new_kernel, K_old_new, old_indices, new_indices);
+    set_matrix_portion(new_kernel, K_old_new.transpose(), new_indices,
+                       old_indices);
+    set_matrix_portion(new_kernel, K_new_new, new_indices, new_indices);
+    kernel.reset(new Kernel{new_kernel});
   }
-  // kernel_inverse.reset(new
-  // Eigen::MatrixXd(computeCovarianceInvert(*kernel)));
-  kernel_inverse = std::make_unique<Eigen::MatrixXd>(this->kernel->inverse());
-  kernel_determinant = std::make_unique<double>(kernel->determinant());
 }
 
-void KernelAware::resetKernel() {
-  kernel.reset();
-  kernel_inverse.reset();
-  kernel_determinant.reset();
-}
+void KernelAware::resetKernel() { kernel.reset(); }
 
 Eigen::MatrixXd KernelAware::getCovariance() const {
   if (nullptr == kernel) {
     throw gauss::gp::Error("Trying to access null kernel covariance");
   }
-  return *kernel;
+  return kernel->getKernel();
 };
 
 Eigen::MatrixXd KernelAware::getCovarianceInv() const {
-  if (nullptr == kernel_inverse) {
+  if (nullptr == kernel) {
     throw gauss::gp::Error("Trying to access null inverse kernel covariance");
   }
-  return *kernel_inverse;
+  return kernel->getKernelInv();
 };
 
 double KernelAware::getCovarianceDeterminant() const {
-  if (nullptr == kernel_determinant) {
+  if (nullptr == kernel) {
     throw gauss::gp::Error("Trying to access null kernel determinant");
   }
-  return *kernel_determinant;
+  double result = 1.0;
+  for (const auto &eig_val : kernel->getDecomposition().eigenValues) {
+    result *= eig_val;
+  }
+  return result;
 };
 } // namespace gauss::gp

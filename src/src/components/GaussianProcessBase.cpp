@@ -7,6 +7,8 @@
 
 #include <GaussianProcess/components/GaussianProcessBase.h>
 
+#include <iostream>
+
 namespace gauss::gp {
 GaussianProcessBase::GaussianProcessBase(KernelFunctionPtr kernel,
                                          const std::size_t input_space_size,
@@ -69,7 +71,7 @@ void GaussianProcessBase::updateKernelFunction(KernelFunctionPtr new_kernel) {
 Eigen::VectorXd GaussianProcessBase::predict(const Eigen::VectorXd &point,
                                              double &covariance) const {
   Eigen::VectorXd Kx = getKx(point);
-  const Eigen::MatrixXd &K_inverse = getKernelInverse();
+  const Eigen::MatrixXd &K_inverse = kernel->getKernelInv();
   covariance = kernelFunction->evaluate(point, point);
   covariance -= Kx.dot(K_inverse * Kx);
   covariance = abs(covariance);
@@ -150,7 +152,7 @@ Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
 
   Eigen::VectorXd result(parameters.size());
   Eigen::Index i = 0;
-  const Eigen::MatrixXd &kernel_inv = getKernelInverse();
+  const Eigen::MatrixXd &kernel_inv = kernel->getKernelInv();
   const auto &samples_input = samples->GetSamplesInput().GetSamples();
   for (auto &parameter : this->parameters) {
     Eigen::MatrixXd kernel_gradient =
@@ -161,6 +163,7 @@ Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
     result(i) *= 0.5;
     ++i;
   }
+  std::cout << result.transpose() << std::endl;
   return -result;
 };
 } // namespace gauss::gp

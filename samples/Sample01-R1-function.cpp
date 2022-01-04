@@ -7,6 +7,30 @@
 const std::function<double(const double &)> function_to_approximate =
     [](const double &point) { return sin(point); };
 
+template <typename SolverT> class Tuner : public SolverT {
+public:
+  Tuner() = default;
+
+  const std::vector<double> &getLikelihoodEvolution() const {
+    return likelihood_evolution;
+  }
+
+protected:
+  void updateDirection() override {
+    const gauss::gp::GaussianProcessBase *process =
+        dynamic_cast<const gauss::gp::GaussianProcessBase *>(this->getModel());
+    likelihood_evolution.push_back(process->getLogLikelihood());
+    this->SolverT::updateDirection();
+  };
+  void initDirection() override {
+    likelihood_evolution.clear();
+    this->SolverT::initDirection();
+  };
+
+private:
+  std::vector<double> likelihood_evolution;
+};
+
 int main() {
   const std::size_t samples_in_train_set = 6;
   const std::size_t samples_for_prediction = 200;
@@ -57,8 +81,21 @@ int main() {
   }
 
   // tune parameters to get better predictions
-  train::GradientDescendFixed{}.train(process);
+  Tuner<train::GradientDescendFixed> tuner;
+  tuner.train(process);
+  // log the likelihood evolution
+  {
+    std::ofstream evolution("tune_evolution.txt");
+    std::size_t iter = 1;
+    for (const auto &l : tuner.getLikelihoodEvolution()) {
+      evolution << iter << ' ' << l << std::endl;
+      ++iter;
+    }
+  }
   std::cout << "tuning of parameters done" << std::endl;
+  std::cout << "call 'python VisualizeEvolution.py' to visualize the check the "
+               "model improvement over the iterations"
+            << std::endl;
 
   // re-generate the predictions with tuned model
   prediction_means.clear();

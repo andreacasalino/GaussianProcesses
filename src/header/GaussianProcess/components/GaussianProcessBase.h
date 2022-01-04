@@ -93,7 +93,7 @@ public:
    * logarithmic likelihoods of the element iniside the samples used to build
    * the kernel, w.r.t the process itself
    */
-  double getLikelihood() const;
+  double getLogLikelihood() const;
 
   /**
    * @return The gradient of the tunable parameters w.r.t. to the logarithmic

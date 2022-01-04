@@ -134,11 +134,13 @@ compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
 }
 } // namespace
 
-double GaussianProcessBase::getLikelihood() const {
+double GaussianProcessBase::getLogLikelihood() const {
   Eigen::MatrixXd Y_Ytras =
       getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
   double result = 0.0;
-  result -= 0.5 * samples->GetSamplesInput().GetSamples().size() *
+  result -= 0.5 *
+            static_cast<double>(
+                samples->GetSamplesInput().GetSamples().front().size()) *
             log(getCovarianceDeterminant());
   result -= 0.5 * (getCovarianceInv() * Y_Ytras).trace();
   return result;
@@ -152,11 +154,11 @@ Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
   Eigen::Index i = 0;
   const Eigen::MatrixXd &kernel_inv = kernel->getKernelInv();
   const auto &samples_input = samples->GetSamplesInput().GetSamples();
+  double M = static_cast<double>(samples_input.front().size());
   for (const auto &parameter : this->parameters) {
     Eigen::MatrixXd kernel_gradient =
         compute_kernel_gradient(*parameter, samples_input);
-    result(i) = -static_cast<double>(samples_input.size()) *
-                (kernel_inv * kernel_gradient).trace();
+    result(i) = -M * (kernel_inv * kernel_gradient).trace();
     result(i) += (kernel_inv * kernel_gradient * kernel_inv * Y_Ytras).trace();
     result(i) *= 0.5;
     ++i;

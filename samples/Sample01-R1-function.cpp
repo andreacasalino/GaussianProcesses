@@ -24,7 +24,8 @@ int main() {
 
   // generate the approximating gaussian process
   gauss::gp::GaussianProcess process(
-      std::make_unique<gauss::gp::SquaredExponential>(1.0, 0.05),
+      // std::make_unique<gauss::gp::SquaredExponential>(1.0, 0.05),
+      std::make_unique<gauss::gp::SquaredExponential>(1.0, 1.0),
       gauss::gp::TrainSet{convert(input_samples), convert(output_samples)});
   std::cout << "Gaussian process generated" << std::endl;
 

@@ -7,8 +7,6 @@
 
 #include <GaussianProcess/components/GaussianProcessBase.h>
 
-#include <iostream>
-
 namespace gauss::gp {
 GaussianProcessBase::GaussianProcessBase(KernelFunctionPtr kernel,
                                          const std::size_t input_space_size,
@@ -119,16 +117,6 @@ void GaussianProcessBase::setParameters(const Eigen::VectorXd &parameters) {
   }
 };
 
-double GaussianProcessBase::getLikelihood() const {
-  Eigen::MatrixXd Y_Ytras =
-      getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
-  double result = 0.0;
-  result -= 0.5 * samples->GetSamplesInput().GetSamples().size() *
-            log(getCovarianceDeterminant());
-  result -= 0.5 * (getCovarianceInv() * Y_Ytras).trace();
-  return result;
-}
-
 namespace {
 Eigen::MatrixXd
 compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
@@ -146,24 +134,33 @@ compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
 }
 } // namespace
 
+double GaussianProcessBase::getLikelihood() const {
+  Eigen::MatrixXd Y_Ytras =
+      getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
+  double result = 0.0;
+  result -= 0.5 * samples->GetSamplesInput().GetSamples().size() *
+            log(getCovarianceDeterminant());
+  result -= 0.5 * (getCovarianceInv() * Y_Ytras).trace();
+  return result;
+}
+
 Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
   Eigen::MatrixXd Y_Ytras =
       getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
 
-  Eigen::VectorXd result(parameters.size());
+  Eigen::VectorXd result(static_cast<Eigen::Index>(parameters.size()));
   Eigen::Index i = 0;
   const Eigen::MatrixXd &kernel_inv = kernel->getKernelInv();
   const auto &samples_input = samples->GetSamplesInput().GetSamples();
-  for (auto &parameter : this->parameters) {
+  for (const auto &parameter : this->parameters) {
     Eigen::MatrixXd kernel_gradient =
         compute_kernel_gradient(*parameter, samples_input);
-    result(i) = -samples->GetSamplesInput().GetSamples().size() *
+    result(i) = -static_cast<double>(samples_input.size()) *
                 (kernel_inv * kernel_gradient).trace();
     result(i) += (kernel_inv * kernel_gradient * kernel_inv * Y_Ytras).trace();
     result(i) *= 0.5;
     ++i;
   }
-  std::cout << result.transpose() << std::endl;
   return -result;
 };
 } // namespace gauss::gp

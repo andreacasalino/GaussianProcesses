@@ -12,7 +12,7 @@ protected:
   void check_kernel_matrix() const {
     const auto &samples = this->getTrainSet()->GetSamplesInput().GetSamples();
     std::size_t expected_size = samples.size();
-    const auto &kernel = this->getKernel();
+    Eigen::MatrixXd kernel = this->getCovariance();
     EXPECT_EQ(kernel.rows(), expected_size);
     EXPECT_EQ(kernel.cols(), expected_size);
     for (std::size_t r = 0; r < expected_size; ++r) {

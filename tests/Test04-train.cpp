@@ -37,10 +37,10 @@ public:
 
 protected:
   void set_and_check_parameters(const Eigen::VectorXd &parameters) {
-    auto initial_kernel = this->getKernel();
+    auto initial_kernel = this->getCovariance();
     this->setParameters(parameters);
     EXPECT_EQ(this->getParameters(), parameters);
-    EXPECT_FALSE(initial_kernel == this->getKernel());
+    EXPECT_FALSE(initial_kernel == this->getCovariance());
   }
 };
 } // namespace gauss::gp::test
@@ -77,21 +77,21 @@ TEST_F(Process5_3, set_parameters) {
 TEST_F(Process3_1, gradient_likelihood_computation) {
   auto grad = getParametersGradient();
   EXPECT_EQ(grad.size(), 2);
-  EXPECT_NO_THROW(getLikelihood());
+  EXPECT_NO_THROW(getLogLikelihood());
 }
 TEST_F(Process5_3, gradient_likelihood_computation) {
   auto grad = getParametersGradient();
   EXPECT_EQ(grad.size(), 2);
-  EXPECT_NO_THROW(getLikelihood());
+  EXPECT_NO_THROW(getLogLikelihood());
 }
 
 TEST_F(Process5_3, train) {
-  auto initial_likelihood = getLikelihood();
+  auto initial_likelihood = getLogLikelihood();
   {
     train::GradientDescend solver;
     solver.train(*this);
   }
-  auto new_likelihood = getLikelihood();
+  auto new_likelihood = getLogLikelihood();
   EXPECT_LE(initial_likelihood, new_likelihood);
 }
 

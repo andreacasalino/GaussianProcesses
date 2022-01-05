@@ -32,9 +32,9 @@ private:
 };
 
 int main() {
-  const std::size_t samples_in_train_set = 6;
+  const std::size_t samples_in_train_set = 12;
   const std::size_t samples_for_prediction = 200;
-  const double ray = 3.0;
+  const double ray = 6.0;
 
   // generate samples from the real function
   auto input_samples = get_equispaced_samples(-ray, ray, samples_in_train_set);

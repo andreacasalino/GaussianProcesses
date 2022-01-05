@@ -118,11 +118,21 @@ void GaussianProcessBase::setParameters(const Eigen::VectorXd &parameters) {
 };
 
 namespace {
+Eigen::MatrixXd compute_V_Vtrasp(const Eigen::VectorXd &v) {
+  Eigen::MatrixXd result(v.size(), v.size());
+  for (Eigen::Index r = 0; r < v.size(); ++r) {
+    for (Eigen::Index c = 0; c < v.size(); ++c) {
+      result(r, c) = v(r) * v(c);
+    }
+  }
+  return result;
+}
+
 Eigen::MatrixXd compute_YY(const Eigen::MatrixXd &outputMatrix) {
   Eigen::MatrixXd result(outputMatrix.rows(), outputMatrix.rows());
   result.setZero();
-  for (Eigen::Index r = 0; r < outputMatrix.rows(); ++r) {
-    result += outputMatrix.row(r).transpose() * outputMatrix.row(r);
+  for (Eigen::Index c = 0; c < outputMatrix.cols(); ++c) {
+    result += compute_V_Vtrasp(outputMatrix.col(c));
   }
   return result;
 }

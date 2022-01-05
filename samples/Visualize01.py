@@ -17,6 +17,7 @@ def plot_data(data_, axis):
 
     axis.plot(input_predictions, data_['output_predictions'], color='blue', label='real function')
     axis.plot(input_predictions, prediction_means, color='red', label='GP predictions')
+    axis.fill_between(input_predictions, prediction_means - 2.5 * prediction_covariances, prediction_means + 2.5 * prediction_covariances, alpha=0.2, color='red', label="GP prediction uncertainty")
     axis.scatter(data_['input_samples'], data_['output_samples'], color='red', marker='o', label="train set")
 
 ax1.set_title('Predictions un-tuned hyperparameters')

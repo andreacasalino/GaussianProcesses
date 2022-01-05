@@ -12,6 +12,30 @@
 #include <GaussianUtils/components/CoviarianceAware.h>
 
 namespace gauss::gp {
+class Kernel {
+public:
+  Kernel(const Eigen::MatrixXd &k) : kernel(k){};
+
+  const Eigen::MatrixXd &getKernel() const { return kernel; };
+
+  const Eigen::MatrixXd &getKernelInv() const;
+
+  struct Decomposition {
+    Eigen::MatrixXd eigenVectors;
+    Eigen::VectorXd eigenValues;
+    Eigen::VectorXd eigenValues_inv;
+  };
+
+  const Decomposition &getDecomposition() const;
+
+private:
+  void init() const;
+
+  Eigen::MatrixXd kernel;
+  mutable std::unique_ptr<Decomposition> decomposition;
+  mutable std::unique_ptr<Eigen::MatrixXd> kernel_inverse;
+};
+
 class KernelAware : virtual public TrainSetAware, public CovarianceAware {
 public:
   /**
@@ -44,16 +68,10 @@ public:
 protected:
   KernelAware(KernelFunctionPtr new_kernel);
 
-  void updateKernel();
-  void resetKernel();
-  const Eigen::MatrixXd &getKernel() const { return *kernel; };
-  const Eigen::MatrixXd &getKernelInverse() const { return *kernel_inverse; };
-
   KernelFunctionPtr kernelFunction;
 
-private:
-  std::unique_ptr<const Eigen::MatrixXd> kernel;
-  std::unique_ptr<const Eigen::MatrixXd> kernel_inverse;
-  std::unique_ptr<double> kernel_determinant;
+  void updateKernel();
+  void resetKernel();
+  std::unique_ptr<Kernel> kernel;
 };
 } // namespace gauss::gp

@@ -42,8 +42,8 @@ jobs:
       run: ./artifacts/bin/Test02-reset-update
     - name: Test-03
       run: ./artifacts/bin/Test03-predict
-#    - name: Test-04
-#      run: ./artifacts/bin/Test04-train
+    - name: Test-04
+      run: ./artifacts/bin/Test04-train
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts

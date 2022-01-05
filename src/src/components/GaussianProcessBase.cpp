@@ -69,7 +69,7 @@ void GaussianProcessBase::updateKernelFunction(KernelFunctionPtr new_kernel) {
 Eigen::VectorXd GaussianProcessBase::predict(const Eigen::VectorXd &point,
                                              double &covariance) const {
   Eigen::VectorXd Kx = getKx(point);
-  const Eigen::MatrixXd &K_inverse = getKernelInverse();
+  const Eigen::MatrixXd &K_inverse = kernel->getKernelInv();
   covariance = kernelFunction->evaluate(point, point);
   covariance -= Kx.dot(K_inverse * Kx);
   covariance = abs(covariance);
@@ -117,17 +117,26 @@ void GaussianProcessBase::setParameters(const Eigen::VectorXd &parameters) {
   }
 };
 
-double GaussianProcessBase::getLikelihood() const {
-  Eigen::MatrixXd Y_Ytras =
-      getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
-  double result = 0.0;
-  result -= 0.5 * samples->GetSamplesInput().GetSamples().size() *
-            log(getCovarianceDeterminant());
-  result -= 0.5 * (getCovarianceInv() * Y_Ytras).trace();
+namespace {
+Eigen::MatrixXd compute_V_Vtrasp(const Eigen::VectorXd &v) {
+  Eigen::MatrixXd result(v.size(), v.size());
+  for (Eigen::Index r = 0; r < v.size(); ++r) {
+    for (Eigen::Index c = 0; c < v.size(); ++c) {
+      result(r, c) = v(r) * v(c);
+    }
+  }
   return result;
 }
 
-namespace {
+Eigen::MatrixXd compute_YY(const Eigen::MatrixXd &outputMatrix) {
+  Eigen::MatrixXd result(outputMatrix.rows(), outputMatrix.rows());
+  result.setZero();
+  for (Eigen::Index c = 0; c < outputMatrix.cols(); ++c) {
+    result += compute_V_Vtrasp(outputMatrix.col(c));
+  }
+  return result;
+}
+
 Eigen::MatrixXd
 compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
                         const std::vector<Eigen::VectorXd> &samples) {
@@ -137,27 +146,39 @@ compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
     col = row;
     for (auto it2 = it; it2 != samples.end(); ++it2, ++col) {
       result(row, col) = handler.evaluate_gradient(*it, *it2);
-      result(col, row) = result(row, col);
+      if (col != row) {
+        result(col, row) = result(row, col);
+      }
     }
   }
   return result;
 }
 } // namespace
 
-Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
-  Eigen::MatrixXd Y_Ytras =
-      getSamplesOutputMatrix() * getSamplesOutputMatrix().transpose();
+double GaussianProcessBase::getLogLikelihood() const {
+  Eigen::MatrixXd Y_Y = compute_YY(getSamplesOutputMatrix());
+  double result = 0.0;
+  result -= 0.5 *
+            static_cast<double>(
+                samples->GetSamplesInput().GetSamples().front().size()) *
+            log(getCovarianceDeterminant());
+  result -= 0.5 * (Y_Y * getCovarianceInv()).trace();
+  return result;
+}
 
-  Eigen::VectorXd result(parameters.size());
-  Eigen::Index i = 0;
-  const Eigen::MatrixXd &kernel_inv = getKernelInverse();
+Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
+  Eigen::MatrixXd Y_Y = compute_YY(getSamplesOutputMatrix());
+
+  Eigen::VectorXd result(static_cast<Eigen::Index>(parameters.size()));
+  const Eigen::MatrixXd &kernel_inv = kernel->getKernelInv();
   const auto &samples_input = samples->GetSamplesInput().GetSamples();
-  for (auto &parameter : this->parameters) {
+  double M = static_cast<double>(samples_input.front().size());
+  Eigen::Index i = 0;
+  for (const auto &parameter : this->parameters) {
     Eigen::MatrixXd kernel_gradient =
         compute_kernel_gradient(*parameter, samples_input);
-    result(i) = -samples->GetSamplesInput().GetSamples().size() *
-                (kernel_inv * kernel_gradient).trace();
-    result(i) += (kernel_inv * kernel_gradient * kernel_inv * Y_Ytras).trace();
+    result(i) = -M * (kernel_inv * kernel_gradient).trace();
+    result(i) += (Y_Y * kernel_inv * kernel_gradient * kernel_inv).trace();
     result(i) *= 0.5;
     ++i;
   }

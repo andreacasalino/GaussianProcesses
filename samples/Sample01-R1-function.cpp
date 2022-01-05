@@ -1,15 +1,40 @@
 #include "Utils.h"
 #include <GaussianProcess/kernel/SquaredExponential.h>
-#include <TrainingTools/iterative/solvers/QuasiNewton.h>
+// #include <TrainingTools/iterative/solvers/QuasiNewton.h>
+#include <TrainingTools/iterative/solvers/GradientDescend.h>
 #include <iostream>
 
 const std::function<double(const double &)> function_to_approximate =
     [](const double &point) { return sin(point); };
 
+template <typename SolverT> class Tuner : public SolverT {
+public:
+  Tuner() = default;
+
+  const std::vector<double> &getLikelihoodEvolution() const {
+    return likelihood_evolution;
+  }
+
+protected:
+  void updateDirection() override {
+    const gauss::gp::GaussianProcessBase *process =
+        dynamic_cast<const gauss::gp::GaussianProcessBase *>(this->getModel());
+    likelihood_evolution.push_back(process->getLogLikelihood());
+    this->SolverT::updateDirection();
+  };
+  void initDirection() override {
+    likelihood_evolution.clear();
+    this->SolverT::initDirection();
+  };
+
+private:
+  std::vector<double> likelihood_evolution;
+};
+
 int main() {
-  const std::size_t samples_in_train_set = 6;
+  const std::size_t samples_in_train_set = 12;
   const std::size_t samples_for_prediction = 200;
-  const double ray = 3.0;
+  const double ray = 6.0;
 
   // generate samples from the real function
   auto input_samples = get_equispaced_samples(-ray, ray, samples_in_train_set);
@@ -23,7 +48,7 @@ int main() {
 
   // generate the approximating gaussian process
   gauss::gp::GaussianProcess process(
-      std::make_unique<gauss::gp::SquaredExponential>(1.0, 0.05),
+      std::make_unique<gauss::gp::SquaredExponential>(1.0, 1.0),
       gauss::gp::TrainSet{convert(input_samples), convert(output_samples)});
   std::cout << "Gaussian process generated" << std::endl;
 
@@ -56,8 +81,21 @@ int main() {
   }
 
   // tune parameters to get better predictions
-  train::QuasiNewton{}.train(process);
+  Tuner<train::GradientDescendFixed> tuner;
+  tuner.train(process);
+  // log the likelihood evolution
+  {
+    std::ofstream evolution("tune_evolution.txt");
+    std::size_t iter = 1;
+    for (const auto &l : tuner.getLikelihoodEvolution()) {
+      evolution << iter << ' ' << l << std::endl;
+      ++iter;
+    }
+  }
   std::cout << "tuning of parameters done" << std::endl;
+  std::cout << "call 'python VisualizeEvolution.py' to visualize the check the "
+               "model improvement over the iterations"
+            << std::endl;
 
   // re-generate the predictions with tuned model
   prediction_means.clear();

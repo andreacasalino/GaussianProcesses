@@ -92,7 +92,7 @@ TEST_F(Process5_3, train) {
     solver.train(*this);
   }
   auto new_likelihood = getLogLikelihood();
-  EXPECT_LE(initial_likelihood, new_likelihood);
+  EXPECT_GE(initial_likelihood, new_likelihood);
 }
 
 int main(int argc, char *argv[]) {

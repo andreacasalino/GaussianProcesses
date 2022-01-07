@@ -82,7 +82,7 @@ int main() {
 
   // tune parameters to get better predictions
   Tuner<train::GradientDescendFixed> tuner;
-  tuner.train(process);
+  process.train(tuner);
   // log the likelihood evolution
   {
     std::ofstream evolution("tune_evolution.txt");

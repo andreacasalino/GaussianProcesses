@@ -89,7 +89,7 @@ TEST_F(Process5_3, train) {
   auto initial_likelihood = getLogLikelihood();
   {
     train::GradientDescend solver;
-    solver.train(*this);
+    this->train(solver);
   }
   auto new_likelihood = getLogLikelihood();
   EXPECT_GE(initial_likelihood, new_likelihood);

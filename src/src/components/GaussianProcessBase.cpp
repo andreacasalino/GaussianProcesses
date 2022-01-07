@@ -184,4 +184,9 @@ Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
   }
   return -result;
 };
+
+void GaussianProcessBase::train(::train::Trainer &trainer) {
+  trainer.maximize();
+  trainer.train(*this);
+}
 } // namespace gauss::gp

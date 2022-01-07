@@ -13,6 +13,7 @@
 #include <GaussianProcess/components/OutputSetMatrixAware.h>
 
 #include <TrainingTools/ParametersAware.h>
+#include <TrainingTools/Trainer.h>
 
 namespace gauss::gp {
 class GaussianProcessBase : public InputOutputSizeAwareBase,
@@ -100,9 +101,8 @@ public:
    * likelihood
    */
   Eigen::VectorXd getParametersGradient() const;
-  ::train::Vect getGradient() const override {
-    return -getParametersGradient();
-  };
+
+  void train(::train::Trainer &trainer);
 
 protected:
   GaussianProcessBase(KernelFunctionPtr kernel,
@@ -113,6 +113,10 @@ protected:
 
   Eigen::VectorXd predict(const Eigen::VectorXd &point,
                           double &covariance) const;
+
+  ::train::Vect getGradient() const override {
+    return getParametersGradient();
+  };
 
 private:
   void pushSample_(const Eigen::VectorXd &input_sample,

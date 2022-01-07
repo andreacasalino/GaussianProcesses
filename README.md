@@ -16,3 +16,6 @@ This library uses [**Eigen**](https://gitlab.com/libeigen/eigen) as internal lin
 However, you can also use a local version, by [setting](https://www.youtube.com/watch?v=LxHV-KNEG3k&t=1s) the **CMake** option **EIGEN_INSTALL_FOLDER** equal to the root folder storing the local **Eigen** you want to use.
 
 If you have found this library useful, take the time to leave a star ;)
+
+![How the predictions with Gaussian Processes look like:](sample.png)
+

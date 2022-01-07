@@ -101,9 +101,6 @@ public:
    * likelihood
    */
   Eigen::VectorXd getParametersGradient() const;
-  ::train::Vect getGradient() const override {
-    return getParametersGradient();
-  };
 
   void train(::train::Trainer &trainer);
 
@@ -116,6 +113,10 @@ protected:
 
   Eigen::VectorXd predict(const Eigen::VectorXd &point,
                           double &covariance) const;
+
+  ::train::Vect getGradient() const override {
+    return getParametersGradient();
+  };
 
 private:
   void pushSample_(const Eigen::VectorXd &input_sample,

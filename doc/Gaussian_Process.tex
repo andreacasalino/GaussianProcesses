@@ -2,17 +2,10 @@
 \author{Andrea Casalino}
 \title{Gaussian Processes}
 
-\RequirePackage[margin=2cm]{geometry}
-\geometry{left=2cm,right=2cm,marginparwidth=6.8cm,marginparsep=1.5cm,top=1.5cm,bottom=1.5cm,footskip=2\baselineskip}
-
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage[default]{lato}
 \usepackage{graphicx,color, import}
 \usepackage{amssymb, amsmath}
-%\usepackage{hyperref}
+\usepackage{hyperref}
 \usepackage{url}
-\usepackage[]{algorithm2e}
 \usepackage[toc,page]{appendix}
 
 \begin{document}
@@ -22,5 +15,142 @@
 \section{What is a Gaussian Process?}
 
 TODO
+
+Scalar case:
+\begin{eqnarray}
+g : \mathcal{I} \rightarrow \mathbb{R} \\
+\mathcal{I} \subseteq \mathbb{R}^i
+\end{eqnarray}
+
+Vectorial case:
+\begin{eqnarray}
+g : \mathcal{I} \rightarrow \mathcal{O} \\
+\mathcal{I} \subseteq \mathbb{R}^i \,\,\,\,\, \mathcal{O} \subseteq \mathbb{R}^o 
+\end{eqnarray}
+
+Training set:
+\begin{eqnarray}
+S &=& 
+\bigg \langle 
+\begin{bmatrix} X^1 \\ y^1 \end{bmatrix}
+\hdots
+\begin{bmatrix} X^N \\ y^N \end{bmatrix} 
+\bigg \rangle \\
+\mathcal{X}^S &=& \big \lbrace X^1 \hdots X^N \big \rbrace \subseteq \mathcal{I} \\
+\mathcal{Y}^S &=& \big \lbrace y^1 \hdots y^N \big \rbrace \subseteq \mathbb{R}
+\end{eqnarray}
+
+Values correlation:
+\begin{eqnarray}
+\begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} \sim \mathcal{N} 
+\bigg (
+0, K(\mathcal{X}^S)
+\bigg ) 
+\end{eqnarray}
+
+$K$ is the kernel function, whose values depend on the definition of a kernel function $k$:
+\begin{eqnarray}
+K = K(\mathcal{X}^S, \Theta) = \begin{bmatrix}
+k(X^1, X^1, \Theta) & \hdots & k(X^1, X^N, \Theta) \\ 
+\vdots & \ddots & \vdots \\ 
+k(X^N, X^1, \Theta) & \hdots & k(X^N, X^N, \Theta) \\ 
+\end{bmatrix}
+\end{eqnarray}
+where $\Theta$ is a vector of hyperparamters that can be also tuned by training (see METTERE):
+\begin{eqnarray}
+\Theta = \begin{bmatrix} \theta_1 & \hdots & \theta_m \end{bmatrix} ^ T
+\end{eqnarray}
+clearly:
+\begin{eqnarray}
+K = K^T
+\end{eqnarray}
+The kernel function describes correlation between inputs, METTERE section dedicata a esempi di kernel function.
+
+Predicitons:
+\begin{eqnarray}
+\begin{bmatrix} y(X) \\ \hline y^1 \\ \vdots \\ y^N \end{bmatrix} \sim \mathcal{N} 
+\bigg (
+\begin{bmatrix} 0 \\ \hline 0 \end{bmatrix},
+\begin{bmatrix}
+k(X,X, \Theta) & \vline & K_x^T \\ 
+\hline
+K_x(X, \mathcal{X}^S, \Theta) & \vline & K(\mathcal{X}^S, \Theta)
+\end{bmatrix}
+\bigg )
+\end{eqnarray}
+where $K_x$ is a vector obtained in the following way:
+\begin{eqnarray}
+K_x(X, \mathcal{X}^S, \Theta) = \begin{bmatrix}
+k(X, X^1 , \Theta) & \hdots & k(X, X^N , \Theta)
+\end{bmatrix} ^ T
+\end{eqnarray}
+
+The prediction actually made considering the conditioned distribution:
+\begin{eqnarray}
+y(X | \mathcal{X}^S) \sim \mathcal{N} \bigg ( 
+K_x^T K^{-1} \begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} , 
+k(X,X) - K_x^T K^{-1}K_x
+\bigg )
+\end{eqnarray}
+
+Training is done maximizing the likelihood $L$ of the training set w.r.t. $\Theta$:
+METTERE perche' vale proprieta traccia
+\begin{eqnarray}
+L(\mathcal{Y}^S) &=& 
+\frac{1}{\sqrt{(2 \pi)^N \left | K \right | }}
+exp \bigg ( - \frac{1}{2}
+\begin{bmatrix} y^1 & \hdots & y^N \end{bmatrix} 
+K^{-1}
+\begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} 
+\bigg ) \\
+&=& 
+\frac{1}{\sqrt{(2 \pi)^N \left | K \right | }}
+exp \bigg ( - \frac{1}{2}
+Tr \bigg [ 
+K^{-1}
+\begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} 
+\begin{bmatrix} y^1 & \hdots & y^N \end{bmatrix} 
+\bigg ]
+\bigg ) \\
+&=&
+\frac{1}{\sqrt{(2 \pi)^N \left | K \right | }}
+exp \bigg ( - \frac{1}{2}
+Tr \bigg [ 
+K^{-1}
+YY
+\bigg ]
+\bigg )
+\end{eqnarray}
+Passing to the logarithm we obtain:
+\begin{eqnarray}
+\mathcal{L} = log(L) = 
+-\frac{N}{2}(2 \pi) 
+-\frac{1}{2} log \big (\left | K \right | \big )
+-\frac{1}{2} Tr \bigg [
+K^{-1} YY
+\bigg ] 
+\end{eqnarray}
+keeping in mind that $\mathcal{L}$ is a function of the hyperparameters $\Theta$:
+\begin{eqnarray}
+\mathcal{L}(\Theta) = 
+-\frac{N}{2}(2 \pi) 
+-\frac{1}{2} log \big (\left | K(\Theta) \right | \big )
+-\frac{1}{2} Tr \bigg [
+K(\Theta)^{-1} YY
+\bigg ] 
+\end{eqnarray}
+
+The gradient of $\mathcal{L}$ w.r.t. the generic hyperparameter $\theta_t$ is computed as follows (refer to the properties exposed in METTERE matrix cookbook):
+\begin{eqnarray}
+\frac{\partial \mathcal{L}}{\partial \theta_t} &=& 
+-\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
+-\frac{1}{2} Tr \bigg [ \frac{\partial }{\partial \theta_t} \big (  
+K^{-1} YY
+\big ) \bigg ] \\
+&=& -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
+-\frac{1}{2} Tr \bigg [ \frac{\partial K^{-1}}{\partial \theta_t} YY \bigg ] \\
+&=& -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
++\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K^{-1}}{\partial \theta_t} K^{-1} YY \bigg ]
+\end{eqnarray}
 
 \end{document}

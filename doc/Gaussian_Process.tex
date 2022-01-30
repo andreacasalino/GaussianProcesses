@@ -150,7 +150,74 @@ K^{-1} YY
 &=& -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
 -\frac{1}{2} Tr \bigg [ \frac{\partial K^{-1}}{\partial \theta_t} YY \bigg ] \\
 &=& -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
-+\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K^{-1}}{\partial \theta_t} K^{-1} YY \bigg ]
++\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} YY \bigg ]
+ \label{eq:L_grad}
+\end{eqnarray}
+
+Training set vectorial:
+\begin{eqnarray}
+S = \bigg \langle
+\begin{bmatrix} X^1 \\ \hline y^1_1 \\ \vdots \\ y^1_o \end{bmatrix} 
+\hdots
+\begin{bmatrix} X^N \\ \hline y^N_1 \\ \vdots \\ y^N_o \end{bmatrix} 
+\bigg \rangle
+\end{eqnarray}
+
+Predicting vectorial case:
+TODO
+
+The logarithmic likelihood is the summation of the logarithmic likelihood of each process that compose the vectorial one (omitting constant terms):
+\begin{eqnarray}
+\mathcal{L} &=& 
+\sum_{i=0}^o \bigg (
+-\frac{1}{2} log \big (\left | K \right | \big )
+-\frac{1}{2} Tr \bigg [
+K^{-1} 
+\begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
+\begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
+\bigg ]  \\
+&=&
+-\frac{o}{2} log \big (\left | K \right | \big )
+-\frac{1}{2} \sum_{i=0}^o \bigg ( Tr \bigg [
+K^{-1} 
+\begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
+\begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
+\bigg ] 
+\bigg ) \\
+&=&
+-\frac{o}{2} log \big (\left | K \right | \big )
+-\frac{1}{2} Tr \bigg [
+K^{-1} \sum_{i=0}^o \bigg (
+\begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
+\begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
+\bigg )
+\bigg ] \\
+&=&
+-\frac{o}{2} log \big (\left | K \right | \big )
+-\frac{1}{2} Tr \bigg [
+K^{-1} YY_2
+\bigg ] 
+\end{eqnarray}
+with:
+\begin{eqnarray}
+YY_2 = \sum_{i=0}^o \bigg (
+\begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
+\begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
+\bigg )
+\end{eqnarray}
+keeping again in mind that $\mathcal{L}$ is a function of the hyperparameters $\Theta$:
+\begin{eqnarray}
+\mathcal{L}(\Theta) = -\frac{o}{2} log \big (\left | K \big (\Theta \big ) \right | \big )
+-\frac{1}{2} Tr \bigg [
+K^{-1}\big (\Theta \big ) YY_2
+\bigg ] 
+\end{eqnarray}
+The gradient can be computed as by doing the steps that led to 
+eq. (\ref{eq:L_grad}), leading to:
+\begin{eqnarray}
+\frac{\partial \mathcal{L}}{\partial \theta_t} = 
+-\frac{o}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
++\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} YY_2 \bigg ]
 \end{eqnarray}
 
 \appendix

@@ -153,4 +153,69 @@ K^{-1} YY
 +\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K^{-1}}{\partial \theta_t} K^{-1} YY \bigg ]
 \end{eqnarray}
 
+\appendix
+\section{Trace property}
+
+Take an $(n,n)$ matrix $A$ and a vector $X$, the scalar quantity $x^T A x$ is equal to:
+\begin{eqnarray}
+x^T A x &=& Tr \bigg [ 
+A xx^T
+\bigg ] \\
+&=& Tr \bigg [ 
+xx^T A^T
+\bigg ]
+\label{eq:Tr_property}
+\end{eqnarray}
+Clearly, in case of symmetric matrix, the following holds:
+\begin{eqnarray}
+x^T A x = Tr \bigg [ 
+xx^T A
+\bigg ]
+\end{eqnarray}
+
+We will now prove equation (\ref{Tr_property}).
+\\
+$x^T A x$ can be also expressed as follows:
+\begin{eqnarray}
+x^T A x &=& x^T \begin{bmatrix} 
+a_1^T \\
+\vdots \\ 
+a_n^T
+\end{bmatrix} x \\
+&=&
+x^T \begin{bmatrix} 
+a_1^T x \\
+\vdots \\ 
+a_n^T x
+\end{bmatrix} = x^T \begin{bmatrix} 
+<a_1, x> \\
+\vdots \\ 
+<a_n, x>
+\end{bmatrix} \\
+&=&
+\sum_{i = 0}^n x_i <a_i, x>
+\label{eq:sum_dots_a}
+\end{eqnarray}
+
+Moreover, the following is also true:
+\begin{eqnarray}
+Tr \bigg [ A x x^T \bigg ] &=& 
+Tr \bigg [
+\begin{bmatrix} a_1^T \\ \vdots \\ a_n^T \end{bmatrix}
+\begin{bmatrix} xx_1 & \hdots & xx_n \end{bmatrix}
+\bigg ]  \\
+&=&
+Tr \bigg [
+\begin{bmatrix} 
+a_1^T xx_1 & & \\
+& \ddots & \\
+& & a_n^T xx_n
+\end{bmatrix}
+\bigg ] \\
+&=&
+\sum_{i = 0}^n x_i <a_i, x>
+\label{eq:sum_dots_b}
+\end{eqnarray}
+where we recognize that eq. (\ref{eq:sum_dots_a}) and (\ref{eq:sum_dots_b}) are identical.
+
 \end{document}

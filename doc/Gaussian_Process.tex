@@ -14,21 +14,25 @@
 \newpage
 \section{What is a Gaussian Process?}
 
-TODO
-
-Scalar case:
-\begin{eqnarray}
-g : \mathcal{I} \rightarrow \mathbb{R} \\
-\mathcal{I} \subseteq \mathbb{R}^i
-\end{eqnarray}
-
-Vectorial case:
+\textbf{Gaussian Processes} (a.k.a. \textbf{GP}) (METTERE ref) are predictive models able to approximate a multivariate scalar function:
 \begin{eqnarray}
 g : \mathcal{I} \rightarrow \mathcal{O} \\
+\mathcal{I} \subseteq \mathbb{R}^i \,\,\,\,\, \mathcal{O} \subseteq \mathbb{R}
+\end{eqnarray}
+or a  multivariate vectorial one:
+\begin{eqnarray}
+G : \mathcal{I} \rightarrow \mathcal{O} \\
 \mathcal{I} \subseteq \mathbb{R}^i \,\,\,\,\, \mathcal{O} \subseteq \mathbb{R}^o 
 \end{eqnarray}
 
-Training set:
+Such models are made by a \textbf{Training Set} and a \textbf{Kernel Function}.
+The \textbf{Training Set} is essentially a collection of points pertaining to $\mathcal{I}$, for which the corresponding output inside $\mathcal{O}$ is known \footnote{Not precisely, as noise might be present in measures.}.
+\\
+Regarding the concept of \textbf{Kernel Function}, refer to METTERE.
+
+\section{Scalar case}
+
+The training set of a scalar \textbf{GP} is formally defined in this way:
 \begin{eqnarray}
 S &=& 
 \bigg \langle 
@@ -40,7 +44,8 @@ S &=&
 \mathcal{Y}^S &=& \big \lbrace y^1 \hdots y^N \big \rbrace \subseteq \mathbb{R}
 \end{eqnarray}
 
-Values correlation:
+\textbf{GP}s assumes values inside the training set to be somehow correlated, as they were generated from the same underlying function.
+The joint probability distribution describing such correlation is assumed to be a \textbf{Gaussian Distribution}:
 \begin{eqnarray}
 \begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} \sim \mathcal{N} 
 \bigg (
@@ -48,7 +53,7 @@ Values correlation:
 \bigg ) 
 \end{eqnarray}
 
-$K$ is the kernel function, whose values depend on the definition of a kernel function $k$:
+$K$ is the kernel function, whose values depend on the definition of a kernel function $k$ (METTERE ref):
 \begin{eqnarray}
 K = K(\mathcal{X}^S, \Theta) = \begin{bmatrix}
 k(X^1, X^1, \Theta) & \hdots & k(X^1, X^N, \Theta) \\ 
@@ -56,7 +61,7 @@ k(X^1, X^1, \Theta) & \hdots & k(X^1, X^N, \Theta) \\
 k(X^N, X^1, \Theta) & \hdots & k(X^N, X^N, \Theta) \\ 
 \end{bmatrix}
 \end{eqnarray}
-where $\Theta$ is a vector of hyperparamters that can be also tuned by training (see METTERE):
+where $\Theta$ is a vector of hyperparamters that can be also tuned by training (see METTERE) the model over a specific training set:
 \begin{eqnarray}
 \Theta = \begin{bmatrix} \theta_1 & \hdots & \theta_m \end{bmatrix} ^ T
 \end{eqnarray}
@@ -64,9 +69,10 @@ clearly:
 \begin{eqnarray}
 K = K^T
 \end{eqnarray}
-The kernel function describes correlation between inputs, METTERE section dedicata a esempi di kernel function.
 
-Predicitons:
+\subsection{Predictions}
+
+The aim of \textbf{Gp}s is to be able to make predictions about the output value of an input $y(X)$, that is outside the training set. This is done assuming a joint correlation between such point and the ones in the training set: 
 \begin{eqnarray}
 \begin{bmatrix} y(X) \\ \hline y^1 \\ \vdots \\ y^N \end{bmatrix} \sim \mathcal{N} 
 \bigg (
@@ -85,13 +91,15 @@ k(X, X^1 , \Theta) & \hdots & k(X, X^N , \Theta)
 \end{bmatrix} ^ T
 \end{eqnarray}
 
-The prediction actually made considering the conditioned distribution:
+The prediction is actually made by the following conditioned probability distribution:
 \begin{eqnarray}
 y(X | \mathcal{X}^S) \sim \mathcal{N} \bigg ( 
 K_x^T K^{-1} \begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} , 
 k(X,X) - K_x^T K^{-1}K_x
 \bigg )
 \end{eqnarray}
+
+\subsection{Training}
 
 Training is done maximizing the likelihood $L$ of the training set w.r.t. $\Theta$:
 METTERE perche' vale proprieta traccia
@@ -154,7 +162,12 @@ K^{-1} YY
  \label{eq:L_grad}
 \end{eqnarray}
 
-Training set vectorial:
+Then, you can choose your favourite gradient-based approach to perform training.
+
+\section{Vectorial case}
+
+Vectorial \textbf{GP} are similarly defined and exploited.
+More formally, their training sets is defined in this way:
 \begin{eqnarray}
 S = \bigg \langle
 \begin{bmatrix} X^1 \\ \hline y^1_1 \\ \vdots \\ y^1_o \end{bmatrix} 
@@ -163,8 +176,13 @@ S = \bigg \langle
 \bigg \rangle
 \end{eqnarray}
 
+\subsection{Predictions}
+
+TODO spiegare che lo puoi vedere come assembramento di vari GP.
 Predicting vectorial case:
 TODO
+
+\subsection{Training}
 
 The logarithmic likelihood is the summation of the logarithmic likelihood of each process that compose the vectorial one (omitting constant terms):
 \begin{eqnarray}
@@ -219,6 +237,14 @@ eq. (\ref{eq:L_grad}), leading to:
 -\frac{o}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
 +\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} YY_2 \bigg ]
 \end{eqnarray}
+
+\section{The Kernel function}
+
+The kernel function describes correlation between inputs, METTERE section dedicata a esempi di kernel function.
+
+\subsection{RBF}
+
+TODO and others ...
 
 \appendix
 \section{Trace property}

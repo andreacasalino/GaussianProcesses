@@ -28,7 +28,7 @@ G : \mathcal{I} \rightarrow \mathcal{O} \\
 Such models are made by a \textbf{Training Set} and a \textbf{Kernel Function}.
 The \textbf{Training Set} is essentially a collection of points pertaining to $\mathcal{I}$, for which the corresponding output inside $\mathcal{O}$ is known \footnote{To be precise, the exact value might be unknown due to noise, but a also a close one is fine.}.
 \\
-Regarding the concept of \textbf{Kernel Function}, refer to METTERE.
+Regarding the concept of \textbf{Kernel Function}, refer to Section \ref{sec:kernel_function}.
 
 \section{Scalar case}
 
@@ -54,7 +54,7 @@ The joint probability distribution describing such correlation is assumed to be 
 \label{eq:y_joint_distr}
 \end{eqnarray}
 
-$K$ is the kernel function, whose values depend on the definition of a kernel function $k$ (METTERE ref):
+$K$ is the kernel function, whose values depend on the definition of a kernel function $k$ (refer to Section \ref{sec:kernel_function}):
 \begin{eqnarray}
 K = K(\mathcal{X}^S, \Theta) = \begin{bmatrix}
 k(X^1, X^1, \Theta) & \hdots & k(X^1, X^N, \Theta) \\ 
@@ -62,7 +62,7 @@ k(X^1, X^1, \Theta) & \hdots & k(X^1, X^N, \Theta) \\
 k(X^N, X^1, \Theta) & \hdots & k(X^N, X^N, \Theta) \\ 
 \end{bmatrix}
 \end{eqnarray}
-where $\Theta$ is a vector of hyperparamters that can be tuned by training (see METTERE) the model over a specific training set:
+where $\Theta$ is a vector of hyperparamters that can be tuned by training (see Sections \ref{sec:train_scalar} and \ref{sec:train_vectorial}) the model over a specific training set:
 \begin{eqnarray}
 \Theta = \begin{bmatrix} \theta_1 & \hdots & \theta_m \end{bmatrix} ^ T
 \end{eqnarray}
@@ -72,6 +72,7 @@ K(\mathcal{X}^S, \Theta) = K(\mathcal{X}^S, \Theta)^T
 \end{eqnarray}
 
 \subsection{Predictions}
+\label{sec:predictions_scalar}
 
 The aim of \textbf{Gp}s is to be able to make predictions about the output value $y(X)$ of an input $X$ that is outside the training set. This is done assuming a joint correlation between such point and the ones in the training set: 
 \begin{eqnarray}
@@ -101,18 +102,22 @@ k(X,X) - K_x^T K^{-1}K_x
 \end{eqnarray}
 
 \subsection{Training}
+\label{sec:train_scalar}
 
 Training is done maximizing the likelihood $L$ of the training set w.r.t. $\Theta$.
 Since eq. (\ref{eq:y_joint_distr}) describes a \textbf{Gaussian} distribution, the likelihood can be computed as follows:
 \begin{eqnarray}
-L(\mathcal{Y}^S) &=& 
+L(\mathcal{Y}^S) = 
 \frac{1}{\sqrt{(2 \pi)^N \left | K(\mathcal{X}^S) \right | }}
 exp \bigg ( - \frac{1}{2}
 \begin{bmatrix} y^1 & \hdots & y^N \end{bmatrix} 
 K^{-1}
 \begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} 
-\bigg ) \\
-&=& 
+\bigg ) 
+\end{eqnarray}
+At this point, the property described in appendix \ref{sec:trace_property} can be exploited to rewrite the above equation as follows:
+\begin{eqnarray}
+L(\mathcal{Y}^S) &=& 
 \frac{1}{\sqrt{(2 \pi)^N \left | K \right | }}
 exp \bigg ( - \frac{1}{2}
 Tr \bigg [ 
@@ -130,6 +135,7 @@ M_{YY}
 \bigg ]
 \bigg )
 \end{eqnarray}
+
 Passing to the logarithm we obtain:
 \begin{eqnarray}
 \mathcal{L} = log(L) = 
@@ -148,7 +154,6 @@ keeping in mind that $\mathcal{L}$ is a function of the hyperparameters $\Theta$
 K(\Theta)^{-1} M_{YY}
 \bigg ] 
 \end{eqnarray}
-METTERE perche' vale proprieta traccia
 
 The gradient of $\mathcal{L}$ w.r.t. the generic hyperparameter $\theta_t$ is computed as follows (refer to the properties exposed in METTERE matrix cookbook):
 \begin{eqnarray}
@@ -181,7 +186,7 @@ S = \bigg \langle
 \subsection{Predictions}
 
 A vectorial \textbf{GP} is actually a composition of scalar \textbf{GP}s.
-The predcition is done as similarly discussed in METTERE, doing $o$ predicitons at the same time. Indeed, for each $i \in \lbrace 0, \hdots ,o \rbrace$ holds that:
+The prediction is done as similarly discussed in Section \ref{sec:predictions_scalar}, doing $o$ predictions at the same time. Indeed, for each $i \in \lbrace 0, \hdots ,o \rbrace$ holds that:
 \begin{eqnarray}
 \begin{bmatrix} y_i(X) \\ \hline y_i^1 \\ \vdots \\ y_i^N \\ \end{bmatrix} \sim
 \mathcal{N} \bigg ( 
@@ -229,6 +234,7 @@ I_{o,o}
 
 
 \subsection{Training}
+\label{sec:train_vectorial}
 
 The logarithmic likelihood is the summation of the logarithmic likelihood of each process that compose the vectorial \textbf{GP}, which leads, omitting constant terms, to:
 \begin{eqnarray}
@@ -285,6 +291,7 @@ eq. (\ref{eq:L_grad}), leading to:
 \end{eqnarray}
 
 \section{The Kernel function}
+\label{sec:kernel_function}
 
 The kernel function describes correlation between inputs, METTERE section dedicata a esempi di kernel function.
 
@@ -298,16 +305,18 @@ TODO spiegare che incertezza aumenta tanto piu sonon lontano da punti in trainin
 
 \appendix
 \section{Trace property}
+\label{sec:trace_property}
 
 Take an $(n,n)$ matrix $A$ and a vector $X$, the scalar quantity $x^T A x$ is equal to:
 \begin{eqnarray}
 x^T A x &=& Tr \bigg [ 
 A xx^T
-\bigg ] \\
+\bigg ]
+\label{eq:Tr_property}
+\\
 &=& Tr \bigg [ 
 xx^T A^T
 \bigg ]
-\label{eq:Tr_property}
 \end{eqnarray}
 Clearly, in case of symmetric matrix, the following holds:
 \begin{eqnarray}
@@ -316,7 +325,7 @@ xx^T A
 \bigg ]
 \end{eqnarray}
 
-We will now prove equation (\ref{Tr_property}).
+We will now prove equation (\ref{eq:Tr_property}).
 \\
 $x^T A x$ can be also expressed as follows:
 \begin{eqnarray}

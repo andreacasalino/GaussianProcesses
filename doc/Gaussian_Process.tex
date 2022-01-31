@@ -162,7 +162,7 @@ K^{-1} YY
  \label{eq:L_grad}
 \end{eqnarray}
 
-Then, you can choose your favourite gradient-based approach to perform training.
+Then, you can choose your favourite gradient-based approach to perform
 
 \section{Vectorial case}
 
@@ -178,9 +178,50 @@ S = \bigg \langle
 
 \subsection{Predictions}
 
-TODO spiegare che lo puoi vedere come assembramento di vari GP.
-Predicting vectorial case:
-TODO
+A vectorial \textbf{GP} is actually a composition of scalar \textbf{Gp}s.
+The predcition is done as similarly discussed in METTERE, doing $o$ predicitons at the same time. Indeed, for each $i \in \mathcal{O}$ holds that:
+\begin{eqnarray}
+\begin{bmatrix} y_i(X) \\ \hline y_i^1 \\ \vdots \\ y_i^N \\ \end{bmatrix} \sim
+\mathcal{N} \bigg ( 
+\begin{bmatrix} 0 \\ \hline 0 \end{bmatrix},
+\begin{bmatrix}
+k(X,X, \Theta) & \vline & K_x^T \\ 
+\hline
+K_x(X, \mathcal{X}^S, \Theta) & \vline & K(\mathcal{X}^S, \Theta)
+\end{bmatrix}
+\bigg )
+\end{eqnarray}
+
+Then, the complete prediction is obtained in this way:
+\begin{eqnarray}
+Y(X | X^S, \Theta) &=& \begin{bmatrix}
+y_1(X | X^S, \Theta) \sim \mathcal{N} \bigg (  
+K_x^T K^{-1} \begin{bmatrix} y_1^1 \\ \vdots \\ y_1^N \end{bmatrix} 
+, k(X,X) - K_x^T K^{-1}K_x 
+\bigg )
+\\
+\vdots
+\\
+y_o(X | X^S, \Theta) \sim \mathcal{N} \bigg (  
+K_x^T K^{-1} \begin{bmatrix} y_o^1 \\ \vdots \\ y_o^N \end{bmatrix} 
+, k(X,X) - K_x^T K^{-1}K_x 
+\bigg )
+\end{bmatrix} \\
+&=&
+\mathcal{N} \bigg ( 
+\bigg (
+K_x^T K^{-1}
+\begin{bmatrix}
+y_1^1 & \hdots & y_o^1 \\
+\vdots & \ddots & \vdots \\
+y_1^N & \hdots & y_o^N
+\end{bmatrix}
+\bigg )^T
+ ,K_x^T K^{-1}K_x 
+I_{o,o}
+\bigg )
+\end{eqnarray}
+
 
 \subsection{Training}
 

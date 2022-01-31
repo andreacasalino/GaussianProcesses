@@ -14,7 +14,7 @@
 \newpage
 \section{What is a Gaussian Process?}
 
-\textbf{Gaussian Processes} (a.k.a. \textbf{GP}s) (METTERE ref) are predictive models able to approximate a multivariate scalar function:
+\textbf{Gaussian Processes} \cite{GP_general_01}, \cite{GP_general_02}, a.k.a. \textbf{GP}s, are predictive models able to approximate a multivariate scalar function:
 \begin{eqnarray}
 g : \mathcal{I} \rightarrow \mathcal{O} \\
 \mathcal{I} \subseteq \mathbb{R}^i \,\,\,\,\, \mathcal{O} \subseteq \mathbb{R}
@@ -155,7 +155,7 @@ K(\Theta)^{-1} M_{YY}
 \bigg ] 
 \end{eqnarray}
 
-The gradient of $\mathcal{L}$ w.r.t. the generic hyperparameter $\theta_t$ is computed as follows (refer to the properties exposed in METTERE matrix cookbook):
+The gradient of $\mathcal{L}$ w.r.t. the generic hyperparameter $\theta_t$ is computed as follows (refer to the properties detailed at \cite{CookBook}):
 \begin{eqnarray}
 \frac{\partial \mathcal{L}}{\partial \theta_t} &=& 
 -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
@@ -369,5 +369,8 @@ a_1^T xx_1 & & \\
 \label{eq:sum_dots_b}
 \end{eqnarray}
 where we recognize that eq. (\ref{eq:sum_dots_a}) and (\ref{eq:sum_dots_b}) are identical.
+
+\bibliographystyle{plain}
+\bibliography{biblio}
 
 \end{document}

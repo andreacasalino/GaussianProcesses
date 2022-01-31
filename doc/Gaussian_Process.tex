@@ -14,7 +14,7 @@
 \newpage
 \section{What is a Gaussian Process?}
 
-\textbf{Gaussian Processes} (a.k.a. \textbf{GP}) (METTERE ref) are predictive models able to approximate a multivariate scalar function:
+\textbf{Gaussian Processes} (a.k.a. \textbf{GP}s) (METTERE ref) are predictive models able to approximate a multivariate scalar function:
 \begin{eqnarray}
 g : \mathcal{I} \rightarrow \mathcal{O} \\
 \mathcal{I} \subseteq \mathbb{R}^i \,\,\,\,\, \mathcal{O} \subseteq \mathbb{R}
@@ -26,7 +26,7 @@ G : \mathcal{I} \rightarrow \mathcal{O} \\
 \end{eqnarray}
 
 Such models are made by a \textbf{Training Set} and a \textbf{Kernel Function}.
-The \textbf{Training Set} is essentially a collection of points pertaining to $\mathcal{I}$, for which the corresponding output inside $\mathcal{O}$ is known \footnote{Not precisely, as noise might be present in measures.}.
+The \textbf{Training Set} is essentially a collection of points pertaining to $\mathcal{I}$, for which the corresponding output inside $\mathcal{O}$ is known \footnote{To be precise, the exact value might be unknown due to noise, but a also a close one is fine.}.
 \\
 Regarding the concept of \textbf{Kernel Function}, refer to METTERE.
 
@@ -51,6 +51,7 @@ The joint probability distribution describing such correlation is assumed to be 
 \bigg (
 0, K(\mathcal{X}^S)
 \bigg ) 
+\label{eq:y_joint_distr}
 \end{eqnarray}
 
 $K$ is the kernel function, whose values depend on the definition of a kernel function $k$ (METTERE ref):
@@ -61,18 +62,18 @@ k(X^1, X^1, \Theta) & \hdots & k(X^1, X^N, \Theta) \\
 k(X^N, X^1, \Theta) & \hdots & k(X^N, X^N, \Theta) \\ 
 \end{bmatrix}
 \end{eqnarray}
-where $\Theta$ is a vector of hyperparamters that can be also tuned by training (see METTERE) the model over a specific training set:
+where $\Theta$ is a vector of hyperparamters that can be tuned by training (see METTERE) the model over a specific training set:
 \begin{eqnarray}
 \Theta = \begin{bmatrix} \theta_1 & \hdots & \theta_m \end{bmatrix} ^ T
 \end{eqnarray}
 clearly:
 \begin{eqnarray}
-K = K^T
+K(\mathcal{X}^S, \Theta) = K(\mathcal{X}^S, \Theta)^T
 \end{eqnarray}
 
 \subsection{Predictions}
 
-The aim of \textbf{Gp}s is to be able to make predictions about the output value of an input $y(X)$, that is outside the training set. This is done assuming a joint correlation between such point and the ones in the training set: 
+The aim of \textbf{Gp}s is to be able to make predictions about the output value $y(X)$ of an input $X$ that is outside the training set. This is done assuming a joint correlation between such point and the ones in the training set: 
 \begin{eqnarray}
 \begin{bmatrix} y(X) \\ \hline y^1 \\ \vdots \\ y^N \end{bmatrix} \sim \mathcal{N} 
 \bigg (
@@ -91,7 +92,7 @@ k(X, X^1 , \Theta) & \hdots & k(X, X^N , \Theta)
 \end{bmatrix} ^ T
 \end{eqnarray}
 
-The prediction is actually made by the following conditioned probability distribution:
+As the joint distribution is \textbf{Gaussian}, the conditioned distribution can be obtained as follows:
 \begin{eqnarray}
 y(X | \mathcal{X}^S) \sim \mathcal{N} \bigg ( 
 K_x^T K^{-1} \begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} , 
@@ -101,11 +102,11 @@ k(X,X) - K_x^T K^{-1}K_x
 
 \subsection{Training}
 
-Training is done maximizing the likelihood $L$ of the training set w.r.t. $\Theta$:
-METTERE perche' vale proprieta traccia
+Training is done maximizing the likelihood $L$ of the training set w.r.t. $\Theta$.
+Since eq. (\ref{eq:y_joint_distr}) describes a \textbf{Gaussian} distribution, the likelihood can be computed as follows:
 \begin{eqnarray}
 L(\mathcal{Y}^S) &=& 
-\frac{1}{\sqrt{(2 \pi)^N \left | K \right | }}
+\frac{1}{\sqrt{(2 \pi)^N \left | K(\mathcal{X}^S) \right | }}
 exp \bigg ( - \frac{1}{2}
 \begin{bmatrix} y^1 & \hdots & y^N \end{bmatrix} 
 K^{-1}
@@ -125,7 +126,7 @@ K^{-1}
 exp \bigg ( - \frac{1}{2}
 Tr \bigg [ 
 K^{-1}
-YY
+M_{YY}
 \bigg ]
 \bigg )
 \end{eqnarray}
@@ -135,7 +136,7 @@ Passing to the logarithm we obtain:
 -\frac{N}{2}(2 \pi) 
 -\frac{1}{2} log \big (\left | K \right | \big )
 -\frac{1}{2} Tr \bigg [
-K^{-1} YY
+K^{-1} M_{YY}
 \bigg ] 
 \end{eqnarray}
 keeping in mind that $\mathcal{L}$ is a function of the hyperparameters $\Theta$:
@@ -144,29 +145,30 @@ keeping in mind that $\mathcal{L}$ is a function of the hyperparameters $\Theta$
 -\frac{N}{2}(2 \pi) 
 -\frac{1}{2} log \big (\left | K(\Theta) \right | \big )
 -\frac{1}{2} Tr \bigg [
-K(\Theta)^{-1} YY
+K(\Theta)^{-1} M_{YY}
 \bigg ] 
 \end{eqnarray}
+METTERE perche' vale proprieta traccia
 
 The gradient of $\mathcal{L}$ w.r.t. the generic hyperparameter $\theta_t$ is computed as follows (refer to the properties exposed in METTERE matrix cookbook):
 \begin{eqnarray}
 \frac{\partial \mathcal{L}}{\partial \theta_t} &=& 
 -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
 -\frac{1}{2} Tr \bigg [ \frac{\partial }{\partial \theta_t} \big (  
-K^{-1} YY
+K^{-1} M_{YY}
 \big ) \bigg ] \\
 &=& -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
--\frac{1}{2} Tr \bigg [ \frac{\partial K^{-1}}{\partial \theta_t} YY \bigg ] \\
+-\frac{1}{2} Tr \bigg [ \frac{\partial (K^{-1}) }{\partial \theta_t} M_{YY} \bigg ] \\
 &=& -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
-+\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} YY \bigg ]
++\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} M_{YY} \bigg ]
  \label{eq:L_grad}
 \end{eqnarray}
 
-Then, you can choose your favourite gradient-based approach to perform
+Choose your favourite gradient-based approach you can then tune the model.
 
 \section{Vectorial case}
 
-Vectorial \textbf{GP} are similarly defined and exploited.
+Vectorial \textbf{GP}s are similarly defined as the scalar ones.
 More formally, their training sets is defined in this way:
 \begin{eqnarray}
 S = \bigg \langle
@@ -178,8 +180,8 @@ S = \bigg \langle
 
 \subsection{Predictions}
 
-A vectorial \textbf{GP} is actually a composition of scalar \textbf{Gp}s.
-The predcition is done as similarly discussed in METTERE, doing $o$ predicitons at the same time. Indeed, for each $i \in \mathcal{O}$ holds that:
+A vectorial \textbf{GP} is actually a composition of scalar \textbf{GP}s.
+The predcition is done as similarly discussed in METTERE, doing $o$ predicitons at the same time. Indeed, for each $i \in \lbrace 0, \hdots ,o \rbrace$ holds that:
 \begin{eqnarray}
 \begin{bmatrix} y_i(X) \\ \hline y_i^1 \\ \vdots \\ y_i^N \\ \end{bmatrix} \sim
 \mathcal{N} \bigg ( 
@@ -194,20 +196,23 @@ K_x(X, \mathcal{X}^S, \Theta) & \vline & K(\mathcal{X}^S, \Theta)
 
 Then, the complete prediction is obtained in this way:
 \begin{eqnarray}
-Y(X | X^S, \Theta) &=& \begin{bmatrix}
-y_1(X | X^S, \Theta) \sim \mathcal{N} \bigg (  
+Y(X | X^S, \Theta) &=&
+\begin{bmatrix} y_1(X | X^S, \Theta) \\ \vdots \\ y_o(X | X^S, \Theta) \end{bmatrix} \\
+&\sim&
+\begin{bmatrix}
+\mathcal{N} \bigg (  
 K_x^T K^{-1} \begin{bmatrix} y_1^1 \\ \vdots \\ y_1^N \end{bmatrix} 
 , k(X,X) - K_x^T K^{-1}K_x 
 \bigg )
 \\
 \vdots
 \\
-y_o(X | X^S, \Theta) \sim \mathcal{N} \bigg (  
+\mathcal{N} \bigg (  
 K_x^T K^{-1} \begin{bmatrix} y_o^1 \\ \vdots \\ y_o^N \end{bmatrix} 
 , k(X,X) - K_x^T K^{-1}K_x 
 \bigg )
-\end{bmatrix} \\
-&=&
+\end{bmatrix}  \\
+&\sim&
 \mathcal{N} \bigg ( 
 \bigg (
 K_x^T K^{-1}
@@ -225,7 +230,7 @@ I_{o,o}
 
 \subsection{Training}
 
-The logarithmic likelihood is the summation of the logarithmic likelihood of each process that compose the vectorial one (omitting constant terms):
+The logarithmic likelihood is the summation of the logarithmic likelihood of each process that compose the vectorial \textbf{GP}, which leads, omitting constant terms, to:
 \begin{eqnarray}
 \mathcal{L} &=& 
 \sum_{i=0}^o \bigg (
@@ -234,7 +239,7 @@ The logarithmic likelihood is the summation of the logarithmic likelihood of eac
 K^{-1} 
 \begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
 \begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
-\bigg ]  \\
+\bigg ] \bigg )  \\
 &=&
 -\frac{o}{2} log \big (\left | K \right | \big )
 -\frac{1}{2} \sum_{i=0}^o \bigg ( Tr \bigg [
@@ -254,12 +259,12 @@ K^{-1} \sum_{i=0}^o \bigg (
 &=&
 -\frac{o}{2} log \big (\left | K \right | \big )
 -\frac{1}{2} Tr \bigg [
-K^{-1} YY_2
+K^{-1} M^o_{YY}
 \bigg ] 
 \end{eqnarray}
 with:
 \begin{eqnarray}
-YY_2 = \sum_{i=0}^o \bigg (
+M^o_{YY} = \sum_{i=0}^o \bigg (
 \begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
 \begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
 \bigg )
@@ -268,7 +273,7 @@ keeping again in mind that $\mathcal{L}$ is a function of the hyperparameters $\
 \begin{eqnarray}
 \mathcal{L}(\Theta) = -\frac{o}{2} log \big (\left | K \big (\Theta \big ) \right | \big )
 -\frac{1}{2} Tr \bigg [
-K^{-1}\big (\Theta \big ) YY_2
+K^{-1}\big (\Theta \big ) M^o_{YY}
 \bigg ] 
 \end{eqnarray}
 The gradient can be computed as by doing the steps that led to 
@@ -276,7 +281,7 @@ eq. (\ref{eq:L_grad}), leading to:
 \begin{eqnarray}
 \frac{\partial \mathcal{L}}{\partial \theta_t} = 
 -\frac{o}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
-+\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} YY_2 \bigg ]
++\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} M^o_{YY} \bigg ]
 \end{eqnarray}
 
 \section{The Kernel function}
@@ -286,6 +291,10 @@ The kernel function describes correlation between inputs, METTERE section dedica
 \subsection{RBF}
 
 TODO and others ...
+
+\section{What to expect from the predictions}
+
+TODO spiegare che incertezza aumenta tanto piu sonon lontano da punti in training set
 
 \appendix
 \section{Trace property}
@@ -330,8 +339,8 @@ a_n^T x
 \sum_{i = 0}^n x_i <a_i, x>
 \label{eq:sum_dots_a}
 \end{eqnarray}
-
-Moreover, the following is also true:
+where $a_i$ is the $i^{th}$ row of $A$.
+At the same time, the following fact is also true:
 \begin{eqnarray}
 Tr \bigg [ A x x^T \bigg ] &=& 
 Tr \bigg [

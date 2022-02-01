@@ -25,10 +25,10 @@ G : \mathcal{I} \rightarrow \mathcal{O} \\
 \mathcal{I} \subseteq \mathbb{R}^i \,\,\,\,\, \mathcal{O} \subseteq \mathbb{R}^o 
 \end{eqnarray}
 
-Such models are made by a \textbf{Training Set} and a \textbf{Kernel Function}.
-The \textbf{Training Set} is essentially a collection of points pertaining to $\mathcal{I}$, for which the corresponding output inside $\mathcal{O}$ is known \footnote{To be precise, the exact value might be unknown due to noise, but a also a close one is fine.}.
+\textbf{GP}s are essentially defined by a \textbf{Training Set} and a \textbf{Kernel Function}.
+The \textbf{Training Set} is a collection of points pertaining to $\mathcal{I}$, for which the corresponding output inside $\mathcal{O}$ is known \footnote{To be precise, the exact value might be unknown due to noise, but a also a close one is fine.}.
 \\
-Regarding the concept of \textbf{Kernel Function}, refer to Section \ref{sec:kernel_function}.
+The concept of \textbf{Kernel Function} is extensively detailed at Section \ref{sec:kernel_function}.
 
 \section{Scalar case}
 
@@ -44,8 +44,8 @@ S &=&
 \mathcal{Y}^S &=& \big \lbrace y^1 \hdots y^N \big \rbrace \subseteq \mathbb{R}
 \end{eqnarray}
 
-\textbf{GP}s assumes values inside the training set to be somehow correlated, as they were generated from the same underlying function.
-The joint probability distribution describing such correlation is assumed to be a \textbf{Gaussian Distribution}:
+\textbf{GP}s consider values inside the training set to be somehow correlated, as they were generated from the same underlying function.
+In particular, the joint probability distribution describing such correlation is assumed to be a \textbf{Gaussian Distribution}:
 \begin{eqnarray}
 \begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} \sim \mathcal{N} 
 \bigg (
@@ -54,7 +54,7 @@ The joint probability distribution describing such correlation is assumed to be 
 \label{eq:y_joint_distr}
 \end{eqnarray}
 
-$K$ is the kernel function, whose values depend on the definition of a kernel function $k$ (refer to Section \ref{sec:kernel_function}):
+$K$ is the kernel covariance, whose values depend on the definition of a kernel function $k$ (refer to Section \ref{sec:kernel_function}):
 \begin{eqnarray}
 K = K(\mathcal{X}^S, \Theta) = \begin{bmatrix}
 k(X^1, X^1, \Theta) & \hdots & k(X^1, X^N, \Theta) \\ 
@@ -66,15 +66,11 @@ where $\Theta$ is a vector of hyperparamters that can be tuned by training (see 
 \begin{eqnarray}
 \Theta = \begin{bmatrix} \theta_1 & \hdots & \theta_m \end{bmatrix} ^ T
 \end{eqnarray}
-clearly:
-\begin{eqnarray}
-K(\mathcal{X}^S, \Theta) = K(\mathcal{X}^S, \Theta)^T
-\end{eqnarray}
 
 \subsection{Predictions}
 \label{sec:predictions_scalar}
 
-The aim of \textbf{Gp}s is to be able to make predictions about the output value $y(X)$ of an input $X$ that is outside the training set. This is done assuming a joint correlation between such point and the ones in the training set: 
+The aim of \textbf{GP}s is to be able to make predictions about the output value $y(X)$ of an input $X$ that is outside the training set. This is done assuming a joint correlation between such point and the ones in the training set: 
 \begin{eqnarray}
 \begin{bmatrix} y(X) \\ \hline y^1 \\ \vdots \\ y^N \end{bmatrix} \sim \mathcal{N} 
 \bigg (
@@ -169,12 +165,12 @@ K^{-1} M_{YY}
  \label{eq:L_grad}
 \end{eqnarray}
 
-Choose your favourite gradient-based approach you can then tune the model.
+Choosing your favourite gradient-based approach you can then tune the model.
 
 \section{Vectorial case}
 
-Vectorial \textbf{GP}s are similarly defined as the scalar ones.
-More formally, their training sets is defined in this way:
+Vectorial \textbf{GP}s are defined as similarly done for scalar \textbf{GP}s.
+The training set should account for the multi-dimensionality of the process and is therefore defined in this way:
 \begin{eqnarray}
 S = \bigg \langle
 \begin{bmatrix} X^1 \\ \hline y^1_1 \\ \vdots \\ y^1_o \end{bmatrix} 
@@ -185,7 +181,7 @@ S = \bigg \langle
 
 \subsection{Predictions}
 
-A vectorial \textbf{GP} is actually a composition of scalar \textbf{GP}s.
+A vectorial \textbf{GP} is actually a composition of independent scalar \textbf{GP}s.
 The prediction is done as similarly discussed in Section \ref{sec:predictions_scalar}, doing $o$ predictions at the same time. Indeed, for each $i \in \lbrace 0, \hdots ,o \rbrace$ holds that:
 \begin{eqnarray}
 \begin{bmatrix} y_i(X) \\ \hline y_i^1 \\ \vdots \\ y_i^N \\ \end{bmatrix} \sim
@@ -282,7 +278,7 @@ keeping again in mind that $\mathcal{L}$ is a function of the hyperparameters $\
 K^{-1}\big (\Theta \big ) M^o_{YY}
 \bigg ] 
 \end{eqnarray}
-The gradient can be computed as by doing the steps that led to 
+The gradient can be computed with the same steps that led to 
 eq. (\ref{eq:L_grad}), leading to:
 \begin{eqnarray}
 \frac{\partial \mathcal{L}}{\partial \theta_t} = 
@@ -293,11 +289,79 @@ eq. (\ref{eq:L_grad}), leading to:
 \section{The Kernel function}
 \label{sec:kernel_function}
 
-The kernel function describes correlation between inputs, METTERE section dedicata a esempi di kernel function.
+The kernel function describes correlation between inputs. Ideally, it should assume a low value for inputs that are "far", w.r.t. a certain metrics, from each other and high values for those inputs that are close.
+\\
+The kernel function $k$ should be designed in order to produce a symemtric positive definite matrix $K$, as this latter should be representative of a covariance matrix, see eq. (\ref{eq:y_joint_distr}).
+\\
+Clearly, the gradient of $K$ can be computed element by element:
+\begin{eqnarray}
+\frac{\partial K}{\partial \theta_t} = 
+\begin{bmatrix}
+\frac{\partial k(X^1, X^1)}{\partial \theta_t} & \hdots & \frac{\partial k(X^1, X^N)}{\partial \theta_t} \\ 
+\vdots & \ddots & \vdots \\ 
+\frac{\partial k(X^N, X^1)}{\partial \theta_t} & \hdots & \frac{\partial k(X^N, X^N)}{\partial \theta_t} \\ 
+\end{bmatrix}
+\end{eqnarray}
+\\
+In the following of this Section, the most popular kernel functions \footnote{Which are also the ones default supported by this package.}  will be discussed.
 
-\subsection{RBF}
+\subsection{Linear function}
 
-TODO and others ...
+Hyperparameters:
+\begin{eqnarray}
+\Theta = \begin{bmatrix} \theta_0 & \theta_1 & \mu_1 & \hdots & \mu_o \end{bmatrix}
+\end{eqnarray}
+
+Fuction evaluation:
+\begin{eqnarray}
+k(x,y,\Theta) 
+&=& 
+\theta_0^2 + \theta_1^2 \big ( x-\mu \big )^T \big ( x-\mu \big ) \\
+&=&
+\theta_0^2 + \theta_1^2 x^T y + \theta_1^2 \mu^T \mu
+- \mu^T \theta_1^2 \big ( x + y \big )
+\end{eqnarray}
+
+Function gradient:
+\begin{eqnarray}
+\frac{\partial k (x,y)}{\partial \theta_0} &=& 2 \theta_0 \\
+\frac{\partial k (x,y)}{\partial \theta_1} &=& 2 \theta_1 \big ( x - \mu \big ) \big ( y - \mu \big ) \\
+\begin{bmatrix} 
+\frac{\partial k (x,y)}{\partial \mu_1} 
+\\ 
+\vdots
+\\ 
+\frac{\partial k (x,y)}{\partial \mu_o} 
+\end{bmatrix}
+&=& 2 \theta_1^2 \mu - \theta_1^2 \big ( x + y \big )
+\end{eqnarray}
+
+\subsection{Squared exponential}
+
+Hyperparameters:
+\begin{eqnarray}
+\Theta = \begin{bmatrix} \theta_0 & \theta_1 \end{bmatrix}
+\end{eqnarray}
+
+Fuction evaluation:
+\begin{eqnarray}
+k(x,y,\Theta) 
+&=& 
+\theta_0^2 exp \big ( -\theta_1^2 \left \| x - y \right \| ^2_2 \big ) \\
+&=&
+\theta_0^2 exp \big ( -\theta_1^2 (x-y)^T (x-y) \big )
+\end{eqnarray}
+
+Function gradient:
+\begin{eqnarray}
+\frac{\partial k (x,y)}{\partial \theta_0} &=& 2 \theta_0 exp \big ( 
+-\theta_1^2 \left \| x - y \right \| ^2_2 
+\big ) \\
+\frac{\partial k (x,y)}{\partial \theta_1} &=& \theta_0^2 exp \big ( 
+-\theta_1^2 \left \| x - y \right \| ^2_2 
+\big )
+\big ( -2 \theta_1(x-y)^T(x-y) \big )
+\end{eqnarray}
 
 \section{What to expect from the predictions}
 

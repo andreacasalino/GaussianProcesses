@@ -7,6 +7,8 @@ If you believe to be not really familiar with this object, have a look at these 
 - [Gaussian Processes](https://www.youtube.com/watch?v=UBDgSHPxVME&t=794s)
 - [Easy introduction to gaussian process regression](https://www.youtube.com/watch?v=iDzaoEwd0N0)
 
+You can decide to use one of the default **kernel functions** provided in this package, or define your own.
+
 The **GP** hyperparameters can be trained with the gradient descend approaches that are part of this package.
 
 This package is completely **cross-platform**: use [CMake](https://cmake.org) to configure the project containig the libary and some samples.

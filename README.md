@@ -9,7 +9,7 @@ If you believe to be not really familiar with this object, have a look at these 
 
 You can decide to use one of the default **kernel functions** provided in this package, or define your own.
 
-The **GP** hyperparameters can be trained with the gradient descend approaches that are part of this package.
+The **GP** hyperparameters can be trained with the gradient descend approaches that are part of [this](https://github.com/andreacasalino/TrainingTools) package.
 
 This package is completely **cross-platform**: use [CMake](https://cmake.org) to configure the project containig the libary and some samples.
 

@@ -68,10 +68,11 @@ public:
 protected:
   KernelAware(KernelFunctionPtr new_kernel);
 
-  KernelFunctionPtr kernelFunction;
-
   void updateKernel();
   void resetKernel();
+
+private:
+  KernelFunctionPtr kernelFunction;
   std::unique_ptr<Kernel> kernel;
 };
 } // namespace gauss::gp

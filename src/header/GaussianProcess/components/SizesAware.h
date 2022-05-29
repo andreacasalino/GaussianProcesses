@@ -10,7 +10,7 @@
 #include <GaussianUtils/components/StateSpaceSizeAware.h>
 
 namespace gauss::gp {
-class InputOutputSizeAware : public StateSpaceSizeAware {
+class SizesAware : public StateSpaceSizeAware {
 public:
   std::size_t getStateSpaceSize() const override {
     return getInputStateSpaceSize();
@@ -19,19 +19,19 @@ public:
   virtual std::size_t getOutputStateSpaceSize() const = 0;
 };
 
-
-class InputOutputSizeAwareBase : public InputOutputSizeAware {
+class InputOutputSizeAwareBase : public SizesAware {
 public:
-    std::size_t getInputStateSpaceSize() const final { return input_space_size; };
-    std::size_t getOutputStateSpaceSize() const final { return output_space_size; };
+  std::size_t getInputStateSpaceSize() const final { return input_space_size; };
+  std::size_t getOutputStateSpaceSize() const final {
+    return output_space_size;
+  };
 
 protected:
-    InputOutputSizeAwareBase(
-        const std::size_t input_space_size,
-        const std::size_t output_space_size);
+  InputOutputSizeAwareBase(const std::size_t input_space_size,
+                           const std::size_t output_space_size);
 
 private:
-    std::size_t input_space_size;
-    std::size_t output_space_size;
+  std::size_t input_space_size;
+  std::size_t output_space_size;
 };
 } // namespace gauss::gp

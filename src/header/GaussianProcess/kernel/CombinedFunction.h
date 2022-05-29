@@ -14,22 +14,21 @@ namespace gauss::gp {
  * @brief The composite sums all the individual wrapped kernel functions.
  *
  */
-class CompositeKernelFunction : public KernelFunction {
+class CombinedFunction : public KernelFunction {
 public:
-  CompositeKernelFunction(KernelFunctionPtr initial_element);
+  CombinedFunction(KernelFunctionPtr first_element,
+                   KernelFunctionPtr second_element);
 
   /**
    * @brief Add an additional kernel function to the composite
    * @throw passing a null element
    */
-  void push_function(KernelFunctionPtr element);
+  void add_element(KernelFunctionPtr element);
 
   double evaluate(const Eigen::VectorXd &a,
                   const Eigen::VectorXd &b) const override;
 
-  std::unique_ptr<KernelFunction> copy() const override;
-
-  std::vector<ParameterHandlerPtr> getParameters() const override;
+  std::vector<ParameterCnstPtr> getParameters() const override;
 
 protected:
   std::vector<KernelFunctionPtr> elements;

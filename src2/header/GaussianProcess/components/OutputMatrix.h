@@ -14,7 +14,7 @@ class SymmetricMatrixExpandable;
 
 class OutputMatrix : virtual public TrainSetAware {
 protected:
-  OutputMatrix() = default;
+  OutputMatrix();
 
   const Eigen::MatrixXd &getOutputMatrix() const;
 

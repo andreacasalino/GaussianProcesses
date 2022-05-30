@@ -51,13 +51,7 @@ void KernelMatrix::updateKernelMatrix() {
   kernel_matrix->expand(getTrainSet()->GetSamplesInput().GetSamples().size());
 }
 
-void KernelMatrix::resetKernelMatrix() { kernel_matrix->reset(); }
-
-KernelMatrix::KernelMatrix(KernelFunctionPtr new_kernel)
-    : kernelFunction(std::move(new_kernel)) {
-  if (nullptr == new_kernel) {
-    throw Error("empty kernel function");
-  }
+void KernelMatrix::resetKernelMatrix() {
   kernel_matrix = std::make_unique<SymmetricMatrixExpandable>(
       [this](const Eigen::Index row, const Eigen::Index col) {
         const auto samples =
@@ -66,6 +60,14 @@ KernelMatrix::KernelMatrix(KernelFunctionPtr new_kernel)
             samples[static_cast<std::size_t>(row)],
             samples[static_cast<std::size_t>(col)]);
       });
+}
+
+KernelMatrix::KernelMatrix(KernelFunctionPtr new_kernel)
+    : kernelFunction(std::move(new_kernel)) {
+  if (nullptr == new_kernel) {
+    throw Error("empty kernel function");
+  }
+  resetKernelMatrix();
 }
 
 double KernelMatrix::getCovarianceDeterminant() const {

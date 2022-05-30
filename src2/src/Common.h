@@ -9,7 +9,6 @@
 
 #include <Eigen/Core>
 #include <functional>
-#include <memory>
 
 namespace gauss::gp {
 class SymmetricMatrixExpandable {
@@ -17,16 +16,15 @@ public:
   SymmetricMatrixExpandable(
       const std::function<double(const Eigen::Index, const Eigen::Index)>
           &emplacer)
-      : emplacer(emplacer) {}
+      : emplacer(emplacer), matrix(0, 0) {}
 
-  const Eigen::MatrixXd &access() const;
+  const Eigen::MatrixXd &access() const { return matrix; }
 
   void expand(const Eigen::Index new_size);
-  void reset() { matrix.reset(); }
 
 private:
   const std::function<double(const Eigen::Index, const Eigen::Index)> emplacer;
-  std::unique_ptr<Eigen::MatrixXd> matrix;
+  Eigen::MatrixXd matrix;
 };
 
 double trace_product(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);

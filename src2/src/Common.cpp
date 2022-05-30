@@ -9,14 +9,6 @@
 #include <GaussianProcess/Error.h>
 
 namespace gauss::gp {
-const Eigen::MatrixXd &SymmetricMatrixExpandable::access() const {
-  throw Error{"TODO use trace_product"};
-  if (nullptr == matrix) {
-    throw Error{"never computed SymmetricMatrixExpandable"};
-  }
-  return *matrix;
-}
-
 namespace {
 struct IndexInterval {
   Eigen::Index start;
@@ -51,22 +43,21 @@ void compute_asymmetric_block(
 } // namespace
 
 void SymmetricMatrixExpandable::expand(const Eigen::Index new_size) {
-  std::unique_ptr<Eigen::MatrixXd> new_matrix =
-      std::make_unique<Eigen::MatrixXd>(new_size, new_size);
-  if (nullptr == matrix) {
-    compute_symmetric_block(*new_matrix, emplacer, IndexInterval{0, new_size});
+  Eigen::MatrixXd new_matrix(new_size, new_size);
+  const auto old_size = matrix.rows();
+  if (0 == old_size) {
+    compute_symmetric_block(new_matrix, emplacer, IndexInterval{0, new_size});
   } else {
-    if (new_size <= matrix->size()) {
+    if (new_size <= old_size) {
       throw Error{"invalid new size for SymmetricMatrixExpandable"};
     }
-    const auto old_size = matrix->rows();
-    new_matrix->block(0, 0, old_size, old_size) = *matrix;
-    compute_symmetric_block(*new_matrix, emplacer,
+    new_matrix.block(0, 0, old_size, old_size) = matrix;
+    compute_symmetric_block(new_matrix, emplacer,
                             IndexInterval{old_size, new_size});
-    compute_asymmetric_block(*new_matrix, emplacer, IndexInterval{0, old_size},
+    compute_asymmetric_block(new_matrix, emplacer, IndexInterval{0, old_size},
                              IndexInterval{old_size, new_size});
-    new_matrix->block(old_size, 0, new_size - old_size, old_size) =
-        new_matrix->block(0, old_size, old_size, new_size - old_size)
+    new_matrix.block(old_size, 0, new_size - old_size, old_size) =
+        new_matrix.block(0, old_size, old_size, new_size - old_size)
             .transpose();
   }
   matrix = std::move(new_matrix);

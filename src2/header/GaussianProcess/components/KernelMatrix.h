@@ -12,6 +12,8 @@
 #include <GaussianUtils/components/CoviarianceAware.h>
 
 namespace gauss::gp {
+class SymmetricMatrixExpandable;
+
 class KernelMatrix : virtual public TrainSetAware, public CovarianceAware {
 public:
   /**
@@ -61,7 +63,7 @@ protected:
 private:
   KernelFunctionPtr kernelFunction;
 
-  std::unique_ptr<Eigen::MatrixXd> kernel_matrix;
+  std::unique_ptr<SymmetricMatrixExpandable> kernel_matrix;
 
   mutable std::unique_ptr<Decomposition> kernel_matrix_decomposition;
 

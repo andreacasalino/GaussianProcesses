@@ -8,7 +8,7 @@
 #include <Common.h>
 #include <Eigen/Dense>
 #include <GaussianProcess/Error.h>
-#include <GaussianProcess/components/KernelAware.h>
+#include <GaussianProcess/components/KernelMatrix.h>
 #include <GaussianUtils/Utils.h>
 
 namespace gauss::gp {

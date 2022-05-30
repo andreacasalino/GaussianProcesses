@@ -8,19 +8,26 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <functional>
+#include <memory>
 
 namespace gauss::gp {
-struct MatrixIndices {
-  const Eigen::Index start;
-  const Eigen::Index end;
+class SymmetricMatrixExpandable {
+public:
+  SymmetricMatrixExpandable(
+      const std::function<double(const Eigen::Index, const Eigen::Index)>
+          &emplacer)
+      : emplacer(emplacer) {}
 
-  bool operator==(const MatrixIndices &o) const;
+  const Eigen::MatrixXd &access() const;
+
+  void expand(const Eigen::Index new_size);
+  void reset() { matrix.reset(); }
+
+private:
+  const std::function<double(const Eigen::Index, const Eigen::Index)> emplacer;
+  std::unique_ptr<Eigen::MatrixXd> matrix;
 };
-
-void set_matrix_portion(Eigen::MatrixXd &recipient,
-                        const Eigen::MatrixXd &portion,
-                        const MatrixIndices &portion_rows,
-                        const MatrixIndices &portion_cols);
 
 double trace_product(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
 } // namespace gauss::gp

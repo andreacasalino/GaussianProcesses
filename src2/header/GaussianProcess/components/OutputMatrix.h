@@ -10,6 +10,8 @@
 #include <GaussianProcess/components/TrainSetAware.h>
 
 namespace gauss::gp {
+class SymmetricMatrixExpandable;
+
 class OutputMatrix : virtual public TrainSetAware {
 protected:
   OutputMatrix() = default;
@@ -17,9 +19,9 @@ protected:
   const Eigen::MatrixXd &getOutputMatrix() const;
 
   void updateOutputMatrix();
-  void resetOutputMatrix() { output_matrix.reset(); };
+  void resetOutputMatrix();
 
 private:
-  std::unique_ptr<const Eigen::MatrixXd> output_matrix;
+  std::unique_ptr<SymmetricMatrixExpandable> output_matrix;
 };
 } // namespace gauss::gp

@@ -10,6 +10,7 @@
 
 namespace gauss::gp {
 const Eigen::MatrixXd &SymmetricMatrixExpandable::access() const {
+  throw Error{"TODO use trace_product"};
   if (nullptr == matrix) {
     throw Error{"never computed SymmetricMatrixExpandable"};
   }

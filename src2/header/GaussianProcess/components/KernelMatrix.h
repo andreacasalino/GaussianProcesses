@@ -22,14 +22,16 @@ public:
    * adding samples to the process.
    * @throw In case the kernel was not computed as no samples are available
    */
-  Eigen::MatrixXd getCovariance() const override;
+  Eigen::MatrixXd getCovariance() const override { return getKernelMatrix(); }
   /**
    * @return The inverse of the kernel of the process
    * The kernel is lazy computed, as is assumed equal to null before actually
    * adding samples to the process.
    * @throw In case the kernel was not computed as no samples are available
    */
-  Eigen::MatrixXd getCovarianceInv() const override;
+  Eigen::MatrixXd getCovarianceInv() const override {
+    return getKernelMatrixInverse();
+  }
   /**
    * @return The determinant of the kernel of the process
    * The kernel is lazy computed, as is assumed equal to null before actually
@@ -54,8 +56,8 @@ protected:
   KernelMatrix(KernelFunctionPtr new_kernel);
 
   const Eigen::MatrixXd &getKernelMatrix() const;
-  const Decomposition &getKernelMatrixDecomposition() const;
   const Eigen::MatrixXd &getKernelMatrixInverse() const;
+  const Decomposition &getKernelMatrixDecomposition() const;
 
   void updateKernelMatrix();
   void resetKernelMatrix();

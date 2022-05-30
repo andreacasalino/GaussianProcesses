@@ -22,6 +22,8 @@ public:
   KernelFunction(const KernelFunction &) = delete;
   KernelFunction &operator==(const KernelFunction &) = delete;
 
+  virtual std::size_t numberOfParameters() const = 0;
+
   /**
    * @return the collection of tunable parameters, i.e. the ones that can be
    * tuned through training.
@@ -44,6 +46,9 @@ public:
    */
   virtual std::vector<double> get_gradient(const Eigen::VectorXd &a,
                                            const Eigen::VectorXd &b) const = 0;
+
+protected:
+  KernelFunction() = default;
 };
 using KernelFunctionPtr = std::unique_ptr<KernelFunction>;
 } // namespace gauss::gp

@@ -18,6 +18,8 @@ class CombinedFunction : public KernelFunction {
 public:
   CombinedFunction(KernelFunctionPtr first, KernelFunctionPtr second);
 
+  std::size_t numberOfParameters() const final { return params_numb; }
+
   std::vector<double> getParameters() const final;
 
   void setParameters(const std::vector<double> &values) const final;
@@ -35,5 +37,6 @@ public:
 
 private:
   std::vector<KernelFunctionPtr> elements;
+  std::size_t params_numb = 0;
 };
 } // namespace gauss::gp

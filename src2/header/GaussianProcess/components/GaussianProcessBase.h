@@ -19,7 +19,7 @@ namespace gauss::gp {
 class GaussianProcessBase : public SizesAwareBase,
                             public KernelMatrix,
                             public OutputMatrix,
-                            public ::train::ParametersAware {
+                            protected ::train::ParametersAware {
 public:
   /**
    * @brief replace the kernel function.
@@ -81,13 +81,13 @@ public:
   /**
    * @return the tunable parameters of the kernel function
    */
-  Eigen::VectorXd getParameters() const override;
+  Eigen::VectorXd getHyperParameters() const;
   /**
    * @param parameters , the new set of tunable parameters for the kernel
    * function
    * @throw in case the number of parameters is not consistent
    */
-  void setParameters(const Eigen::VectorXd &parameters) override;
+  void setHyperParameters(const Eigen::VectorXd &parameters);
 
   /**
    * @return the logarithmic likelihood of the process, i.e. the product of the
@@ -114,9 +114,11 @@ protected:
   Eigen::VectorXd predict(const Eigen::VectorXd &point,
                           double &covariance) const;
 
-  ::train::Vect getGradient() const override {
-    return getParametersGradient();
-  };
+  ::train::Vect getParameters() const final { return getHyperParameters(); }
+  void setParameters(const ::train::Vect &parameters) final {
+    setHyperParameters(parameters);
+  }
+  ::train::Vect getGradient() const final { return getParametersGradient(); };
 
 private:
   void pushSample_(const Eigen::VectorXd &input_sample,

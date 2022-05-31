@@ -57,11 +57,11 @@ double CombinedFunction::evaluate(const Eigen::VectorXd &a,
 }
 
 std::vector<double>
-CombinedFunction::get_gradient(const Eigen::VectorXd &a,
-                               const Eigen::VectorXd &b) const {
+CombinedFunction::getGradient(const Eigen::VectorXd &a,
+                              const Eigen::VectorXd &b) const {
   std::vector<double> result;
   for (const auto &element : elements) {
-    for (const auto &val : element->get_gradient(a, b)) {
+    for (const auto &val : element->getGradient(a, b)) {
       result.push_back(val);
     }
   }

@@ -44,8 +44,8 @@ public:
    * @param b
    * @return The gradient of the kernel activation function
    */
-  virtual std::vector<double> get_gradient(const Eigen::VectorXd &a,
-                                           const Eigen::VectorXd &b) const = 0;
+  virtual std::vector<double> getGradient(const Eigen::VectorXd &a,
+                                          const Eigen::VectorXd &b) const = 0;
 
 protected:
   KernelFunction() = default;

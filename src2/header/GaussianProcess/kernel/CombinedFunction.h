@@ -27,8 +27,8 @@ public:
   double evaluate(const Eigen::VectorXd &a,
                   const Eigen::VectorXd &b) const final;
 
-  std::vector<double> get_gradient(const Eigen::VectorXd &a,
-                                   const Eigen::VectorXd &b) const final;
+  std::vector<double> getGradient(const Eigen::VectorXd &a,
+                                  const Eigen::VectorXd &b) const final;
 
   void addElement(KernelFunctionPtr element);
   const std::vector<KernelFunctionPtr> &getElements() const {

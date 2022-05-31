@@ -13,6 +13,9 @@ namespace gauss::gp {
 class SymmetricMatrixExpandable;
 
 class OutputMatrix : virtual public TrainSetAware {
+public:
+  ~OutputMatrix();
+
 protected:
   OutputMatrix();
 

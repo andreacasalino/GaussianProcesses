@@ -56,8 +56,7 @@ void GaussianProcessBase::updateKernelFunction(KernelFunctionPtr new_kernel) {
   if (nullptr == new_kernel) {
     throw Error("empty kernel function");
   }
-  kernelFunction = std::move(new_kernel);
-  resetKernelMatrix();
+  this->KernelMatrix::updateKernelFuction(std::move(new_kernel));
   if (nullptr != samples) {
     updateKernelMatrix();
   }
@@ -90,7 +89,7 @@ Eigen::VectorXd GaussianProcessBase::getKx(const Eigen::VectorXd &point) const {
   return Kx;
 }
 
-Eigen::VectorXd GaussianProcessBase::getParameters() const {
+Eigen::VectorXd GaussianProcessBase::getHyperParameters() const {
   const auto &params = getKernelFunction().getParameters();
   Eigen::VectorXd result(params.size());
   Eigen::Index i = 0;
@@ -101,7 +100,8 @@ Eigen::VectorXd GaussianProcessBase::getParameters() const {
   return result;
 }
 
-void GaussianProcessBase::setParameters(const Eigen::VectorXd &parameters) {
+void GaussianProcessBase::setHyperParameters(
+    const Eigen::VectorXd &parameters) {
   auto &kernel_function = getKernelFunction();
   if (static_cast<std::size_t>(parameters.size()) !=
       kernel_function.numberOfParameters()) {
@@ -118,36 +118,7 @@ void GaussianProcessBase::setParameters(const Eigen::VectorXd &parameters) {
   if (nullptr != samples) {
     updateKernelMatrix();
   }
-};
-
-namespace {
-Eigen::MatrixXd compute_V_Vtrasp(const Eigen::VectorXd &v) {
-  Eigen::MatrixXd result(v.size(), v.size());
-  for (Eigen::Index r = 0; r < v.size(); ++r) {
-    for (Eigen::Index c = 0; c < v.size(); ++c) {
-      result(r, c) = v(r) * v(c);
-    }
-  }
-  return result;
 }
-
-Eigen::MatrixXd
-compute_kernel_gradient(const gauss::gp::ParameterHandler &handler,
-                        const std::vector<Eigen::VectorXd> &samples) {
-  Eigen::MatrixXd result(samples.size(), samples.size());
-  Eigen::Index row = 0, col;
-  for (auto it = samples.begin(); it != samples.end(); ++it, ++row) {
-    col = row;
-    for (auto it2 = it; it2 != samples.end(); ++it2, ++col) {
-      result(row, col) = handler.evaluate_gradient(*it, *it2);
-      if (col != row) {
-        result(col, row) = result(row, col);
-      }
-    }
-  }
-  return result;
-}
-} // namespace
 
 double GaussianProcessBase::getLogLikelihood() const {
   double result = 0.0;
@@ -160,22 +131,49 @@ double GaussianProcessBase::getLogLikelihood() const {
 }
 
 Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
-  Eigen::MatrixXd Y_Y = getOutputMatrix();
+  const auto parameters_numb = getKernelFunction().numberOfParameters();
+  const auto &samples = getTrainSet()->GetSamplesInput().GetSamples();
 
-  Eigen::VectorXd result(static_cast<Eigen::Index>(parameters.size()));
-  const Eigen::MatrixXd &kernel_inv = kernel->getKernelInv();
-  const auto &samples_input = samples->GetSamplesInput().GetSamples();
-  double M = static_cast<double>(samples_input.front().size());
-  Eigen::Index i = 0;
-  for (const auto &parameter : this->parameters) {
-    Eigen::MatrixXd kernel_gradient =
-        compute_kernel_gradient(*parameter, samples_input);
-    result(i) = -M * (kernel_inv * kernel_gradient).trace();
-    result(i) += (Y_Y * kernel_inv * kernel_gradient * kernel_inv).trace();
-    result(i) *= 0.5;
-    ++i;
+  std::vector<Eigen::MatrixXd> kernel_matrix_gradients;
+  {
+    kernel_matrix_gradients.reserve(parameters_numb);
+    for (std::size_t p = 0; p < parameters_numb; ++p) {
+      kernel_matrix_gradients.emplace_back(
+          static_cast<Eigen::Index>(samples.size()),
+          static_cast<Eigen::Index>(samples.size()));
+    }
+    auto fill_kernel_matrix_gradients_at =
+        [&kernel_function = getKernelFunction(), &samples,
+         &kernel_matrix_gradients](const std::size_t r, const std::size_t c) {
+          auto grad = kernel_function.getGradient(samples[r], samples[c]);
+          for (std::size_t k = 0; k < grad.size(); ++k) {
+            kernel_matrix_gradients[k](r, c) = grad[k];
+            if (r != c) {
+              kernel_matrix_gradients[k](c, r) =
+                  kernel_matrix_gradients[k](r, c);
+            }
+          }
+        };
+    for (std::size_t r = 0; r < samples.size(); ++r) {
+      for (std::size_t c = r; c < samples.size(); ++c) {
+        fill_kernel_matrix_gradients_at(r, c);
+      }
+    }
   }
-  return -result;
+
+  Eigen::MatrixXd YY = getOutputMatrix();
+  Eigen::VectorXd result(static_cast<Eigen::Index>(parameters_numb));
+  const Eigen::MatrixXd &kernel_inv = getKernelMatrixInverse();
+  double M = static_cast<double>(samples.front().size());
+  for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(parameters_numb);
+       ++i) {
+    const auto &gradient_matrix =
+        kernel_matrix_gradients[static_cast<std::size_t>(i)];
+    result(i) = -M * (kernel_inv * gradient_matrix).trace();
+    result(i) += (YY * kernel_inv * gradient_matrix * kernel_inv).trace();
+    result(i) *= 0.5;
+  }
+  return result;
 };
 
 void GaussianProcessBase::train(::train::Trainer &trainer) {

@@ -10,6 +10,8 @@
 #include <GaussianProcess/components/OutputMatrix.h>
 
 namespace gauss::gp {
+OutputMatrix::~OutputMatrix() = default;
+
 const Eigen::MatrixXd &OutputMatrix::getOutputMatrix() const {
   return output_matrix->access();
 }

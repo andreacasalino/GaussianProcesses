@@ -16,10 +16,12 @@ class SymmetricMatrixExpandable;
 
 class KernelMatrix : virtual public TrainSetAware, public CovarianceAware {
 public:
+  ~KernelMatrix();
+
   /**
    * @return The kernel of the process.
-   * The kernel is lazy computed, as is assumed equal to null before actually
-   * adding samples to the process.
+   * The kernel is lazy computed, as is assumed equal to null before
+   * actually adding samples to the process.
    * @throw In case the kernel was not computed as no samples are available
    */
   Eigen::MatrixXd getCovariance() const override { return getKernelMatrix(); }
@@ -59,6 +61,7 @@ protected:
   const Eigen::MatrixXd &getKernelMatrixInverse() const;
   const Decomposition &getKernelMatrixDecomposition() const;
 
+  void updateKernelFuction(KernelFunctionPtr new_kernel);
   void updateKernelMatrix();
   void resetKernelMatrix();
 

@@ -12,6 +12,8 @@
 #include <GaussianUtils/Utils.h>
 
 namespace gauss::gp {
+KernelMatrix::~KernelMatrix() = default;
+
 const Eigen::MatrixXd &KernelMatrix::getKernelMatrix() const {
   return kernel_matrix->access();
 }
@@ -62,12 +64,16 @@ void KernelMatrix::resetKernelMatrix() {
       });
 }
 
-KernelMatrix::KernelMatrix(KernelFunctionPtr new_kernel)
-    : kernelFunction(std::move(new_kernel)) {
+void KernelMatrix::updateKernelFuction(KernelFunctionPtr new_kernel) {
+  kernelFunction = std::move(new_kernel);
+  void resetKernelMatrix();
+}
+
+KernelMatrix::KernelMatrix(KernelFunctionPtr new_kernel) {
   if (nullptr == new_kernel) {
     throw Error("empty kernel function");
   }
-  resetKernelMatrix();
+  updateKernelFuction(std::move(new_kernel));
 }
 
 double KernelMatrix::getCovarianceDeterminant() const {

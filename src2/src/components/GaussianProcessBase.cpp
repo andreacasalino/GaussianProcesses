@@ -7,6 +7,8 @@
 
 #include <GaussianProcess/components/GaussianProcessBase.h>
 
+#include "Common.h"
+
 namespace gauss::gp {
 GaussianProcessBase::GaussianProcessBase(KernelFunctionPtr kernel,
                                          const std::size_t input_space_size,
@@ -165,12 +167,15 @@ Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
   Eigen::VectorXd result(static_cast<Eigen::Index>(parameters_numb));
   const Eigen::MatrixXd &kernel_inv = getKernelMatrixInverse();
   double M = static_cast<double>(samples.front().size());
+  Eigen::MatrixXd B =
+      kernel_inv * YY - Eigen::MatrixXd::Identity(YY.rows(), YY.rows()) *
+                            static_cast<float>(getOutputStateSpaceSize());
   for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(parameters_numb);
        ++i) {
     const auto &gradient_matrix =
         kernel_matrix_gradients[static_cast<std::size_t>(i)];
-    result(i) = -M * (kernel_inv * gradient_matrix).trace();
-    result(i) += (YY * kernel_inv * gradient_matrix * kernel_inv).trace();
+    Eigen::MatrixXd A = kernel_inv * gradient_matrix;
+    result(i) = trace_product(A, B);
     result(i) *= 0.5;
   }
   return result;

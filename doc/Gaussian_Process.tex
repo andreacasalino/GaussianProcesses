@@ -161,7 +161,9 @@ K^{-1} M_{YY}
 &=& -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
 -\frac{1}{2} Tr \bigg [ \frac{\partial (K^{-1}) }{\partial \theta_t} M_{YY} \bigg ] \\
 &=& -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
-+\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} M_{YY} \bigg ]
++\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} M_{YY} \bigg ] \\
+&=&
+\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg (K^{-1} M_{YY} - I_N \bigg ) \bigg ]
  \label{eq:L_grad}
 \end{eqnarray}
 
@@ -177,6 +179,11 @@ S = \bigg \langle
 \hdots
 \begin{bmatrix} X^N \\ \hline y^N_1 \\ \vdots \\ y^N_o \end{bmatrix} 
 \bigg \rangle
+= \bigg \langle
+\begin{bmatrix} X^1 \\ \hline Y^1 \end{bmatrix}
+\hdots
+\begin{bmatrix} X^N \\ \hline Y^N \end{bmatrix}
+ \bigg \rangle 
 \end{eqnarray}
 
 \subsection{Predictions}
@@ -269,7 +276,11 @@ with:
 M^o_{YY} = \sum_{i=0}^o \bigg (
 \begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
 \begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
-\bigg )
+\bigg ) = \begin{bmatrix}
+<Y^1, Y^1> & \hdots  & <Y^1, Y^N> \\ 
+\vdots & \ddots & \vdots \\ 
+<Y^N, Y^1> & \hdots & <Y^N, Y^N>
+\end{bmatrix}
 \end{eqnarray}
 keeping again in mind that $\mathcal{L}$ is a function of the hyperparameters $\Theta$:
 \begin{eqnarray}
@@ -281,9 +292,7 @@ K^{-1}\big (\Theta \big ) M^o_{YY}
 The gradient can be computed with the same steps that led to 
 eq. (\ref{eq:L_grad}), leading to:
 \begin{eqnarray}
-\frac{\partial \mathcal{L}}{\partial \theta_t} = 
--\frac{o}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
-+\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} M^o_{YY} \bigg ]
+\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg (K^{-1} M^o_{YY} - o I_N \bigg ) \bigg ]
 \end{eqnarray}
 
 \section{The Kernel function}

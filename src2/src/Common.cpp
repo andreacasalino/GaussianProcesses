@@ -43,14 +43,14 @@ void compute_asymmetric_block(
 } // namespace
 
 void SymmetricMatrixExpandable::expand(const Eigen::Index new_size) {
-  Eigen::MatrixXd new_matrix(new_size, new_size);
   const auto old_size = matrix.rows();
+  if (new_size <= old_size) {
+    throw Error{"invalid new size for SymmetricMatrixExpandable"};
+  }
+  Eigen::MatrixXd new_matrix(new_size, new_size);
   if (0 == old_size) {
     compute_symmetric_block(new_matrix, emplacer, IndexInterval{0, new_size});
   } else {
-    if (new_size <= old_size) {
-      throw Error{"invalid new size for SymmetricMatrixExpandable"};
-    }
     new_matrix.block(0, 0, old_size, old_size) = matrix;
     compute_symmetric_block(new_matrix, emplacer,
                             IndexInterval{old_size, new_size});
@@ -61,6 +61,7 @@ void SymmetricMatrixExpandable::expand(const Eigen::Index new_size) {
             .transpose();
   }
   matrix = std::move(new_matrix);
+  throw std::runtime_error{"chiarire se esiste move per MatrixXd"};
 }
 
 double trace_product(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {

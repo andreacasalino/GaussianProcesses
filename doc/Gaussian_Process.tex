@@ -344,26 +344,25 @@ Hyperparameters:
 
 Fuction evaluation:
 \begin{eqnarray}
-k(x,y,\Theta) 
-&=& 
-\theta_0^2 + \theta_1^2 \big ( x-\mu \big )^T \big ( x-\mu \big ) \\
+k(a,b,\Theta) 
 &=&
-\theta_0^2 + \theta_1^2 x^T y + \theta_1^2 \mu^T \mu
-- \mu^T \theta_1^2 \big ( x + y \big )
+\theta_0^2 + \theta_1^2 \big ( a-\mu \big )^T \big ( b-\mu \big ) \\
+&=&
+\theta_0^2 + \theta_1^2 \big ( <\mu, \mu> + <a, b> - <\mu, a + b> \big )
 \end{eqnarray}
 
 Function gradient:
 \begin{eqnarray}
-\frac{\partial k (x,y)}{\partial \theta_0} &=& 2 \theta_0 \\
-\frac{\partial k (x,y)}{\partial \theta_1} &=& 2 \theta_1 \big ( x - \mu \big ) \big ( y - \mu \big ) \\
+\frac{\partial k (a,b)}{\partial \theta_0} &=& 2 \theta_0 \\
+\frac{\partial k (a,b)}{\partial \theta_1} &=& 2 \theta_1 \big ( a - \mu \big ) \big ( b - \mu \big ) \\
 \begin{bmatrix} 
-\frac{\partial k (x,y)}{\partial \mu_1} 
+\frac{\partial k (a,b)}{\partial \mu^1} 
 \\ 
 \vdots
 \\ 
-\frac{\partial k (x,y)}{\partial \mu_o} 
+\frac{\partial k (a,b)}{\partial \mu^o} 
 \end{bmatrix}
-&=& 2 \theta_1^2 \mu - \theta_1^2 \big ( x + y \big )
+&=& 2 \theta_1^2 \mu - \theta_1^2 \big ( a + b \big )
 \end{eqnarray}
 
 \subsection{Squared exponential}
@@ -375,22 +374,22 @@ Hyperparameters:
 
 Fuction evaluation:
 \begin{eqnarray}
-k(x,y,\Theta) 
+k(a,b,\Theta) 
 &=& 
-\theta_0^2 exp \big ( -\theta_1^2 \left \| x - y \right \| ^2_2 \big ) \\
+\theta_0^2 exp \big ( -\theta_1^2 \left \| a - b \right \| ^2_2 \big ) \\
 &=&
-\theta_0^2 exp \big ( -\theta_1^2 (x-y)^T (x-y) \big )
+\theta_0^2 exp \big ( -\theta_1^2 (a-b)^T (a-b) \big )
 \end{eqnarray}
 
 Function gradient:
 \begin{eqnarray}
-\frac{\partial k (x,y)}{\partial \theta_0} &=& 2 \theta_0 exp \big ( 
--\theta_1^2 \left \| x - y \right \| ^2_2 
+\frac{\partial k (a,b)}{\partial \theta_0} &=& 2 \theta_0 exp \big ( 
+-\theta_1^2 \left \| a - b \right \| ^2_2 
 \big ) \\
-\frac{\partial k (x,y)}{\partial \theta_1} &=& \theta_0^2 exp \big ( 
--\theta_1^2 \left \| x - y \right \| ^2_2 
+\frac{\partial k (a,b)}{\partial \theta_1} &=& \theta_0^2 exp \big ( 
+-\theta_1^2 \left \| a - b \right \| ^2_2 
 \big )
-\big ( -2 \theta_1(x-y)^T(x-y) \big )
+\big ( -2 \theta_1(a-b)^T(a-b) \big )
 \end{eqnarray}
 
 \subsection{What to expect from the predictions}

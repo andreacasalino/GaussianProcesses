@@ -14,55 +14,54 @@
 \newpage
 \section{What is a Gaussian Process?}
 
-\textbf{Gaussian Processes} \cite{GP_general_01}, \cite{GP_general_02}, a.k.a. \textbf{GP}s, are predictive models able to approximate a multivariate scalar function:
+\textbf{Gaussian Processes} \cite{GP_general_01}, \cite{GP_general_02}, a.k.a. \textbf{GP}s, are
+data driven probabiistic models able to approximate generic multivariate and possibly vectorial real functions $G$ defined like that:
 \begin{eqnarray}
-g : \mathcal{I} \rightarrow \mathcal{O} \\
-\mathcal{I} \subseteq \mathbb{R}^i \,\,\,\,\, \mathcal{O} \subseteq \mathbb{R}
-\end{eqnarray}
-or a  multivariate vectorial one:
-\begin{eqnarray}
-G : \mathcal{I} \rightarrow \mathcal{O} \\
-\mathcal{I} \subseteq \mathbb{R}^i \,\,\,\,\, \mathcal{O} \subseteq \mathbb{R}^o 
+G : \mathcal{I} \subseteq \mathbb{R}^i \rightarrow \mathcal{O} \subseteq \mathbb{R}^o
 \end{eqnarray}
 
-\textbf{GP}s are essentially defined by a \textbf{Training Set} and a \textbf{Kernel Function}.
-The \textbf{Training Set} is a collection of points pertaining to $\mathcal{I}$, for which the corresponding output inside $\mathcal{O}$ is known \footnote{To be precise, the exact value might be unknown due to noise, but a also a close one is fine.}.
+In essence, \textbf{GP}s are defined by their own \textbf{Training Set} and \textbf{Kernel Function}.
+The \textbf{Training Set} is a collection of points pertaining to $\mathcal{I}$, for which the corresponding output, or at least thst value summed with noise, inside $\mathcal{O}$ is known.
 \\
-The concept of \textbf{Kernel Function} is extensively detailed at Section \ref{sec:kernel_function}.
+The \textbf{Kernel Function} is something that has to be chosen and typical of the kind of function to approximate. Definitions and meanings of possible \textbf{Kernel Function} are extensively detailed in Section \ref{sec:kernel_function}.
+\\
+The aim of \textbf{GP}s is to be able to predict the value of $G$ for a point inside $\mathcal{I}$ that is not inside of the trainin set. In particular, this is done in probabilistic terms, as the result of the prediction is not just a value, but a conditioned Gaussian distribution.
+\\
+Section METTERE discusses the formulation of scalar \textbf{GP}, i.e. cases for which $\mathcal{O} \subseteq \mathbb{R}$. Insted, Section METTERE focuses on the more general cases. The reader will notice that the 2 formulations are not in contradiction and the decision to discuss them into 2 separate Sections is only the purpose of a better readability. 
 
 \section{Scalar case}
 
-The training set of a scalar \textbf{GP} is formally defined in this way:
+The training set of a scalar \textbf{GP} is a collection of points inside $\mathcal{I}$ for which the corresponding value inside $\mathcal{O}$ is known. More formally:
 \begin{eqnarray}
 S &=& 
-\bigg \langle 
-\begin{bmatrix} X^1 \\ y^1 \end{bmatrix}
-\hdots
-\begin{bmatrix} X^N \\ y^N \end{bmatrix} 
-\bigg \rangle \\
-\mathcal{X}^S &=& \big \lbrace X^1 \hdots X^N \big \rbrace \subseteq \mathcal{I} \\
-\mathcal{Y}^S &=& \big \lbrace y^1 \hdots y^N \big \rbrace \subseteq \mathbb{R}
+\bigg \lbrace 
+\begin{bmatrix} X_1 \\ \downarrow \\ y_1 \end{bmatrix}, 
+\hdots,  
+\begin{bmatrix} X_N \\ \downarrow \\ y_N \end{bmatrix}
+\bigg \rbrace \\
+\big \lbrace X_1, \hdots, X_N \big \rbrace &\subset & \mathbb{R}^i \\
+\big \lbrace y_1, \hdots, y_N \big \rbrace &\subset & \mathbb{R}
 \end{eqnarray}
 
 \textbf{GP}s consider values inside the training set to be somehow correlated, as they were generated from the same underlying function.
-In particular, the joint probability distribution describing such correlation is assumed to be a \textbf{Gaussian Distribution}:
+In particular, the joint probability distribution describing such correlation is assumed to be the following 0 mean \textbf{Gaussian Distribution}:
 \begin{eqnarray}
-\begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} \sim \mathcal{N} 
+\begin{bmatrix} y_1 \\ \vdots \\ y_N \end{bmatrix} \sim \mathcal{N} 
 \bigg (
-0, K(\mathcal{X}^S)
-\bigg ) 
+0, K \big( X_{1, \hdots, N} \big)
+\bigg )  
 \label{eq:y_joint_distr}
 \end{eqnarray}
 
-$K$ is the kernel covariance, whose values depend on the definition of a kernel function $k$ (refer to Section \ref{sec:kernel_function}):
+$K$ is a covariance matrix induced by the choice of a certain kernel function $k$ (refer also to Section \ref{sec:kernel_function}):
 \begin{eqnarray}
-K = K(\mathcal{X}^S, \Theta) = \begin{bmatrix}
-k(X^1, X^1, \Theta) & \hdots & k(X^1, X^N, \Theta) \\ 
+K = \begin{bmatrix}
+k(X_1, X_1, \Theta) & \hdots & k(X_1, X_N, \Theta) \\ 
 \vdots & \ddots & \vdots \\ 
-k(X^N, X^1, \Theta) & \hdots & k(X^N, X^N, \Theta) \\ 
+k(X_N, X_1, \Theta) & \hdots & k(X_N, X_N, \Theta) \\ 
 \end{bmatrix}
 \end{eqnarray}
-where $\Theta$ is a vector of hyperparamters that can be tuned by training (see Sections \ref{sec:train_scalar} and \ref{sec:train_vectorial}) the model over a specific training set:
+where $\Theta$ is a vector of hyperparameters that are typical of the chosen kernel function and whose values can be tuned also by training (see Sections \ref{sec:train_scalar} and \ref{sec:train_vectorial}):
 \begin{eqnarray}
 \Theta = \begin{bmatrix} \theta_1 & \hdots & \theta_m \end{bmatrix} ^ T
 \end{eqnarray}
@@ -70,56 +69,74 @@ where $\Theta$ is a vector of hyperparamters that can be tuned by training (see 
 \subsection{Predictions}
 \label{sec:predictions_scalar}
 
-The aim of \textbf{GP}s is to be able to make predictions about the output value $y(X)$ of an input $X$ that is outside the training set. This is done assuming a joint correlation between such point and the ones in the training set: 
+The aim of a \textbf{GP} is to be able to make predictions about the output value $y = G(X)$ pertaining o an input $X$ that is outside of the training set. This is done assuming again a joint Gaussian correlation between such an additional point and all the ones in the training set: 
 \begin{eqnarray}
-\begin{bmatrix} y(X) \\ \hline y^1 \\ \vdots \\ y^N \end{bmatrix} \sim \mathcal{N} 
+\begin{bmatrix} y = G(X) \\ \hline y_1 \\ \vdots \\ y_N \end{bmatrix} \sim \mathcal{N} 
 \bigg (
 \begin{bmatrix} 0 \\ \hline 0 \end{bmatrix},
 \begin{bmatrix}
-k(X,X, \Theta) & \vline & K_x^T \\ 
+k(X,X, \Theta) & \vline & K_x(X, X_{1,\hdots,N}, \Theta)^T \\ 
 \hline
-K_x(X, \mathcal{X}^S, \Theta) & \vline & K(\mathcal{X}^S, \Theta)
+K_x(X, X_{1,\hdots,N}, \Theta) & \vline & K
 \end{bmatrix}
 \bigg )
 \end{eqnarray}
-where $K_x$ is a vector obtained in the following way:
+where $K_x$ is a vector assembled in this way:
 \begin{eqnarray}
-K_x(X, \mathcal{X}^S, \Theta) = \begin{bmatrix}
-k(X, X^1 , \Theta) & \hdots & k(X, X^N , \Theta)
+K_x(X, X_{1,\hdots,N}, \Theta) = \begin{bmatrix}
+k(X, X_1 , \Theta) & \hdots & k(X, X_N , \Theta)
 \end{bmatrix} ^ T
+\label{eq:additional_joint}
 \end{eqnarray}
 
-As the joint distribution is \textbf{Gaussian}, the conditioned distribution can be obtained as follows:
+Since eq. \ref{eq:additional_joint} describes a Gaussian distibution, the conditioned distribution involving only $X$ can be obtained as follows:
 \begin{eqnarray}
-y(X | \mathcal{X}^S) \sim \mathcal{N} \bigg ( 
-K_x^T K^{-1} \begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} , 
-k(X,X) - K_x^T K^{-1}K_x
-\bigg )
+y(X | X_{1,\hdots,N}) 
+\sim \mathcal{N} \bigg ( 
+K_x K^{-1} \begin{bmatrix} y_1 \\ \vdots \\ y_N \end{bmatrix} , 
+\sigma_K(X)
+\bigg )  
+\label{eq:scalar_prediction}
+\end{eqnarray}
+where $\sigma_K(X)$ is the covariance of the conditioned distribution and can be computed as follows:
+\begin{eqnarray}
+\sigma_K(X) =
+k(X,X) - K_x K^{-1} K_x^T
+\end{eqnarray}
+
+The distribution described by eq. \ref{eq:scalar_prediction}, actually represents the prediction made by the \textbf{GP}. Eq. \ref{eq:scalar_prediction} can also be rewritten as follows:
+\begin{eqnarray}
+y(X | X_{1,\hdots,N}) 
+\sim \mathcal{N} \bigg (
+\begin{bmatrix} y_1 & \hdots & y_N \end{bmatrix}
+K^{-1} K_x^T, 
+\sigma_K(X)
+\bigg ) 
 \end{eqnarray}
 
 \subsection{Training}
 \label{sec:train_scalar}
 
-Training is done maximizing the likelihood $L$ of the training set w.r.t. $\Theta$.
+Training is done maximizing the likelihood $L$ of the training set w.r.t. the hyperparameters $\Theta$ of the kernel function.
 Since eq. (\ref{eq:y_joint_distr}) describes a \textbf{Gaussian} distribution, the likelihood can be computed as follows:
 \begin{eqnarray}
-L(\mathcal{Y}^S) = 
-\frac{1}{\sqrt{(2 \pi)^N \left | K(\mathcal{X}^S) \right | }}
+L = 
+\frac{1}{\sqrt{(2 \pi)^N \left | K \right | }}
 exp \bigg ( - \frac{1}{2}
-\begin{bmatrix} y^1 & \hdots & y^N \end{bmatrix} 
+\begin{bmatrix} y_1 & \hdots & y_N \end{bmatrix} 
 K^{-1}
-\begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} 
+\begin{bmatrix} y_1 \\ \vdots \\ y_N \end{bmatrix} 
 \bigg ) 
 \end{eqnarray}
 At this point, the property described in appendix \ref{sec:trace_property} can be exploited to rewrite the above equation as follows:
 \begin{eqnarray}
-L(\mathcal{Y}^S) &=& 
+L &=& 
 \frac{1}{\sqrt{(2 \pi)^N \left | K \right | }}
 exp \bigg ( - \frac{1}{2}
 Tr \bigg [ 
 K^{-1}
-\begin{bmatrix} y^1 \\ \vdots \\ y^N \end{bmatrix} 
-\begin{bmatrix} y^1 & \hdots & y^N \end{bmatrix} 
+\begin{bmatrix} y_1 \\ \vdots \\ y_N \end{bmatrix} 
+\begin{bmatrix} y_1 & \hdots & y_N \end{bmatrix} 
 \bigg ]
 \bigg ) \\
 &=&
@@ -163,78 +180,69 @@ K^{-1} M_{YY}
 &=& -\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg ]
 +\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} K^{-1} M_{YY} \bigg ] \\
 &=&
-\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg (K^{-1} M_{YY} - I_N \bigg ) \bigg ]
+\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg (K^{-1} M_{YY} - I_{N \times N} \bigg ) \bigg ]
  \label{eq:L_grad}
 \end{eqnarray}
 
-Choosing your favourite gradient-based approach you can then tune the model.
+Choosing your favourite gradient-based approach you can tune the model, byt computing the gradient as described by the above equation.
 
 \section{Vectorial case}
 
-Vectorial \textbf{GP}s are defined as similarly done for scalar \textbf{GP}s.
-The training set should account for the multi-dimensionality of the process and is therefore defined in this way:
+Vectorial \textbf{GP}s are defined as similarly done for the scalar case detailed in the previous Section.
+The training set should now account for the multi-dimensionality of the process and is therefore defined in this way:
 \begin{eqnarray}
-S = \bigg \langle
-\begin{bmatrix} X^1 \\ \hline y^1_1 \\ \vdots \\ y^1_o \end{bmatrix} 
-\hdots
-\begin{bmatrix} X^N \\ \hline y^N_1 \\ \vdots \\ y^N_o \end{bmatrix} 
-\bigg \rangle
-= \bigg \langle
-\begin{bmatrix} X^1 \\ \hline Y^1 \end{bmatrix}
-\hdots
-\begin{bmatrix} X^N \\ \hline Y^N \end{bmatrix}
- \bigg \rangle 
+S &=& 
+\bigg \lbrace 
+\begin{bmatrix} X_1 \\ \downarrow \\ Y_1 \end{bmatrix}, 
+\hdots,  
+\begin{bmatrix} X_N \\ \downarrow \\ Y_N \end{bmatrix}
+\bigg \rbrace \\
+\big \lbrace X_1, \hdots, X_N \big \rbrace &\subset & \mathbb{R}^i \\
+\big \lbrace Y_1, \hdots, Y_N \big \rbrace &\subset & \mathbb{R}^o
+\end{eqnarray}
+The generic $Y_k$ is a vector made of $o$ components:
+\begin{eqnarray}
+Y_k = \begin{bmatrix} y_k^1 & \hdots & y_k^o \end{bmatrix}^T
 \end{eqnarray}
 
 \subsection{Predictions}
 
 A vectorial \textbf{GP} is actually a composition of independent scalar \textbf{GP}s.
-The prediction is done as similarly discussed in Section \ref{sec:predictions_scalar}, doing $o$ predictions at the same time. Indeed, for each $i \in \lbrace 0, \hdots ,o \rbrace$ holds that:
+The prediction is done as similarly discussed in Section \ref{sec:predictions_scalar}, doing $o$ predictions at the same time. Indeed, for each component $y^{k \in \lbrace 1, \hdots ,o\rbrace}$ of the prediction  holds equation \ref{eq:scalar_prediction}. Therefore, the complete prediction can be obtained in this way:
 \begin{eqnarray}
-\begin{bmatrix} y_i(X) \\ \hline y_i^1 \\ \vdots \\ y_i^N \\ \end{bmatrix} \sim
-\mathcal{N} \bigg ( 
-\begin{bmatrix} 0 \\ \hline 0 \end{bmatrix},
-\begin{bmatrix}
-k(X,X, \Theta) & \vline & K_x^T \\ 
-\hline
-K_x(X, \mathcal{X}^S, \Theta) & \vline & K(\mathcal{X}^S, \Theta)
-\end{bmatrix}
-\bigg )
+Y(X| X_{1,\hdots,N}) = \begin{bmatrix}
+\mathcal{N} \bigg (
+\begin{bmatrix} y^1_1 & \hdots & y^1_N \end{bmatrix}
+K^{-1} K_x^T, 
+\sigma_K(X)
+\bigg ) \\ 
+\vdots \\
+\mathcal{N} \bigg (
+\begin{bmatrix} y^o_1 & \hdots & y^o_N \end{bmatrix}
+K^{-1} K_x^T, 
+\sigma_K(X)
+\bigg ) 
+\end{bmatrix} 
 \end{eqnarray}
-
-Then, the complete prediction is obtained in this way:
+the above expression can be further elaborated, leading to the distribution of an isotropic Gaussian:
 \begin{eqnarray}
-Y(X | X^S, \Theta) &=&
-\begin{bmatrix} y_1(X | X^S, \Theta) \\ \vdots \\ y_o(X | X^S, \Theta) \end{bmatrix} \\
-&\sim&
-\begin{bmatrix}
-\mathcal{N} \bigg (  
-K_x^T K^{-1} \begin{bmatrix} y_1^1 \\ \vdots \\ y_1^N \end{bmatrix} 
-, k(X,X) - K_x^T K^{-1}K_x 
-\bigg )
-\\
-\vdots
-\\
-\mathcal{N} \bigg (  
-K_x^T K^{-1} \begin{bmatrix} y_o^1 \\ \vdots \\ y_o^N \end{bmatrix} 
-, k(X,X) - K_x^T K^{-1}K_x 
-\bigg )
-\end{bmatrix}  \\
-&\sim&
-\mathcal{N} \bigg ( 
-\bigg (
-K_x^T K^{-1}
-\begin{bmatrix}
-y_1^1 & \hdots & y_o^1 \\
+Y(X| X_{1,\hdots,N}) 
+&\sim &
+\mathcal{N} \bigg (
+\begin{bmatrix} 
+y^1_1 & \hdots & y^1_N \\
 \vdots & \ddots & \vdots \\
-y_1^N & \hdots & y_o^N
-\end{bmatrix}
-\bigg )^T
- ,K_x^T K^{-1}K_x 
-I_{o,o}
+y^o_1 & \hdots & y^o_N
+\end{bmatrix} K^{-1} K_x^T
+, \sigma_K(X) I_{o \times o}
+\bigg )
+\\
+&\sim &
+\mathcal{N} \bigg (
+\begin{bmatrix} Y_1 | & \hdots & | Y_N \end{bmatrix} K^{-1} K_x^T
+, \sigma_K(X) I_{o \times o}
 \bigg )
 \end{eqnarray}
-
 
 \subsection{Training}
 \label{sec:train_vectorial}
@@ -242,27 +250,27 @@ I_{o,o}
 The logarithmic likelihood is the summation of the logarithmic likelihood of each process that compose the vectorial \textbf{GP}, which leads, omitting constant terms, to:
 \begin{eqnarray}
 \mathcal{L} &=& 
-\sum_{i=0}^o \bigg (
+\sum_{k=1}^o \bigg (
 -\frac{1}{2} log \big (\left | K \right | \big )
 -\frac{1}{2} Tr \bigg [
 K^{-1} 
-\begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
-\begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
+\begin{bmatrix} y^i_1 \\ \vdots \\ y^i_N \end{bmatrix}
+\begin{bmatrix} y^i_1 & \hdots & y^i_N \end{bmatrix}
 \bigg ] \bigg )  \\
 &=&
 -\frac{o}{2} log \big (\left | K \right | \big )
--\frac{1}{2} \sum_{i=0}^o \bigg ( Tr \bigg [
+-\frac{1}{2} \sum_{k=1}^o \bigg ( Tr \bigg [
 K^{-1} 
-\begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
-\begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
+\begin{bmatrix} y^i_1 \\ \vdots \\ y^i_N \end{bmatrix}
+\begin{bmatrix} y^i_1 & \hdots & y^i_N \end{bmatrix}
 \bigg ] 
 \bigg ) \\
 &=&
 -\frac{o}{2} log \big (\left | K \right | \big )
 -\frac{1}{2} Tr \bigg [
-K^{-1} \sum_{i=0}^o \bigg (
-\begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
-\begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
+K^{-1} \sum_{k=1}^o \bigg (
+\begin{bmatrix} y^i_1 \\ \vdots \\ y^i_N \end{bmatrix}
+\begin{bmatrix} y^i_1 & \hdots & y^i_N \end{bmatrix}
 \bigg )
 \bigg ] \\
 &=&
@@ -273,13 +281,26 @@ K^{-1} M^o_{YY}
 \end{eqnarray}
 with:
 \begin{eqnarray}
-M^o_{YY} = \sum_{i=0}^o \bigg (
-\begin{bmatrix} y^1_i \\ \vdots \\ y^N_i \end{bmatrix}
-\begin{bmatrix} y^1_i & \hdots & y^N_i \end{bmatrix}
-\bigg ) = \begin{bmatrix}
-<Y^1, Y^1> & \hdots  & <Y^1, Y^N> \\ 
+M^o_{YY} 
+&=& \sum_{k=1}^o \bigg (
+\begin{bmatrix} y^i_1 \\ \vdots \\ y^i_N \end{bmatrix}
+\begin{bmatrix} y^i_1 & \hdots & y^i_N \end{bmatrix}
+\bigg ) \\
+&=& \sum_{k=1}^o 
+\begin{bmatrix}
+y^i_1 y^i_1 & \hdots & y^i_1 y^i_N \\ 
 \vdots & \ddots & \vdots \\ 
-<Y^N, Y^1> & \hdots & <Y^N, Y^N>
+y^i_N y^i_1 & \hdots & y^i_N y^i_N
+\end{bmatrix} \\
+&=& \begin{bmatrix}
+\sum_{k=1}^o y^i_1 y^i_1 & \hdots & \sum_{k=1}^o y^i_1 y^i_N \\ 
+\vdots & \ddots & \vdots \\ 
+\sum_{k=1}^o y^i_N y^i_1 & \hdots & \sum_{k=1}^o y^i_N y^i_N
+\end{bmatrix} \\
+&=& \begin{bmatrix}
+<Y_1, Y_1> & \hdots  & <Y_1, Y_N> \\ 
+\vdots & \ddots & \vdots \\ 
+<Y_N, Y_1> & \hdots & <Y_N, Y_N>
 \end{bmatrix}
 \end{eqnarray}
 keeping again in mind that $\mathcal{L}$ is a function of the hyperparameters $\Theta$:
@@ -292,10 +313,10 @@ K^{-1}\big (\Theta \big ) M^o_{YY}
 The gradient can be computed with the same steps that led to 
 eq. (\ref{eq:L_grad}), leading to:
 \begin{eqnarray}
-\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg (K^{-1} M^o_{YY} - o I_N \bigg ) \bigg ]
+\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg (K^{-1} M^o_{YY} - o I_{N \times N} \bigg ) \bigg ]
 \end{eqnarray}
 
-\section{The Kernel function}
+\section{Kernel functions}
 \label{sec:kernel_function}
 
 The kernel function describes correlation between inputs. Ideally, it should assume a low value for inputs that are "far", w.r.t. a certain metrics, from each other and high values for those inputs that are close.
@@ -306,9 +327,9 @@ Clearly, the gradient of $K$ can be computed element by element:
 \begin{eqnarray}
 \frac{\partial K}{\partial \theta_t} = 
 \begin{bmatrix}
-\frac{\partial k(X^1, X^1)}{\partial \theta_t} & \hdots & \frac{\partial k(X^1, X^N)}{\partial \theta_t} \\ 
+\frac{\partial k(X_1, X_1)}{\partial \theta_t} & \hdots & \frac{\partial k(X_1, X_N)}{\partial \theta_t} \\ 
 \vdots & \ddots & \vdots \\ 
-\frac{\partial k(X^N, X^1)}{\partial \theta_t} & \hdots & \frac{\partial k(X^N, X^N)}{\partial \theta_t} \\ 
+\frac{\partial k(X_N, X_1)}{\partial \theta_t} & \hdots & \frac{\partial k(X_N, X_N)}{\partial \theta_t} \\ 
 \end{bmatrix}
 \end{eqnarray}
 \\
@@ -372,11 +393,12 @@ Function gradient:
 \big ( -2 \theta_1(x-y)^T(x-y) \big )
 \end{eqnarray}
 
-\section{What to expect from the predictions}
+\subsection{What to expect from the predictions}
 
 TODO spiegare che incertezza aumenta tanto piu sonon lontano da punti in training set
 
 \appendix
+
 \section{Trace property}
 \label{sec:trace_property}
 
@@ -418,7 +440,7 @@ a_n^T x
 <a_n, x>
 \end{bmatrix} \\
 &=&
-\sum_{i = 0}^n x_i <a_i, x>
+\sum_{i = 1}^n x_i <a_i, x>
 \label{eq:sum_dots_a}
 \end{eqnarray}
 where $a_i$ is the $i^{th}$ row of $A$.
@@ -438,7 +460,7 @@ a_1^T xx_1 & & \\
 \end{bmatrix}
 \bigg ] \\
 &=&
-\sum_{i = 0}^n x_i <a_i, x>
+\sum_{i = 1}^n x_i <a_i, x>
 \label{eq:sum_dots_b}
 \end{eqnarray}
 where we recognize that eq. (\ref{eq:sum_dots_a}) and (\ref{eq:sum_dots_b}) are identical.

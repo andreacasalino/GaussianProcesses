@@ -11,19 +11,18 @@
 #include <functional>
 
 namespace gauss::gp {
+using Emplacer = std::function<double(const Eigen::Index, const Eigen::Index)>;
+
 class SymmetricMatrixExpandable {
 public:
-  SymmetricMatrixExpandable(
-      const std::function<double(const Eigen::Index, const Eigen::Index)>
-          &emplacer)
-      : emplacer(emplacer), matrix(0, 0) {}
+  SymmetricMatrixExpandable(const Emplacer &emplacer);
 
   const Eigen::MatrixXd &access() const { return matrix; }
 
   void expand(const Eigen::Index new_size);
 
 private:
-  const std::function<double(const Eigen::Index, const Eigen::Index)> emplacer;
+  const Emplacer emplacer;
   Eigen::MatrixXd matrix;
 };
 

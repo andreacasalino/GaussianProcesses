@@ -107,12 +107,12 @@ public:
    * @return the input realizations
    * @throw when no samples are available
    */
-  const gauss::TrainSet &GetSamplesInput() const;
+  const std::vector<Eigen::VectorXd> &GetSamplesInput() const;
   /**
    * @return the output realizations
    * @throw when no samples are available
    */
-  const gauss::TrainSet &GetSamplesOutput() const;
+  const std::vector<Eigen::VectorXd> &GetSamplesOutput() const;
 
 private:
   std::unique_ptr<gauss::TrainSet> input;

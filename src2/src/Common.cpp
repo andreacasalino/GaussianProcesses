@@ -9,17 +9,18 @@
 #include <GaussianProcess/Error.h>
 
 namespace gauss::gp {
+SymmetricMatrixExpandable::SymmetricMatrixExpandable(const Emplacer &emplacer)
+    : emplacer(emplacer), matrix(0, 0) {}
+
 namespace {
 struct IndexInterval {
   Eigen::Index start;
   Eigen::Index end;
 };
 
-void compute_symmetric_block(
-    Eigen::MatrixXd &recipient,
-    const std::function<double(const Eigen::Index, const Eigen::Index)>
-        &emplacer,
-    const IndexInterval &indices) {
+void compute_symmetric_block(Eigen::MatrixXd &recipient,
+                             const Emplacer &emplacer,
+                             const IndexInterval &indices) {
   for (Eigen::Index r = indices.start; r < indices.end; ++r) {
     recipient(r, r) = emplacer(r, r);
     for (Eigen::Index c = r + 1; c < indices.end; ++c) {
@@ -29,11 +30,10 @@ void compute_symmetric_block(
   }
 }
 
-void compute_asymmetric_block(
-    Eigen::MatrixXd &recipient,
-    const std::function<double(const Eigen::Index, const Eigen::Index)>
-        &emplacer,
-    const IndexInterval &rows, const IndexInterval &cols) {
+void compute_asymmetric_block(Eigen::MatrixXd &recipient,
+                              const Emplacer &emplacer,
+                              const IndexInterval &rows,
+                              const IndexInterval &cols) {
   for (Eigen::Index r = rows.start; r < rows.end; ++r) {
     for (Eigen::Index c = cols.start; c < cols.end; ++c) {
       recipient(r, c) = emplacer(r, c);
@@ -68,7 +68,7 @@ double trace_product(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {
   Eigen::Index size = a.rows();
   double result = 0;
   for (Eigen::Index i = 0; i < size; ++i) {
-    result += a.row(i) * b.col(i);
+    result += a.row(i).dot(b.col(i));
   }
   return result;
 }

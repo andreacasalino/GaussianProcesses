@@ -54,17 +54,17 @@ void TrainSet::operator+=(const Eigen::VectorXd &sample) {
   *output += get_slice(sample, getInputStateSpaceSize() + 1, sample.size());
 }
 
-const gauss::TrainSet &TrainSet::GetSamplesInput() const {
+const std::vector<Eigen::VectorXd> &TrainSet::GetSamplesInput() const {
   if (nullptr == input) {
     throw gauss::gp::Error("Trying to access null input");
   }
-  return *input;
+  return input->GetSamples();
 };
 
-const gauss::TrainSet &TrainSet::GetSamplesOutput() const {
+const std::vector<Eigen::VectorXd> &TrainSet::GetSamplesOutput() const {
   if (nullptr == output) {
     throw gauss::gp::Error("Trying to access null input");
   }
-  return *output;
+  return output->GetSamples();
 };
 } // namespace gauss::gp

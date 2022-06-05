@@ -8,7 +8,7 @@
 
 #include <Common.h>
 #include <GaussianProcess/Error.h>
-#include <YYMatrices.h>
+#include <GaussianProcess/YYMatrices.h>
 
 namespace gauss::gp {
 YYMatrixTrain::YYMatrixTrain() {
@@ -24,16 +24,8 @@ YYMatrixTrain::YYMatrixTrain() {
 YYMatrixTrain::~YYMatrixTrain() = default;
 
 const Eigen::MatrixXd &YYMatrixTrain::getYYtrain() const {
+  YYtrain->resize(getTrainSet().GetSamplesInput().size());
   return YYtrain->access();
-}
-
-void KernelCovariance::updateKernelMatrix() {
-  const auto *train_set = getTrainSet();
-  if (nullptr == train_set) {
-    YYtrain->resize(0);
-    return;
-  }
-  YYtrain->resize(train_set->GetSamplesInput().size());
 }
 
 class YYResizableMatrix : public ResizableMatrix {
@@ -71,7 +63,7 @@ private:
 };
 
 YYMatrixPredict::YYMatrixPredict() {
-  YYtrain =
+  YYpredict =
       std::make_unique<YYResizableMatrix>([this](const Eigen::Index index) {
         const auto samples = this->getTrainSet()->GetSamplesOutput();
         return samples[static_cast<std::size_t>(index)];
@@ -79,15 +71,7 @@ YYMatrixPredict::YYMatrixPredict() {
 }
 
 const Eigen::MatrixXd &YYMatrixPredict::getYYpredict() const {
+  YYpredict->resize(getTrainSet().GetSamplesInput().size());
   return YYpredict->access();
-}
-
-void YYMatrixPredict::updateKernelMatrix() {
-  const auto *train_set = getTrainSet();
-  if (nullptr == train_set) {
-    YYpredict->resize(0);
-    return;
-  }
-  YYpredict->resize(train_set->GetSamplesInput().size());
 }
 } // namespace gauss::gp

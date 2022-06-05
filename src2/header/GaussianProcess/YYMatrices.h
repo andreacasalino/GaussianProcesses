@@ -9,6 +9,7 @@
 #pragma once
 
 #include <GaussianProcess/TrainSet.h>
+#include <memory>
 
 namespace gauss::gp {
 class SymmetricResizableMatrix;

@@ -8,17 +8,16 @@
 #pragma once
 
 #include <GaussianProcess/Error.h>
-#include <GaussianProcess/components/KernelMatrix.h>
-#include <GaussianProcess/components/OutputMatrix.h>
-#include <GaussianProcess/components/SizesAware.h>
+#include <GaussianProcess/KernelCovariance.h>
+#include <GaussianProcess/YYMatrices.h>
 
 #include <TrainingTools/ParametersAware.h>
 #include <TrainingTools/Trainer.h>
 
 namespace gauss::gp {
-class GaussianProcessBase : public SizesAwareBase,
-                            public KernelMatrix,
-                            public OutputMatrix,
+class GaussianProcessBase : public KernelCovariance,
+                            protected YYMatrixTrain,
+                            protected YYMatrixPredict,
                             protected ::train::ParametersAware {
 public:
   TrainSet &getSamples();
@@ -54,7 +53,10 @@ public:
   void train(::train::Trainer &trainer);
 
 protected:
-  GaussianProcessBase(KernelFunctionPtr kernel, ...);
+  template <typename... TrainSetArgs>
+  GaussianProcessBase(KernelFunctionPtr kernel, TrainSetArgs... args)
+      : KernelCovariance(std::move(kernel)),
+        samples(std::forward<TrainSetArgs>(args)...) {}
 
   Eigen::VectorXd predict(const Eigen::VectorXd &point,
                           double &covariance) const;
@@ -65,7 +67,9 @@ protected:
   }
   ::train::Vect getGradient() const final { return getParametersGradient(); };
 
+  const TrainSet &getTrainSet() const final { return samples; }
+
 private:
-  gauss::gp::TrainSet samples;
+  TrainSet samples;
 };
 } // namespace gauss::gp

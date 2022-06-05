@@ -64,8 +64,12 @@ public:
    */
   void addSample(const Eigen::VectorXd &sample);
 
-  std::size_t getInputStateSpaceSize() const { return input_space_size; };
-  std::size_t getOutputStateSpaceSize() const { return output_space_size; };
+  std::size_t getInputStateSpaceSize() const {
+    return static_cast<std::size_t>(input_space_size);
+  };
+  std::size_t getOutputStateSpaceSize() const {
+    return static_cast<std::size_t>(output_space_size);
+  };
 
   /**
    * @return the input realizations
@@ -83,10 +87,10 @@ public:
   }
 
 private:
-  const std::size_t input_space_size;
+  Eigen::Index input_space_size;
   std::vector<Eigen::VectorXd> input_samples;
 
-  const std::size_t output_space_size;
+  Eigen::Index output_space_size;
   std::vector<Eigen::VectorXd> output_samples;
 };
 

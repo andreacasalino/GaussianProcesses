@@ -8,25 +8,25 @@
 #include <Common.h>
 #include <Eigen/Dense>
 #include <GaussianProcess/Error.h>
-#include <GaussianProcess/components/KernelMatrix.h>
+#include <GaussianProcess/KernelCovariance.h>
 #include <GaussianUtils/Utils.h>
 
 namespace gauss::gp {
 KernelCovariance::KernelCovariance(KernelFunctionPtr new_kernel)
-    kernelFunction(std::move(new_kernel)) {
+    : kernelFunction(std::move(new_kernel)) {
   kernel_matrix = std::make_unique<SymmetricResizableMatrix>(
       [this](const Eigen::Index row, const Eigen::Index col) {
-        const auto samples = this->getTrainSet()->GetSamplesInput();
+        const auto samples = this->getTrainSet().GetSamplesInput();
         return this->kernelFunction->evaluate(
             samples[static_cast<std::size_t>(row)],
             samples[static_cast<std::size_t>(col)]);
       });
-  kernel_matrix = std::make_unique<KernelCovariance>();
 }
 
 KernelCovariance::~KernelCovariance() = default;
 
 const Eigen::MatrixXd &KernelCovariance::getKernelMatrix() const {
+  kernel_matrix->resize(getTrainSet().GetSamplesInput().size());
   return kernel_matrix->access();
 }
 
@@ -72,15 +72,8 @@ double KernelCovariance::getCovarianceDeterminant() const {
 
 void KernelCovariance::updateKernelFuction(KernelFunctionPtr new_kernel) {
   kernelFunction = std::move(new_kernel);
-  updateKernelMatrix(true);
+  resetKernelMatrix();
 }
 
-void KernelCovariance::updateKernelMatrix(const bool reset) {
-  const auto *train_set = getTrainSet();
-  if ((nullptr == train_set) || (reset)) {
-    kernel_matrix->resize(0);
-    return;
-  }
-  kernel_matrix->resize(train_set->GetSamplesInput().size());
-}
+void KernelCovariance::resetKernelMatrix() { kernel_matrix->resize(0); }
 } // namespace gauss::gp

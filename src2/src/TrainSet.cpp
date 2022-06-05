@@ -19,52 +19,82 @@ Eigen::VectorXd get_slice(const Eigen::VectorXd &source,
   }
   return result;
 }
+
+std::pair<std::vector<Eigen::VectorXd>, std::vector<Eigen::VectorXd>>
+import_train_set(const std::string &file_to_read,
+                 const std::size_t input_space_size);
+//                  {
+//   gauss::TrainSet temp(file_to_read);
+//   if (static_cast<std::size_t>(temp.GetSamples().front().size()) <
+//       input_space_size) {
+//     throw gauss::gp::Error("Invalid size of samples in parsed files");
+//   }
+//   auto it = temp.GetSamples().begin();
+//   input =
+//       std::make_unique<gauss::TrainSet>(get_slice(*it, 0, input_space_size));
+//   output = std::make_unique<gauss::TrainSet>(
+//       get_slice(*it, input_space_size + 1, it->size()));
+//   ++it;
+//   for (it; it != temp.GetSamples().end(); ++it) {
+//     *input += get_slice(*it, 0, input_space_size);
+//     *output += get_slice(*it, input_space_size + 1, it->size());
+//   }
+// }
 } // namespace
+
+TrainSet::TrainSet(const std::size_t input_space_size,
+                   const std::size_t output_space_size)
+    : input_space_size(input_space_size), output_space_size(output_space_size) {
+}
+
+TrainSet::TrainSet(const gauss::TrainSet &inputSamples,
+                   const gauss::TrainSet &outputSamples) {
+  input_space_size = inputSamples.GetSamples().front().size();
+  output_space_size = outputSamples.GetSamples().front().size();
+  input_samples = inputSamples.GetSamples();
+  output_samples = outputSamples.GetSamples();
+}
 
 TrainSet::TrainSet(const std::string &file_to_read,
                    const std::size_t input_space_size) {
-  gauss::TrainSet temp(file_to_read);
-  if (static_cast<std::size_t>(temp.GetSamples().front().size()) <
-      input_space_size) {
-    throw gauss::gp::Error("Invalid size of samples in parsed files");
-  }
-  auto it = temp.GetSamples().begin();
-  input =
-      std::make_unique<gauss::TrainSet>(get_slice(*it, 0, input_space_size));
-  output = std::make_unique<gauss::TrainSet>(
-      get_slice(*it, input_space_size + 1, it->size()));
-  ++it;
-  for (it; it != temp.GetSamples().end(); ++it) {
-    *input += get_slice(*it, 0, input_space_size);
-    *output += get_slice(*it, input_space_size + 1, it->size());
-  }
+  auto samples = import_train_set(file_to_read, input_space_size);
+  input_space_size = samples.first.front().size();
+  output_space_size = samples.second.front().size();
+  input_samples = std::move(samples.first);
+  output_samples = std::move(samples.second);
 }
 
-TrainSet::TrainSet(gauss::TrainSet input_samples,
-                   gauss::TrainSet output_samples) {
-  this->input = std::make_unique<gauss::TrainSet>(std::move(input_samples));
-  this->output = std::make_unique<gauss::TrainSet>(std::move(output_samples));
+void TrainSet::addSample(const Eigen::VectorXd &input_sample,
+                         const Eigen::VectorXd &output_sample) {
+  if (input_sample.size() != input_space_size) {
+    throw Error{"Invalid new sample"};
+  }
+  input_samples.push_back(input_sample);
+
+  if (output_sample.size() != output_space_size) {
+    throw Error{"Invalid new sample"};
+  }
+  output_samples.push_back(output_sample);
 }
 
-void TrainSet::operator+=(const Eigen::VectorXd &sample) {
-  if (sample.size() != (getInputStateSpaceSize() + getOutputStateSpaceSize())) {
+void TrainSet::addSample(const Eigen::VectorXd &sample) {
+  if ((input_space_size + output_space_size) !=
+      (getInputStateSpaceSize() + getOutputStateSpaceSize())) {
     throw gauss::gp::Error("Invalid new sample");
   }
-  *input += get_slice(sample, 0, getInputStateSpaceSize());
-  *output += get_slice(sample, getInputStateSpaceSize() + 1, sample.size());
+  input_samples.emplace_back(get_slice(sample, 0, getInputStateSpaceSize()));
+  output_samples.emplace_back(
+      get_slice(sample, getInputStateSpaceSize() + 1, sample.size()));
 }
 
-const std::vector<Eigen::VectorXd> &TrainSet::GetSamplesInput() const {
-  if (nullptr == input) {
-    throw gauss::gp::Error("Trying to access null input");
+void TrainSet::addSamples(const gauss::gp::TrainSet &o) {
+  if ((input_space_size != o.input_space_size) ||
+      (output_space_size != o.output_space_size)) {
+    throw Error{"Invalid new samples"};
   }
-  return input->GetSamples();
-};
-
-const std::vector<Eigen::VectorXd> &TrainSet::GetSamplesOutput() const {
-  if (nullptr == output) {
-    throw gauss::gp::Error("Trying to access null input");
+  for (std::size_t k = 0; k < o.input_samples.size(); ++k) {
+    input_samples.push_back(o.input_samples[k]);
+    output_samples.push_back(o.output_samples[k]);
   }
-  return output->GetSamples();
-};
+}
 } // namespace gauss::gp

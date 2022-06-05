@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <GaussianProcess/Error.h>
 #include <GaussianProcess/KernelCovariance.h>
 #include <GaussianProcess/YYMatrices.h>
 

@@ -14,6 +14,9 @@
 namespace gauss::gp {
 KernelCovariance::KernelCovariance(KernelFunctionPtr new_kernel)
     : kernelFunction(std::move(new_kernel)) {
+  if (nullptr == new_kernel) {
+    throw Error{"Found null kernel function"};
+  }
   kernel_matrix = std::make_unique<SymmetricResizableMatrix>(
       [this](const Eigen::Index row, const Eigen::Index col) {
         const auto samples = this->getTrainSet().GetSamplesInput();

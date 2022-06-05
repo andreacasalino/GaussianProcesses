@@ -14,7 +14,7 @@ namespace gauss::gp {
 YYMatrixTrain::YYMatrixTrain() {
   YYtrain = std::make_unique<SymmetricResizableMatrix>(
       [this](const Eigen::Index row, const Eigen::Index col) {
-        const auto samples = this->getTrainSet()->GetSamplesOutput();
+        const auto samples = this->getTrainSet().GetSamplesOutput();
         const auto &y1 = samples[static_cast<std::size_t>(row)];
         const auto &y2 = samples[static_cast<std::size_t>(col)];
         return y1.dot(y2);
@@ -28,47 +28,34 @@ const Eigen::MatrixXd &YYMatrixTrain::getYYtrain() const {
   return YYtrain->access();
 }
 
-class YYResizableMatrix : public ResizableMatrix {
+class YYResizableMatrixPredict : public ResizableMatrix {
 public:
-  using Emplacer = std::function<Eigen::VectorXd(const Eigen::Index)>;
-  YYResizableMatrix(const Emplacer &emplacer) : emplacer(emplacer) {}
+  YYResizableMatrixPredict(const TrainSet &samples) : samples(samples) {}
 
 protected:
   Eigen::MatrixXd makeResized() const final {
     const auto size = getSize();
     const auto computed_size = getComputedSize();
-    throw std::runtime_error{"TODO"};
-    // Eigen::MatrixXd new_matrix = Eigen::MatrixXd::Zero(size, size);
-    // if (0 == computed_size) {
-    //   compute_symmetric_block(new_matrix, emplacer, IndexInterval{0, size});
-    // } else {
-    //   new_matrix.block(0, 0, computed_size, computed_size) =
-    //       getComputedPortion();
-    //   compute_symmetric_block(new_matrix, emplacer,
-    //                           IndexInterval{computed_size, size});
-    //   compute_asymmetric_block(new_matrix, emplacer,
-    //                            IndexInterval{0, computed_size},
-    //                            IndexInterval{computed_size, size});
-    //   new_matrix.block(computed_size, 0, size - computed_size, computed_size)
-    //   =
-    //       new_matrix
-    //           .block(0, computed_size, computed_size, size - computed_size)
-    //           .transpose();
-    // }
-    // return new_matrix;
+    const auto &samples_in = samples.GetSamplesInput();
+    Eigen::MatrixXd result =
+        Eigen::MatrixXd{samples.getInputStateSpaceSize(), samples_in.size()};
+    result.block(0, 0, samples.getInputStateSpaceSize(), computed_size) =
+        getComputedPortion();
+    for (Eigen::Index c = computed_size; c < size; ++c) {
+      result.col(c) = samples_in[c];
+    }
+    return result;
   }
 
 private:
-  const Emplacer emplacer;
+  const TrainSet &samples;
 };
 
 YYMatrixPredict::YYMatrixPredict() {
-  YYpredict =
-      std::make_unique<YYResizableMatrix>([this](const Eigen::Index index) {
-        const auto samples = this->getTrainSet()->GetSamplesOutput();
-        return samples[static_cast<std::size_t>(index)];
-      });
+  YYpredict = std::make_unique<YYResizableMatrixPredict>(getTrainSet());
 }
+
+YYMatrixPredict::~YYMatrixPredict() = default;
 
 const Eigen::MatrixXd &YYMatrixPredict::getYYpredict() const {
   YYpredict->resize(getTrainSet().GetSamplesInput().size());

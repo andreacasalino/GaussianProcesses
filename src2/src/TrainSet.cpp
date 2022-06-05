@@ -22,24 +22,21 @@ Eigen::VectorXd get_slice(const Eigen::VectorXd &source,
 
 std::pair<std::vector<Eigen::VectorXd>, std::vector<Eigen::VectorXd>>
 import_train_set(const std::string &file_to_read,
-                 const std::size_t input_space_size);
-//                  {
-//   gauss::TrainSet temp(file_to_read);
-//   if (static_cast<std::size_t>(temp.GetSamples().front().size()) <
-//       input_space_size) {
-//     throw gauss::gp::Error("Invalid size of samples in parsed files");
-//   }
-//   auto it = temp.GetSamples().begin();
-//   input =
-//       std::make_unique<gauss::TrainSet>(get_slice(*it, 0, input_space_size));
-//   output = std::make_unique<gauss::TrainSet>(
-//       get_slice(*it, input_space_size + 1, it->size()));
-//   ++it;
-//   for (it; it != temp.GetSamples().end(); ++it) {
-//     *input += get_slice(*it, 0, input_space_size);
-//     *output += get_slice(*it, input_space_size + 1, it->size());
-//   }
-// }
+                 const std::size_t input_space_size) {
+  gauss::TrainSet temp(file_to_read);
+  if (static_cast<std::size_t>(temp.GetSamples().front().size()) <
+      input_space_size) {
+    throw gauss::gp::Error("Invalid size of samples in parsed files");
+  }
+  std::pair<std::vector<Eigen::VectorXd>, std::vector<Eigen::VectorXd>> result;
+  auto &input = result.first;
+  auto &output = result.second;
+  for (const auto &vec : temp.GetSamples()) {
+    input.push_back(get_slice(vec, 0, input_space_size));
+    output.push_back(get_slice(vec, input_space_size + 1, vec.size()));
+  }
+  return result;
+}
 } // namespace
 
 TrainSet::TrainSet(const std::size_t input_space_size,
@@ -49,8 +46,8 @@ TrainSet::TrainSet(const std::size_t input_space_size,
 
 TrainSet::TrainSet(const gauss::TrainSet &inputSamples,
                    const gauss::TrainSet &outputSamples) {
-  input_space_size = inputSamples.GetSamples().front().size();
-  output_space_size = outputSamples.GetSamples().front().size();
+  this->input_space_size = inputSamples.GetSamples().front().size();
+  this->output_space_size = outputSamples.GetSamples().front().size();
   input_samples = inputSamples.GetSamples();
   output_samples = outputSamples.GetSamples();
 }
@@ -58,8 +55,8 @@ TrainSet::TrainSet(const gauss::TrainSet &inputSamples,
 TrainSet::TrainSet(const std::string &file_to_read,
                    const std::size_t input_space_size) {
   auto samples = import_train_set(file_to_read, input_space_size);
-  input_space_size = samples.first.front().size();
-  output_space_size = samples.second.front().size();
+  this->input_space_size = samples.first.front().size();
+  this->output_space_size = samples.second.front().size();
   input_samples = std::move(samples.first);
   output_samples = std::move(samples.second);
 }

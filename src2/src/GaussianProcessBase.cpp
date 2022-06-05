@@ -5,82 +5,14 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <GaussianProcess/components/GaussianProcessBase.h>
+#include <GaussianProcess/Error.h>
+#include <GaussianProcess/GaussianProcessBase.h>
 
 #include "Common.h"
 
 namespace gauss::gp {
-GaussianProcessBase::GaussianProcessBase(KernelFunctionPtr kernel,
-                                         const std::size_t input_space_size,
-                                         const std::size_t output_space_size)
-    : SizesAwareBase(input_space_size, output_space_size),
-      KernelMatrix(std::move(kernel)) {}
-
-GaussianProcessBase::GaussianProcessBase(KernelFunctionPtr kernel,
-                                         gauss::gp::TrainSet train_set)
-    : GaussianProcessBase(std::move(kernel), train_set.getInputStateSpaceSize(),
-                          train_set.getOutputStateSpaceSize()) {
-  this->samples = std::make_unique<gauss::gp::TrainSet>(std::move(train_set));
-  updateKernelMatrix();
-  updateOutputMatrix();
-}
-
-void GaussianProcessBase::pushSample_(const Eigen::VectorXd &input_sample,
-                                      const Eigen::VectorXd &output_sample) {
-  if (input_sample.size() != getInputStateSpaceSize()) {
-    throw Error("Invalid size for input sample");
-  }
-  if (output_sample.size() != getOutputStateSpaceSize()) {
-    throw Error("Invalid size for output sample");
-  }
-  if (nullptr == samples) {
-    samples =
-        std::make_unique<gauss::gp::TrainSet>(input_sample, output_sample);
-    return;
-  }
-  samples->addSample(input_sample, output_sample);
-}
-
-void GaussianProcessBase::pushSample(const Eigen::VectorXd &input_sample,
-                                     const Eigen::VectorXd &output_sample) {
-  pushSample_(input_sample, output_sample);
-  updateKernelMatrix();
-  updateOutputMatrix();
-}
-
-void GaussianProcessBase::clearSamples() {
-  samples.reset();
-  resetKernelMatrix();
-  resetOutputMatrix();
-}
-
-void GaussianProcessBase::updateKernelFunction(KernelFunctionPtr new_kernel) {
-  if (nullptr == new_kernel) {
-    throw Error("empty kernel function");
-  }
-  this->KernelMatrix::updateKernelFuction(std::move(new_kernel));
-  if (nullptr != samples) {
-    updateKernelMatrix();
-  }
-}
-
-Eigen::VectorXd GaussianProcessBase::predict(const Eigen::VectorXd &point,
-                                             double &covariance) const {
-  Eigen::VectorXd Kx = getKx(point);
-  const Eigen::MatrixXd &K_inverse = getKernelMatrixInverse();
-  covariance = getKernelFunction().evaluate(point, point);
-  covariance -= Kx.dot(K_inverse * Kx);
-  covariance = abs(covariance);
-  Eigen::MatrixXd K_inverse_Output = K_inverse * getOutputMatrix();
-  Eigen::VectorXd result(K_inverse_Output.cols());
-  for (Eigen::Index i = 0; i < K_inverse_Output.cols(); ++i) {
-    result(i) = Kx.dot(K_inverse_Output.col(i));
-  }
-  return result;
-}
-
 Eigen::VectorXd GaussianProcessBase::getKx(const Eigen::VectorXd &point) const {
-  const auto &input_samples = getTrainSet()->GetSamplesInput();
+  const auto &input_samples = getTrainSet().GetSamplesInput();
   Eigen::VectorXd Kx(input_samples.size());
   Eigen::Index pos = 0;
   const auto &kernel_function = getKernelFunction();
@@ -89,6 +21,17 @@ Eigen::VectorXd GaussianProcessBase::getKx(const Eigen::VectorXd &point) const {
     ++pos;
   }
   return Kx;
+}
+
+Eigen::VectorXd GaussianProcessBase::predict(const Eigen::VectorXd &point,
+                                             double &covariance) const {
+  Eigen::VectorXd Kx = getKx(point);
+  const Eigen::MatrixXd &K_inverse = getKernelMatrixInverse();
+  covariance = getKernelFunction().evaluate(point, point);
+  covariance -= (Kx * K_inverse * Kx.transpose())(0, 0);
+  throw std::runtime_error{"check negative covariance"};
+  covariance = abs(covariance);
+  return getYYpredict() * K_inverse * Kx.transpose();
 }
 
 Eigen::VectorXd GaussianProcessBase::getHyperParameters() const {
@@ -117,36 +60,32 @@ void GaussianProcessBase::setHyperParameters(
     ++i;
   }
   resetKernelMatrix();
-  if (nullptr != samples) {
-    updateKernelMatrix();
-  }
 }
 
 double GaussianProcessBase::getLogLikelihood() const {
-  double result = 0.0;
-  result -= 0.5 *
-            static_cast<double>(samples->GetSamplesInput().front().size()) *
-            log(getCovarianceDeterminant());
-  result -= 0.5 * (getOutputMatrix() * getCovarianceInv()).trace();
+  double result = 0.5 *
+                  static_cast<double>(getTrainSet().getOutputStateSpaceSize()) *
+                  log(getCovarianceDeterminant());
+  result -= 0.5 * trace_product(getKernelMatrixInverse(), getYYtrain());
   return result;
 }
 
 Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
   const auto parameters_numb = getKernelFunction().numberOfParameters();
-  const auto &samples = getTrainSet()->GetSamplesInput();
+  const auto &samples_in = getTrainSet().GetSamplesInput();
 
   std::vector<Eigen::MatrixXd> kernel_matrix_gradients;
   {
     kernel_matrix_gradients.reserve(parameters_numb);
     for (std::size_t p = 0; p < parameters_numb; ++p) {
       kernel_matrix_gradients.emplace_back(
-          static_cast<Eigen::Index>(samples.size()),
-          static_cast<Eigen::Index>(samples.size()));
+          static_cast<Eigen::Index>(samples_in.size()),
+          static_cast<Eigen::Index>(samples_in.size()));
     }
     auto fill_kernel_matrix_gradients_at =
-        [&kernel_function = getKernelFunction(), &samples,
+        [&kernel_function = getKernelFunction(), &samples_in,
          &kernel_matrix_gradients](const std::size_t r, const std::size_t c) {
-          auto grad = kernel_function.getGradient(samples[r], samples[c]);
+          auto grad = kernel_function.getGradient(samples_in[r], samples_in[c]);
           for (std::size_t k = 0; k < grad.size(); ++k) {
             kernel_matrix_gradients[k](r, c) = grad[k];
             if (r != c) {
@@ -155,20 +94,20 @@ Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
             }
           }
         };
-    for (std::size_t r = 0; r < samples.size(); ++r) {
-      for (std::size_t c = r; c < samples.size(); ++c) {
+    for (std::size_t r = 0; r < samples_in.size(); ++r) {
+      for (std::size_t c = r; c < samples_in.size(); ++c) {
         fill_kernel_matrix_gradients_at(r, c);
       }
     }
   }
 
-  Eigen::MatrixXd YY = getOutputMatrix();
+  const auto &YY = getYYtrain();
   Eigen::VectorXd result(static_cast<Eigen::Index>(parameters_numb));
   const Eigen::MatrixXd &kernel_inv = getKernelMatrixInverse();
-  double M = static_cast<double>(samples.front().size());
   Eigen::MatrixXd B =
-      kernel_inv * YY - Eigen::MatrixXd::Identity(YY.rows(), YY.rows()) *
-                            static_cast<float>(getOutputStateSpaceSize());
+      kernel_inv * YY -
+      Eigen::MatrixXd::Identity(YY.rows(), YY.rows()) *
+          static_cast<double>(getTrainSet().getOutputStateSpaceSize());
   for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(parameters_numb);
        ++i) {
     const auto &gradient_matrix =

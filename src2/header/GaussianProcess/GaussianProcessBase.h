@@ -21,62 +21,11 @@ class GaussianProcessBase : public SizesAwareBase,
                             public OutputMatrix,
                             protected ::train::ParametersAware {
 public:
-  /**
-   * @brief replace the kernel function.
-   *
-   * @param new_kernel
-   * @throw passing a null kernel
-   */
-  void updateKernelFunction(KernelFunctionPtr new_kernel);
-
-  /**
-   * @brief Add one new pair of samples to enlarge the kernel
-   *
-   * @param input_sample
-   * @param output_sample
-   * @throw in case the size of the samples is not consistent with the input or
-   * the output space size of the process
-   */
-  void pushSample(const Eigen::VectorXd &input_sample,
-                  const Eigen::VectorXd &output_sample);
-  /**
-   * @brief Add a new set of input-output realizations to enlarge the kernel
-   *
-   * @tparam IterableT
-   * @param input_samples
-   * @param output_samples
-   * @throw in case the size of the samples is not consistent with the
-   * input or the output space size of the process
-   */
-  template <typename IterableT>
-  void pushSamples(const IterableT &input_samples,
-                   const IterableT &output_samples) {
-    if (input_samples.size() != output_samples.size()) {
-      throw Error("Invalid new sets of samples");
-    }
-    auto it_out = output_samples.begin();
-    for (const auto &sample_in : input_samples) {
-      pushSample_(sample_in, *it_out);
-      ++it_out;
-    }
-    updateKernelMatrix();
-    updateOutputMatrix();
-  };
-  /**
-   * @brief Remove all the samples.
-   * This will empty the kernel and will make a subsequent call to predict(...)
-   * throw.
-   *
-   */
-  void clearSamples();
+  TrainSet &getSamples();
+  const TrainSet &getSamples() const;
 
   /// column wise
   Eigen::VectorXd getKx(const Eigen::VectorXd &point) const;
-
-  /**
-   * @return the samples used to build the kernel
-   */
-  const TrainSet *getTrainSet() const override { return samples.get(); };
 
   /**
    * @return the tunable parameters of the kernel function
@@ -105,11 +54,7 @@ public:
   void train(::train::Trainer &trainer);
 
 protected:
-  GaussianProcessBase(KernelFunctionPtr kernel,
-                      const std::size_t input_space_size,
-                      const std::size_t output_space_size);
-
-  GaussianProcessBase(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set);
+  GaussianProcessBase(KernelFunctionPtr kernel, ...);
 
   Eigen::VectorXd predict(const Eigen::VectorXd &point,
                           double &covariance) const;
@@ -121,9 +66,6 @@ protected:
   ::train::Vect getGradient() const final { return getParametersGradient(); };
 
 private:
-  void pushSample_(const Eigen::VectorXd &input_sample,
-                   const Eigen::VectorXd &output_sample);
-
-  std::unique_ptr<gauss::gp::TrainSet> samples;
+  gauss::gp::TrainSet samples;
 };
 } // namespace gauss::gp

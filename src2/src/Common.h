@@ -11,30 +11,35 @@
 #include <functional>
 
 namespace gauss::gp {
-class MatrixExpandable {
+class ResizableMatrix {
 public:
+  void resize(const Eigen::Index new_size = 0);
+
   const Eigen::MatrixXd &access() const;
 
-  void resize(const Eigen::Index new_size);
+  Eigen::Index getSize() const { return size; }
+  Eigen::Index getComputedSize() const { return computed_portion_size; }
 
 protected:
-  MatrixExpandable();
+  ResizableMatrix() = default;
 
-  virtual Eigen::MatrixXd makeResized(const Eigen::Index new_size) = 0;
+  virtual Eigen::MatrixXd makeResized() const = 0;
+  const Eigen::MatrixXd &getComputedPortion() const { return computed_portion; }
 
 private:
-  Eigen::Index size;
-  mutable Eigen::MatrixXd computed_portion;
+  Eigen::Index size = 0;
+  Eigen::Index computed_portion_size = 0;
+  mutable Eigen::MatrixXd computed_portion = Eigen::MatrixXd{0, 0};
 };
 
-class SymmetricMatrixExpandable : public MatrixExpandable {
+class SymmetricResizableMatrix : public ResizableMatrix {
 public:
   using Emplacer =
       std::function<double(const Eigen::Index, const Eigen::Index)>;
-  SymmetricMatrixExpandable(const Emplacer &emplacer);
+  SymmetricResizableMatrix(const Emplacer &emplacer);
 
 protected:
-  Eigen::MatrixXd makeResized(const Eigen::Index new_size) override;
+  Eigen::MatrixXd makeResized() const final;
 
 private:
   const Emplacer emplacer;

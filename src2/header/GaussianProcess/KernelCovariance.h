@@ -7,16 +7,16 @@
 
 #pragma once
 
-#include <GaussianProcess/components/TrainSetAware.h>
+#include <GaussianProcess/TrainSet.h>
 #include <GaussianProcess/kernel/KernelFunction.h>
 #include <GaussianUtils/components/CoviarianceAware.h>
 
 namespace gauss::gp {
-class SymmetricMatrixExpandable;
+class SymmetricResizableMatrix;
 
-class KernelMatrix : virtual public TrainSetAware, public CovarianceAware {
+class KernelCovariance : virtual public TrainSetAware, public CovarianceAware {
 public:
-  ~KernelMatrix();
+  ~KernelCovariance();
 
   /**
    * @return The kernel of the process.
@@ -50,59 +50,35 @@ public:
   Decomposition getCovarianceDecomposition() const;
 
   /**
+   * @brief replace the kernel function.
+   *
+   * @param new_kernel
+   * @throw passing a null kernel
+   */
+  void updateKernelFunction(KernelFunctionPtr new_kernel);
+
+  /**
    * @return The kernel function used to compute the kernel of the process
    */
   const KernelFunction &getKernelFunction() const { return *kernelFunction; }
 
 protected:
-  KernelMatrix(KernelFunctionPtr new_kernel);
+  KernelCovariance(KernelFunctionPtr new_kernel);
 
   const Eigen::MatrixXd &getKernelMatrix() const;
   const Eigen::MatrixXd &getKernelMatrixInverse() const;
   const Decomposition &getKernelMatrixDecomposition() const;
 
   void updateKernelFuction(KernelFunctionPtr new_kernel);
-  void updateKernelMatrix();
   void resetKernelMatrix();
 
 private:
   KernelFunctionPtr kernelFunction;
 
-  std::unique_ptr<SymmetricMatrixExpandable> kernel_matrix;
+  std::unique_ptr<SymmetricResizableMatrix> kernel_matrix;
 
   mutable std::unique_ptr<Decomposition> kernel_matrix_decomposition;
 
   mutable std::unique_ptr<Eigen::MatrixXd> kernel_matrix_inverse;
-};
-} // namespace gauss::gp
-
-/**
- * Author:    Andrea Casalino
- * Created:   29.11.2021
- *
- * report any bug to andrecasa91@gmail.com.
- **/
-
-#pragma once
-
-#include <GaussianProcess/components/TrainSetAware.h>
-
-namespace gauss::gp {
-class SymmetricMatrixExpandable;
-
-class OutputMatrix : virtual public TrainSetAware {
-public:
-  ~OutputMatrix();
-
-protected:
-  OutputMatrix();
-
-  const Eigen::MatrixXd &getOutputMatrix() const;
-
-  void updateOutputMatrix();
-  void resetOutputMatrix();
-
-private:
-  std::unique_ptr<SymmetricMatrixExpandable> output_matrix;
 };
 } // namespace gauss::gp

@@ -9,14 +9,23 @@
 #include <GaussianProcess/Error.h>
 
 namespace gauss::gp {
-SymmetricMatrixExpandable::SymmetricMatrixExpandable(const Emplacer &emplacer)
-    : emplacer(emplacer), size(0), computed_portion(0, 0) {}
-
-void SymmetricMatrixExpandable::resize(const Eigen::Index new_size) {
+void ResizableMatrix::resize(const Eigen::Index new_size) {
+  if (0 == new_size) {
+    computed_portion_size = 0;
+    computed_portion = Eigen::MatrixXd{0, 0};
+    return;
+  }
   if (new_size < size) {
     throw Error{"invalid new size for SymmetricMatrixExpandable"};
   }
   size = new_size;
+}
+
+const Eigen::MatrixXd &ResizableMatrix::access() const {
+  if (size != computed_portion_size) {
+    computed_portion = makeResized();
+  }
+  return computed_portion;
 }
 
 namespace {
@@ -26,7 +35,7 @@ struct IndexInterval {
 };
 
 void compute_symmetric_block(Eigen::MatrixXd &recipient,
-                             const Emplacer &emplacer,
+                             const SymmetricResizableMatrix::Emplacer &emplacer,
                              const IndexInterval &indices) {
   for (Eigen::Index r = indices.start; r < indices.end; ++r) {
     recipient(r, r) = emplacer(r, r);
@@ -37,10 +46,10 @@ void compute_symmetric_block(Eigen::MatrixXd &recipient,
   }
 }
 
-void compute_asymmetric_block(Eigen::MatrixXd &recipient,
-                              const Emplacer &emplacer,
-                              const IndexInterval &rows,
-                              const IndexInterval &cols) {
+void compute_asymmetric_block(
+    Eigen::MatrixXd &recipient,
+    const SymmetricResizableMatrix::Emplacer &emplacer,
+    const IndexInterval &rows, const IndexInterval &cols) {
   for (Eigen::Index r = rows.start; r < rows.end; ++r) {
     for (Eigen::Index c = cols.start; c < cols.end; ++c) {
       recipient(r, c) = emplacer(r, c);
@@ -49,31 +58,27 @@ void compute_asymmetric_block(Eigen::MatrixXd &recipient,
 }
 } // namespace
 
-const Eigen::MatrixXd &SymmetricMatrixExpandable::access() const {
-  const auto &computed_portion_size = computed_portion.rows();
-  if (computed_portion_size < size) {
-    Eigen::MatrixXd new_matrix = Eigen::MatrixXd::Zero(size, size);
-    if (0 == computed_portion_size) {
-      compute_symmetric_block(new_matrix, emplacer, IndexInterval{0, size});
-    } else {
-      new_matrix.block(0, 0, computed_portion_size, computed_portion_size) =
-          computed_portion;
-      compute_symmetric_block(new_matrix, emplacer,
-                              IndexInterval{computed_portion_size, size});
-      compute_asymmetric_block(new_matrix, emplacer,
-                               IndexInterval{0, computed_portion_size},
-                               IndexInterval{computed_portion_size, size});
-      new_matrix.block(computed_portion_size, 0, size - computed_portion_size,
-                       computed_portion_size) =
-          new_matrix
-              .block(0, computed_portion_size, computed_portion_size,
-                     size - computed_portion_size)
-              .transpose();
-    }
-    computed_portion = std::move(new_matrix);
-    throw std::runtime_error{"chiarire se esiste move per MatrixXd"};
+SymmetricResizableMatrix::SymmetricResizableMatrix(const Emplacer &emplacer)
+    : emplacer(emplacer) {}
+
+Eigen::MatrixXd SymmetricResizableMatrix::makeResized() const {
+  const auto size = getSize();
+  const auto computed_size = getComputedSize();
+  Eigen::MatrixXd new_matrix = Eigen::MatrixXd::Zero(size, size);
+  if (0 == computed_size) {
+    compute_symmetric_block(new_matrix, emplacer, IndexInterval{0, size});
+  } else {
+    new_matrix.block(0, 0, computed_size, computed_size) = getComputedPortion();
+    compute_symmetric_block(new_matrix, emplacer,
+                            IndexInterval{computed_size, size});
+    compute_asymmetric_block(new_matrix, emplacer,
+                             IndexInterval{0, computed_size},
+                             IndexInterval{computed_size, size});
+    new_matrix.block(computed_size, 0, size - computed_size, computed_size) =
+        new_matrix.block(0, computed_size, computed_size, size - computed_size)
+            .transpose();
   }
-  return computed_portion;
+  return new_matrix;
 }
 
 double trace_product(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {

@@ -63,7 +63,7 @@ void GaussianProcessBase::setHyperParameters(
 }
 
 double GaussianProcessBase::getLogLikelihood() const {
-  double result = 0.5 *
+  double result = -0.5 *
                   static_cast<double>(getTrainSet().getOutputStateSpaceSize()) *
                   log(getCovarianceDeterminant());
   result -= 0.5 * trace_product(getKernelMatrixInverse(), getYYtrain());

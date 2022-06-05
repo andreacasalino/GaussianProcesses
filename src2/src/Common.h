@@ -28,7 +28,7 @@ protected:
 
 private:
   Eigen::Index size = 0;
-  Eigen::Index computed_portion_size = 0;
+  mutable Eigen::Index computed_portion_size = 0;
   mutable Eigen::MatrixXd computed_portion = Eigen::MatrixXd{0, 0};
 };
 

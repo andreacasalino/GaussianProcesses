@@ -19,8 +19,8 @@ class GaussianProcessBase : public KernelCovariance,
                             protected YYMatrixPredict,
                             protected ::train::ParametersAware {
 public:
-  TrainSet &getSamples();
-  const TrainSet &getSamples() const;
+  const TrainSet &getTrainSet() const final { return samples; }
+  TrainSet &getTrainSet() { return samples; }
 
   /// column wise
   Eigen::VectorXd getKx(const Eigen::VectorXd &point) const;
@@ -65,8 +65,6 @@ protected:
     setHyperParameters(parameters);
   }
   ::train::Vect getGradient() const final { return getParametersGradient(); };
-
-  const TrainSet &getTrainSet() const final { return samples; }
 
 private:
   TrainSet samples;

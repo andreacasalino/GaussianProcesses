@@ -24,7 +24,7 @@ std::pair<std::vector<Eigen::VectorXd>, std::vector<Eigen::VectorXd>>
 import_train_set(const std::string &file_to_read,
                  const std::size_t input_space_size) {
   gauss::TrainSet temp(file_to_read);
-  if (static_cast<std::size_t>(temp.GetSamples().front().size()) <
+  if (static_cast<std::size_t>(temp.GetSamples().front().size()) <=
       input_space_size) {
     throw gauss::gp::Error("Invalid size of samples in parsed files");
   }

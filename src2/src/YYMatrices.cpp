@@ -28,18 +28,20 @@ const Eigen::MatrixXd &YYMatrixTrain::getYYtrain() const {
   return YYtrain->access();
 }
 
-class YYResizableMatrixPredict : public ResizableMatrix {
+namespace {
+class YYMatrixPredict_ : public ResizableMatrix {
 public:
-  YYResizableMatrixPredict(const TrainSet &samples) : samples(samples) {}
+  YYMatrixPredict_(const TrainSetAware &source) : source(source) {}
 
 protected:
   Eigen::MatrixXd makeResized() const final {
     const auto size = getSize();
     const auto computed_size = getComputedSize();
-    const auto &samples_in = samples.GetSamplesInput();
+    const auto &train_set = source.getTrainSet();
+    const auto &samples_in = train_set.GetSamplesInput();
     Eigen::MatrixXd result =
-        Eigen::MatrixXd{samples.getInputStateSpaceSize(), samples_in.size()};
-    result.block(0, 0, samples.getInputStateSpaceSize(), computed_size) =
+        Eigen::MatrixXd{train_set.getInputStateSpaceSize(), samples_in.size()};
+    result.block(0, 0, train_set.getInputStateSpaceSize(), computed_size) =
         getComputedPortion();
     for (Eigen::Index c = computed_size; c < size; ++c) {
       result.col(c) = samples_in[c];
@@ -48,11 +50,12 @@ protected:
   }
 
 private:
-  const TrainSet &samples;
+  const TrainSetAware &source;
 };
+} // namespace
 
 YYMatrixPredict::YYMatrixPredict() {
-  YYpredict = std::make_unique<YYResizableMatrixPredict>(getTrainSet());
+  YYpredict = std::make_unique<YYMatrixPredict_>(*this);
 }
 
 YYMatrixPredict::~YYMatrixPredict() = default;

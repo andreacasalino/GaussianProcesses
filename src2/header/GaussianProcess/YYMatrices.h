@@ -18,26 +18,27 @@ class YYMatrixTrain : virtual public TrainSetAware {
 public:
   ~YYMatrixTrain();
 
+  const Eigen::MatrixXd &getYYtrain() const;
+
 protected:
   YYMatrixTrain();
-
-  const Eigen::MatrixXd &getYYtrain() const;
 
 private:
   std::unique_ptr<SymmetricResizableMatrix> YYtrain;
 };
 
-class YYResizableMatrixPredict;
+class ResizableMatrix;
+
 class YYMatrixPredict : virtual public TrainSetAware {
 public:
   ~YYMatrixPredict();
 
+  const Eigen::MatrixXd &getYYpredict() const;
+
 protected:
   YYMatrixPredict();
 
-  const Eigen::MatrixXd &getYYpredict() const;
-
 private:
-  std::unique_ptr<YYResizableMatrixPredict> YYpredict;
+  std::unique_ptr<ResizableMatrix> YYpredict;
 };
 } // namespace gauss::gp

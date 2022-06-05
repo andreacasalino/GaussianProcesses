@@ -95,9 +95,10 @@ private:
 };
 
 class TrainSetAware {
+public:
+  virtual const TrainSet &getTrainSet() const = 0;
+
 protected:
   TrainSetAware() = default;
-
-  virtual const TrainSet &getTrainSet() const = 0;
 };
 } // namespace gauss::gp

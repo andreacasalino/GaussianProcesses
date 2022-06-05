@@ -16,7 +16,7 @@ void ResizableMatrix::resize(const Eigen::Index new_size) {
     return;
   }
   if (new_size < size) {
-    throw Error{"invalid new size for SymmetricMatrixExpandable"};
+    throw Error{"Invalid new size for SymmetricMatrixExpandable"};
   }
   size = new_size;
 }
@@ -24,6 +24,7 @@ void ResizableMatrix::resize(const Eigen::Index new_size) {
 const Eigen::MatrixXd &ResizableMatrix::access() const {
   if (size != computed_portion_size) {
     computed_portion = makeResized();
+    computed_portion_size = size;
   }
   return computed_portion;
 }

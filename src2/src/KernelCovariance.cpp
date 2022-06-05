@@ -19,8 +19,8 @@ const Eigen::MatrixXd &KernelMatrix::getKernelMatrix() const {
 }
 
 const Eigen::MatrixXd &KernelMatrix::getKernelMatrixInverse() const {
-  const auto &decomposition = getKernelMatrixDecomposition();
   if (nullptr == kernel_matrix_inverse) {
+    const auto &decomposition = getKernelMatrixDecomposition();
     kernel_matrix_inverse = std::make_unique<Eigen::MatrixXd>(
         decomposition.eigenVectors *
         decomposition.eigenValues_inv.asDiagonal() *
@@ -50,18 +50,18 @@ KernelMatrix::getKernelMatrixDecomposition() const {
 }
 
 void KernelMatrix::updateKernelMatrix() {
-  kernel_matrix->expand(getTrainSet()->GetSamplesInput().GetSamples().size());
+  kernel_matrix->resize(getTrainSet()->GetSamplesInput().size());
 }
 
 void KernelMatrix::resetKernelMatrix() {
   kernel_matrix = std::make_unique<SymmetricMatrixExpandable>(
       [this](const Eigen::Index row, const Eigen::Index col) {
-        const auto samples =
-            this->getTrainSet()->GetSamplesInput().GetSamples();
+        const auto samples = this->getTrainSet()->GetSamplesInput();
         return this->kernelFunction->evaluate(
             samples[static_cast<std::size_t>(row)],
             samples[static_cast<std::size_t>(col)]);
       });
+  kernel_matrix->resize(getTrainSet()->GetSamplesInput().size());
 }
 
 void KernelMatrix::updateKernelFuction(KernelFunctionPtr new_kernel) {
@@ -84,4 +84,39 @@ double KernelMatrix::getCovarianceDeterminant() const {
   }
   return result;
 }
+} // namespace gauss::gp
+
+/**
+ * Author:    Andrea Casalino
+ * Created:   29.11.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
+#include <Common.h>
+#include <GaussianProcess/Error.h>
+#include <GaussianProcess/components/OutputMatrix.h>
+
+namespace gauss::gp {
+OutputMatrix::~OutputMatrix() = default;
+
+const Eigen::MatrixXd &OutputMatrix::getOutputMatrix() const {
+  return output_matrix->access();
+}
+
+void OutputMatrix::updateOutputMatrix() {
+  output_matrix->resize(getTrainSet()->GetSamplesInput().size());
+}
+
+void OutputMatrix::resetOutputMatrix() {
+  output_matrix = std::make_unique<SymmetricMatrixExpandable>(
+      [this](const Eigen::Index row, const Eigen::Index col) {
+        const auto samples = this->getTrainSet()->GetSamplesOutput();
+        const auto &y1 = samples[static_cast<std::size_t>(row)];
+        const auto &y2 = samples[static_cast<std::size_t>(col)];
+        return y1.dot(y2);
+      });
+}
+
+OutputMatrix::OutputMatrix() { resetOutputMatrix(); }
 } // namespace gauss::gp

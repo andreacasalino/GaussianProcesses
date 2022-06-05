@@ -10,7 +10,14 @@
 
 namespace gauss::gp {
 SymmetricMatrixExpandable::SymmetricMatrixExpandable(const Emplacer &emplacer)
-    : emplacer(emplacer), matrix(0, 0) {}
+    : emplacer(emplacer), size(0), computed_portion(0, 0) {}
+
+void SymmetricMatrixExpandable::resize(const Eigen::Index new_size) {
+  if (new_size < size) {
+    throw Error{"invalid new size for SymmetricMatrixExpandable"};
+  }
+  size = new_size;
+}
 
 namespace {
 struct IndexInterval {
@@ -42,26 +49,31 @@ void compute_asymmetric_block(Eigen::MatrixXd &recipient,
 }
 } // namespace
 
-void SymmetricMatrixExpandable::expand(const Eigen::Index new_size) {
-  const auto old_size = matrix.rows();
-  if (new_size <= old_size) {
-    throw Error{"invalid new size for SymmetricMatrixExpandable"};
+const Eigen::MatrixXd &SymmetricMatrixExpandable::access() const {
+  const auto &computed_portion_size = computed_portion.rows();
+  if (computed_portion_size < size) {
+    Eigen::MatrixXd new_matrix = Eigen::MatrixXd::Zero(size, size);
+    if (0 == computed_portion_size) {
+      compute_symmetric_block(new_matrix, emplacer, IndexInterval{0, size});
+    } else {
+      new_matrix.block(0, 0, computed_portion_size, computed_portion_size) =
+          computed_portion;
+      compute_symmetric_block(new_matrix, emplacer,
+                              IndexInterval{computed_portion_size, size});
+      compute_asymmetric_block(new_matrix, emplacer,
+                               IndexInterval{0, computed_portion_size},
+                               IndexInterval{computed_portion_size, size});
+      new_matrix.block(computed_portion_size, 0, size - computed_portion_size,
+                       computed_portion_size) =
+          new_matrix
+              .block(0, computed_portion_size, computed_portion_size,
+                     size - computed_portion_size)
+              .transpose();
+    }
+    computed_portion = std::move(new_matrix);
+    throw std::runtime_error{"chiarire se esiste move per MatrixXd"};
   }
-  Eigen::MatrixXd new_matrix(new_size, new_size);
-  if (0 == old_size) {
-    compute_symmetric_block(new_matrix, emplacer, IndexInterval{0, new_size});
-  } else {
-    new_matrix.block(0, 0, old_size, old_size) = matrix;
-    compute_symmetric_block(new_matrix, emplacer,
-                            IndexInterval{old_size, new_size});
-    compute_asymmetric_block(new_matrix, emplacer, IndexInterval{0, old_size},
-                             IndexInterval{old_size, new_size});
-    new_matrix.block(old_size, 0, new_size - old_size, old_size) =
-        new_matrix.block(0, old_size, old_size, new_size - old_size)
-            .transpose();
-  }
-  matrix = std::move(new_matrix);
-  throw std::runtime_error{"chiarire se esiste move per MatrixXd"};
+  return computed_portion;
 }
 
 double trace_product(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {

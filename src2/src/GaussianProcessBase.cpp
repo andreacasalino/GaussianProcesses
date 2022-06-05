@@ -80,7 +80,7 @@ Eigen::VectorXd GaussianProcessBase::predict(const Eigen::VectorXd &point,
 }
 
 Eigen::VectorXd GaussianProcessBase::getKx(const Eigen::VectorXd &point) const {
-  const auto &input_samples = getTrainSet()->GetSamplesInput().GetSamples();
+  const auto &input_samples = getTrainSet()->GetSamplesInput();
   Eigen::VectorXd Kx(input_samples.size());
   Eigen::Index pos = 0;
   const auto &kernel_function = getKernelFunction();
@@ -125,8 +125,7 @@ void GaussianProcessBase::setHyperParameters(
 double GaussianProcessBase::getLogLikelihood() const {
   double result = 0.0;
   result -= 0.5 *
-            static_cast<double>(
-                samples->GetSamplesInput().GetSamples().front().size()) *
+            static_cast<double>(samples->GetSamplesInput().front().size()) *
             log(getCovarianceDeterminant());
   result -= 0.5 * (getOutputMatrix() * getCovarianceInv()).trace();
   return result;
@@ -134,7 +133,7 @@ double GaussianProcessBase::getLogLikelihood() const {
 
 Eigen::VectorXd GaussianProcessBase::getParametersGradient() const {
   const auto parameters_numb = getKernelFunction().numberOfParameters();
-  const auto &samples = getTrainSet()->GetSamplesInput().GetSamples();
+  const auto &samples = getTrainSet()->GetSamplesInput();
 
   std::vector<Eigen::MatrixXd> kernel_matrix_gradients;
   {

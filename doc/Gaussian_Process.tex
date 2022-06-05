@@ -27,9 +27,10 @@ The \textbf{Kernel Function} is something that has to be chosen and typical of t
 \\
 The aim of \textbf{GP}s is to be able to predict the value of $G$ for a point inside $\mathcal{I}$ that is not inside of the trainin set. In particular, this is done in probabilistic terms, as the result of the prediction is not just a value, but a conditioned Gaussian distribution.
 \\
-Section METTERE discusses the formulation of scalar \textbf{GP}, i.e. cases for which $\mathcal{O} \subseteq \mathbb{R}$. Insted, Section METTERE focuses on the more general cases. The reader will notice that the 2 formulations are not in contradiction and the decision to discuss them into 2 separate Sections is only the purpose of a better readability. 
+Section \ref{sec:scalar} discusses the formulation of scalar \textbf{GP}, i.e. cases for which $\mathcal{O} \subseteq \mathbb{R}$. Insted, Section \ref{sec:vectorial} focuses on the more general cases. The reader will notice that the two formulations are not in contradiction and the decision to discuss them into separate Sections is only for the purpose of a better readability. 
 
 \section{Scalar case}
+\label{sec:scalar}
 
 The training set of a scalar \textbf{GP} is a collection of points inside $\mathcal{I}$ for which the corresponding value inside $\mathcal{O}$ is known. More formally:
 \begin{eqnarray}
@@ -187,6 +188,7 @@ K^{-1} M_{YY}
 Choosing your favourite gradient-based approach you can tune the model, byt computing the gradient as described by the above equation.
 
 \section{Vectorial case}
+\label{sec:vectorial}
 
 Vectorial \textbf{GP}s are defined as similarly done for the scalar case detailed in the previous Section.
 The training set should now account for the multi-dimensionality of the process and is therefore defined in this way:

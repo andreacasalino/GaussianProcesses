@@ -11,6 +11,9 @@
 #include <memory>
 
 namespace gauss::gp {
+class KernelFunction;
+using KernelFunctionPtr = std::unique_ptr<KernelFunction>;
+
 /**
  * @brief https : // www.cs.toronto.edu/~duvenaud/cookbook/
  *
@@ -18,6 +21,8 @@ namespace gauss::gp {
 class KernelFunction {
 public:
   virtual ~KernelFunction() = default;
+
+  virtual KernelFunctionPtr copy() const = 0;
 
   KernelFunction(const KernelFunction &) = delete;
   KernelFunction &operator==(const KernelFunction &) = delete;
@@ -50,5 +55,4 @@ public:
 protected:
   KernelFunction() = default;
 };
-using KernelFunctionPtr = std::unique_ptr<KernelFunction>;
 } // namespace gauss::gp

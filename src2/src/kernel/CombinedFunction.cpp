@@ -9,6 +9,15 @@
 #include <GaussianProcess/kernel/CombinedFunction.h>
 
 namespace gauss::gp {
+KernelFunctionPtr CombinedFunction::copy() const {
+  std::unique_ptr<CombinedFunction> result = std::make_unique<CombinedFunction>(
+      elements[0]->copy(), elements[1]->copy());
+  for (std::size_t k = 2; k < elements.size(); ++k) {
+    result->addElement(elements[k]->copy());
+  }
+  return result;
+}
+
 void CombinedFunction::addElement(KernelFunctionPtr element) {
   if (nullptr == element) {
     throw Error{"can't add null element to CombinedFunction kernel"};

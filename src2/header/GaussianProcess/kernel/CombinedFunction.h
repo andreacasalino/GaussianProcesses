@@ -18,6 +18,8 @@ class CombinedFunction : public KernelFunction {
 public:
   CombinedFunction(KernelFunctionPtr first, KernelFunctionPtr second);
 
+  KernelFunctionPtr copy() const final;
+
   std::size_t numberOfParameters() const final { return params_numb; }
 
   std::vector<double> getParameters() const final;

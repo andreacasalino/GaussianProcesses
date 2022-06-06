@@ -7,54 +7,89 @@
 
 #pragma once
 
-#include <GaussianProcess/components/GaussianProcessBase.h>
+#include <GaussianProcess/KernelCovariance.h>
+#include <GaussianProcess/YYMatrices.h>
+
+#include <TrainingTools/ParametersAware.h>
+#include <TrainingTools/Trainer.h>
+
 #include <GaussianUtils/GaussianDistribution.h>
 
 namespace gauss::gp {
-/**
- * @brief A normal gaussian process has an output space size w equal to 1
- *
- */
-class GaussianProcess : public GaussianProcessBase {
+class GaussianProcess : public KernelCovariance,
+                        protected YYMatrixTrain,
+                        protected YYMatrixPredict,
+                        protected ::train::ParametersAware {
 public:
-  /**
-   * @brief Construct a new Gaussian Process Vectorial object.
-   * No initial samples would be available. Therefore, calling predict(...)
-   * immediately after would throw an exception
-   *
-   * @param kernel
-   * @param input_space_size
-   * @throw when passing a null kernel
-   * @throw when passsing input_space_size equal to 0
-   */
-  GaussianProcess(KernelFunctionPtr kernel, const std::size_t input_space_size);
+  template <typename... TrainSetArgs>
+  GaussianProcess(KernelFunctionPtr kernel, TrainSetArgs... args)
+      : KernelCovariance(std::move(kernel)),
+        samples(std::forward<TrainSetArgs>(args)...) {}
+
+  const TrainSet &getTrainSet() const final { return samples; }
+  TrainSet &getTrainSet() { return samples; }
+
+  /// column wise
+  Eigen::VectorXd getKx(const Eigen::VectorXd &point) const;
 
   /**
-   * @brief Construct a new Gaussian Process Vectorial object.
-   *
-   * @param kernel
-   * @param train_set
-   * @throw when passing a null kernel
-   * @throw passing a train set with output samples with a size different from 1
+   * @return the tunable parameters of the kernel function
    */
-  GaussianProcess(KernelFunctionPtr kernel, gauss::gp::TrainSet train_set);
+  Eigen::VectorXd getHyperParameters() const;
+  /**
+   * @param parameters , the new set of tunable parameters for the kernel
+   * function
+   * @throw in case the number of parameters is not consistent
+   */
+  void setHyperParameters(const Eigen::VectorXd &parameters);
+
+  /**
+   * @return the logarithmic likelihood of the process, i.e. the product of the
+   * logarithmic likelihoods of the element iniside the samples used to build
+   * the kernel, w.r.t the process itself
+   */
+  double getLogLikelihood() const;
+
+  /**
+   * @return The gradient of the tunable parameters w.r.t. to the logarithmic
+   * likelihood
+   */
+  Eigen::VectorXd getParametersGradient() const;
+
+  void train(::train::Trainer &trainer);
 
   /**
    * @param point
-   * @return The distribution describing the possible output of the
+   * @return The vectorial distribution describing the possible output of the
    * process w.r.t the passed input point.
    */
-  gauss::GaussianDistribution predict(const Eigen::VectorXd &point) const;
+  std::vector<gauss::GaussianDistribution>
+  predict(const Eigen::VectorXd &point) const;
 
   struct Prediction {
-    double mean;
+    Eigen::VectorXd mean;
     double covariance;
   };
   /**
    * @param point
-   * @return The parameters distribution describing the possible output of the
-   * process w.r.t the passed input point.
+   * @return The vectorial distribution parameters describing the possible
+   * output of the process w.r.t the passed input point.
    */
   Prediction predict2(const Eigen::VectorXd &point) const;
+
+  GaussianDistribution predict3(const Eigen::VectorXd &point) const;
+
+protected:
+  Eigen::VectorXd predict(const Eigen::VectorXd &point,
+                          double &covariance) const;
+
+  ::train::Vect getParameters() const final { return getHyperParameters(); }
+  void setParameters(const ::train::Vect &parameters) final {
+    setHyperParameters(parameters);
+  }
+  ::train::Vect getGradient() const final { return getParametersGradient(); };
+
+private:
+  TrainSet samples;
 };
 } // namespace gauss::gp

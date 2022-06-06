@@ -11,36 +11,8 @@
 #include <memory>
 
 namespace gauss::gp {
-/**
- * @brief Handler of a single kernel function parameter.
- *
- */
-class Parameter {
-public:
-  virtual ~Parameter() = default;
-
-  Parameter(const Parameter &) = delete;
-  Parameter &operator==(const Parameter &) = delete;
-
-  /**
-   * @param a
-   * @param b
-   * @return The gradient of the kernel activation function
-   */
-  virtual double evaluate_gradient(const Eigen::VectorXd &a,
-                                   const Eigen::VectorXd &b) const = 0;
-
-  double getParameter() const { return parameter_value; };
-  void setParameter(const double value) { parameter_value = value; };
-
-protected:
-  Parameter(const double parameter) : parameter_value(parameter){};
-
-private:
-  double parameter_value;
-};
-using ParameterPtr = std::shared_ptr<Parameter>;
-using ParameterCnstPtr = std::shared_ptr<const Parameter>;
+class KernelFunction;
+using KernelFunctionPtr = std::unique_ptr<KernelFunction>;
 
 /**
  * @brief https : // www.cs.toronto.edu/~duvenaud/cookbook/
@@ -50,8 +22,20 @@ class KernelFunction {
 public:
   virtual ~KernelFunction() = default;
 
+  virtual KernelFunctionPtr copy() const = 0;
+
   KernelFunction(const KernelFunction &) = delete;
   KernelFunction &operator==(const KernelFunction &) = delete;
+
+  virtual std::size_t numberOfParameters() const = 0;
+
+  /**
+   * @return the collection of tunable parameters, i.e. the ones that can be
+   * tuned through training.
+   */
+  virtual std::vector<double> getParameters() const = 0;
+
+  virtual void setParameters(const std::vector<double> &values) = 0;
 
   /**
    * @brief evaluation should be reflexive: evaluate(a,b) = evaluate(b,a)
@@ -61,16 +45,14 @@ public:
                           const Eigen::VectorXd &b) const = 0;
 
   /**
-   * @return the collection of tunable parameters, i.e. the ones that can be
-   * tuned through training.
+   * @param a
+   * @param b
+   * @return The gradient of the kernel activation function
    */
-  std::vector<ParameterCnstPtr> getParameters() const;
+  virtual std::vector<double> getGradient(const Eigen::VectorXd &a,
+                                          const Eigen::VectorXd &b) const = 0;
 
 protected:
-  KernelFunction(const std::vector<ParameterPtr> &params);
-
-private:
-  std::vector<ParameterPtr> parameters;
+  KernelFunction() = default;
 };
-using KernelFunctionPtr = std::unique_ptr<KernelFunction>;
 } // namespace gauss::gp

@@ -5,49 +5,75 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <GaussianProcess/kernel/CompositeKernelFunction.h>
 #include <GaussianProcess/Error.h>
+#include <GaussianProcess/kernel/CombinedFunction.h>
 
 namespace gauss::gp {
-  CompositeKernelFunction::CompositeKernelFunction(KernelFunctionPtr initial_element) {
-      push_function(std::move(initial_element));
+KernelFunctionPtr CombinedFunction::copy() const {
+  std::unique_ptr<CombinedFunction> result = std::make_unique<CombinedFunction>(
+      elements[0]->copy(), elements[1]->copy());
+  for (std::size_t k = 2; k < elements.size(); ++k) {
+    result->addElement(elements[k]->copy());
   }
+  return result;
+}
 
-  void CompositeKernelFunction::push_function(KernelFunctionPtr element) {
-      if(nullptr == element) {
-          throw gauss::gp::Error("empty element");
-      }
-      elements.emplace_back(std::move(element));
+void CombinedFunction::addElement(KernelFunctionPtr element) {
+  if (nullptr == element) {
+    throw Error{"can't add null element to CombinedFunction kernel"};
   }
+  elements.emplace_back(std::move(element));
+  params_numb += element->numberOfParameters();
+}
 
-  // evaluation should be reflexive: evaluate(a,b) = evaluate(b,a)
-  double CompositeKernelFunction::evaluate(const Eigen::VectorXd &a,
-                          const Eigen::VectorXd &b) const {
-      double result = 0.0;
-      for(const auto& element : elements) {
-          result += element->evaluate(a,b);
-      }
-      return result;
+CombinedFunction::CombinedFunction(KernelFunctionPtr first,
+                                   KernelFunctionPtr second) {
+  addElement(std::move(first));
+  addElement(std::move(second));
+}
+
+std::vector<double> CombinedFunction::getParameters() const {
+  std::vector<double> result;
+  for (const auto &element : elements) {
+    for (const auto &val : element->getParameters()) {
+      result.push_back(val);
+    }
   }
+  return result;
+}
 
-  std::unique_ptr<KernelFunction> CompositeKernelFunction::copy() const {
-      auto it_element = elements.begin();
-      std::unique_ptr<CompositeKernelFunction> result = std::make_unique<CompositeKernelFunction>((*it_element)->copy());
-      ++it_element;
-      for(it_element; it_element != elements.end(); ++it_element) {
-          result->push_function((*it_element)->copy());
-      }
-      return result;
-  };
-
-  std::vector<ParameterHandlerPtr> CompositeKernelFunction::getParameters() const {
-      std::vector<ParameterHandlerPtr> result;
-      for(const auto& element : elements) {
-          auto temp = element->getParameters();
-          for(auto& param : temp) {
-              result.emplace_back(std::move(param));
-          }
-      }
-      return result;
+void CombinedFunction::setParameters(const std::vector<double> &values) {
+  if (values.size() != params_numb) {
+    throw Error{"Invalid parameters"};
+  }
+  using Iter = std::vector<double>::const_iterator;
+  Iter cursor = values.begin();
+  for (const auto &element : elements) {
+    auto cursor_end = cursor;
+    std::advance(cursor_end, element->numberOfParameters());
+    element->setParameters(std::vector<double>{cursor, cursor_end});
+    cursor = cursor_end;
   }
 }
+
+double CombinedFunction::evaluate(const Eigen::VectorXd &a,
+                                  const Eigen::VectorXd &b) const {
+  double result = 0;
+  for (const auto &element : elements) {
+    result += element->evaluate(a, b);
+  }
+  return result;
+}
+
+std::vector<double>
+CombinedFunction::getGradient(const Eigen::VectorXd &a,
+                              const Eigen::VectorXd &b) const {
+  std::vector<double> result;
+  for (const auto &element : elements) {
+    for (const auto &val : element->getGradient(a, b)) {
+      result.push_back(val);
+    }
+  }
+  return result;
+}
+} // namespace gauss::gp

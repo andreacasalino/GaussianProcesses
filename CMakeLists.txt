@@ -18,7 +18,7 @@ include(MakeLibrary)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 project(Gaussian-Process)
-add_subdirectory(src2)
+add_subdirectory(src)
 
 option(BUILD_GaussianProcess_SAMPLES "Build the samples showing how to use the package" ON)
 if(BUILD_GaussianProcess_SAMPLES)

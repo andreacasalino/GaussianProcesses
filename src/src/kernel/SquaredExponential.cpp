@@ -1,76 +1,55 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   29.11.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   29.11.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #include <GaussianProcess/kernel/SquaredExponential.h>
+#include <GaussianProcess/Error.h>
+#include <GaussianProcess/kernel/SquaredExponential.h>
 
-// namespace gauss::gp {
-// namespace {
-// class Teta0Handler : public ParameterHandler {
-// public:
-//   Teta0Handler(const Parameter &teta0, const Parameter &teta1)
-//       : ParameterHandler(teta0) {
-//     this->teta1 = teta1;
-//   };
+namespace gauss::gp {
+SquaredExponential::SquaredExponential(const double teta0, const double teta1)
+    : teta0(teta0), teta1(teta1) {
+  teta0_squared = teta0 * teta0;
+  teta1_squared = teta1 * teta1;
+}
 
-//   double evaluate_gradient(const Eigen::VectorXd &a,
-//                            const Eigen::VectorXd &b) const override {
-//     double teta1_sq = (*teta1) * (*teta1);
-//     double distance = (a - b).dot(a - b);
-//     return 2.0 * getParameter() * exp(-teta1_sq * distance);
-//   };
+void SquaredExponential::setParameters(const std::vector<double> &values) {
+  if (values.size() != 2) {
+    throw Error{"Invalid parameters for SquaredExponential function"};
+  }
+  teta0 = values.front();
+  teta1 = values.back();
+  teta0_squared = teta0 * teta0;
+  teta1_squared = teta1 * teta1;
+}
 
-// private:
-//   Parameter teta1;
-// };
+namespace {
+double squared_distance(const Eigen::VectorXd &a, const Eigen::VectorXd &b) {
+  auto delta = a;
+  delta -= b;
+  return delta.squaredNorm();
+}
 
-// class Teta1Handler : public ParameterHandler {
-// public:
-//   Teta1Handler(const Parameter &teta0, const Parameter &teta1)
-//       : ParameterHandler(teta1) {
-//     this->teta0 = teta0;
-//   };
+double evaluate_exp_part(const double &squared_distance,
+                         const double &teta1_squared) {
+  return exp(-teta1_squared * squared_distance);
+}
+} // namespace
 
-//   double evaluate_gradient(const Eigen::VectorXd &a,
-//                            const Eigen::VectorXd &b) const override {
-//     double teta0_sq = (*teta0) * (*teta0);
-//     double teta1_sq = getParameter() * getParameter();
-//     double distance = (a - b).dot(a - b);
-//     return -teta0_sq * exp(-teta1_sq * distance) * 2.0 * getParameter() *
-//            distance;
-//   };
+double SquaredExponential::evaluate(const Eigen::VectorXd &a,
+                                    const Eigen::VectorXd &b) const {
+  return teta0_squared *
+         evaluate_exp_part(squared_distance(a, b), teta1_squared);
+}
 
-// private:
-//   Parameter teta0;
-// };
-// } // namespace
-
-// SquaredExponential::SquaredExponential(const double teta0, const double
-// teta1) {
-//   this->teta0 = std::make_shared<double>(teta0);
-//   this->teta1 = std::make_shared<double>(teta1);
-// }
-
-// double SquaredExponential::evaluate(const Eigen::VectorXd &a,
-//                                     const Eigen::VectorXd &b) const {
-//   double teta0_sq = (*teta0) * (*teta0);
-//   double teta1_sq = (*teta1) * (*teta1);
-//   double distance = (a - b).dot(a - b);
-//   return teta0_sq * exp(-teta1_sq * distance);
-// };
-
-// std::unique_ptr<KernelFunction> SquaredExponential::copy() const {
-//   return std::make_unique<SquaredExponential>(*teta0, *teta1);
-// };
-
-// std::vector<ParameterHandlerPtr> SquaredExponential::getParameters() const {
-//   std::vector<ParameterHandlerPtr> result;
-//   result.reserve(2);
-//   result.emplace_back(std::make_unique<Teta0Handler>(teta0, teta1));
-//   result.emplace_back(std::make_unique<Teta1Handler>(teta0, teta1));
-//   return result;
-// };
-// } // namespace gauss::gp
+std::vector<double>
+SquaredExponential::getGradient(const Eigen::VectorXd &a,
+                                const Eigen::VectorXd &b) const {
+  const auto squared_dist = squared_distance(a, b);
+  const auto exp_part = evaluate_exp_part(squared_dist, teta1_squared);
+  return {2.0 * teta0 * exp_part,
+          -2.0 * teta1 * squared_dist * teta0_squared * exp_part};
+}
+} // namespace gauss::gp

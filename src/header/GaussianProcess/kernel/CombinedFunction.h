@@ -16,21 +16,29 @@ namespace gauss::gp {
  */
 class CombinedFunction : public KernelFunction {
 public:
-  CombinedFunction(KernelFunctionPtr first_element,
-                   KernelFunctionPtr second_element);
+  CombinedFunction(KernelFunctionPtr first, KernelFunctionPtr second);
 
-  /**
-   * @brief Add an additional kernel function to the composite
-   * @throw passing a null element
-   */
-  void add_element(KernelFunctionPtr element);
+  KernelFunctionPtr copy() const final;
+
+  std::size_t numberOfParameters() const final { return params_numb; }
+
+  std::vector<double> getParameters() const final;
+
+  void setParameters(const std::vector<double> &values) final;
 
   double evaluate(const Eigen::VectorXd &a,
-                  const Eigen::VectorXd &b) const override;
+                  const Eigen::VectorXd &b) const final;
 
-  std::vector<ParameterCnstPtr> getParameters() const override;
+  std::vector<double> getGradient(const Eigen::VectorXd &a,
+                                  const Eigen::VectorXd &b) const final;
 
-protected:
+  void addElement(KernelFunctionPtr element);
+  const std::vector<KernelFunctionPtr> &getElements() const {
+    return elements;
+  };
+
+private:
   std::vector<KernelFunctionPtr> elements;
+  std::size_t params_numb = 0;
 };
 } // namespace gauss::gp

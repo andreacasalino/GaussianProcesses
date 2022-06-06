@@ -321,7 +321,7 @@ eq. (\ref{eq:L_grad}), leading to:
 \section{Kernel functions}
 \label{sec:kernel_function}
 
-The kernel function describes correlation between inputs. Ideally, it should assume a low value for inputs that are "far", w.r.t. a certain metrics, from each other and high values for those inputs that are close.
+The kernel function describes the correlation between the inputs. Ideally, it should assume a low value for inputs that are "far", w.r.t. a certain metrics, from each other and high values for those inputs that are close.
 \\
 The kernel function $k$ should be designed in order to produce a symemtric positive definite matrix $K$, as this latter should be representative of a covariance matrix, see eq. (\ref{eq:y_joint_distr}).
 \\
@@ -335,7 +335,7 @@ Clearly, the gradient of $K$ can be computed element by element:
 \end{bmatrix}
 \end{eqnarray}
 \\
-In the following of this Section, the most popular kernel functions \footnote{Which are also the ones default supported by this package.}  will be discussed.
+In the following of this Section, some of the most popular kernel functions \footnote{Which are also the ones default supported by this package.}  will be discussed.
 
 \subsection{Linear function}
 

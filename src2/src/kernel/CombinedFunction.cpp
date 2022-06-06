@@ -42,7 +42,7 @@ std::vector<double> CombinedFunction::getParameters() const {
   return result;
 }
 
-void CombinedFunction::setParameters(const std::vector<double> &values) const {
+void CombinedFunction::setParameters(const std::vector<double> &values) {
   if (values.size() != params_numb) {
     throw Error{"Invalid parameters"};
   }

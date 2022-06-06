@@ -35,7 +35,7 @@ public:
    */
   virtual std::vector<double> getParameters() const = 0;
 
-  virtual void setParameters(const std::vector<double> &values) const = 0;
+  virtual void setParameters(const std::vector<double> &values) = 0;
 
   /**
    * @brief evaluation should be reflexive: evaluate(a,b) = evaluate(b,a)

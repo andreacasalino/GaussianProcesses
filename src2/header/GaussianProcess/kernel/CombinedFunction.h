@@ -24,7 +24,7 @@ public:
 
   std::vector<double> getParameters() const final;
 
-  void setParameters(const std::vector<double> &values) const final;
+  void setParameters(const std::vector<double> &values) final;
 
   double evaluate(const Eigen::VectorXd &a,
                   const Eigen::VectorXd &b) const final;

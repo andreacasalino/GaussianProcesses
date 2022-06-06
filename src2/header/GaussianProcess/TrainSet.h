@@ -7,10 +7,11 @@
 
 #pragma once
 
+#include <GaussianProcess/SpaceSizesAware.h>
 #include <GaussianUtils/TrainSet.h>
 
 namespace gauss::gp {
-class TrainSet {
+class TrainSet : public SpaceSizesAware {
 public:
   virtual ~TrainSet() = default;
 
@@ -36,20 +37,6 @@ public:
   TrainSet(const gauss::TrainSet &input_samples,
            const gauss::TrainSet &output_samples);
 
-  /**
-   * @brief Construct a new Train Set object.
-   * input_samples and output_samples are red from file.
-   * In each row of such a file, the initial columns represent the inpuy
-   * realization, while the remaining the output one. The size of th input
-   * samples are assumed equal to input_space_size
-   *
-   * @param file_to_read
-   * @param input_space_size
-   * @throw In case the file is not existent
-   * @throw In case the file contains less columns than input_space_size
-   */
-  TrainSet(const std::string &file_to_read, const std::size_t input_space_size);
-
   void addSample(const Eigen::VectorXd &input_sample,
                  const Eigen::VectorXd &output_sample);
 
@@ -63,13 +50,6 @@ public:
    * @param sample
    */
   void addSample(const Eigen::VectorXd &sample);
-
-  std::size_t getInputStateSpaceSize() const {
-    return static_cast<std::size_t>(input_space_size);
-  };
-  std::size_t getOutputStateSpaceSize() const {
-    return static_cast<std::size_t>(output_space_size);
-  };
 
   /**
    * @return the input realizations
@@ -87,12 +67,24 @@ public:
   }
 
 private:
-  Eigen::Index input_space_size;
   std::vector<Eigen::VectorXd> input_samples;
-
-  Eigen::Index output_space_size;
   std::vector<Eigen::VectorXd> output_samples;
 };
+
+/**
+ * @brief Creates a new Train Set object, with
+ * input_samples and output_samples are red from file.
+ * In each row of such a file, the initial columns represent the inpuy
+ * realization, while the remaining the output one. The size of th input
+ * samples are assumed equal to input_space_size
+ *
+ * @param file_to_read
+ * @param input_space_size
+ * @throw In case the file is not existent
+ * @throw In case the file contains less columns than input_space_size
+ */
+TrainSet import_train_set(const std::string &file_to_read,
+                          const std::size_t input_space_size);
 
 class TrainSetAware {
 public:

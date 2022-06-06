@@ -19,64 +19,54 @@ Eigen::VectorXd get_slice(const Eigen::VectorXd &source,
   }
   return result;
 }
-
-std::pair<std::vector<Eigen::VectorXd>, std::vector<Eigen::VectorXd>>
-import_train_set(const std::string &file_to_read,
-                 const std::size_t input_space_size) {
-  gauss::TrainSet temp(file_to_read);
-  if (static_cast<std::size_t>(temp.GetSamples().front().size()) <=
-      input_space_size) {
-    throw gauss::gp::Error("Invalid size of samples in parsed files");
-  }
-  std::pair<std::vector<Eigen::VectorXd>, std::vector<Eigen::VectorXd>> result;
-  auto &input = result.first;
-  auto &output = result.second;
-  for (const auto &vec : temp.GetSamples()) {
-    input.push_back(get_slice(vec, 0, input_space_size));
-    output.push_back(get_slice(vec, input_space_size + 1, vec.size()));
-  }
-  return result;
-}
 } // namespace
 
 TrainSet::TrainSet(const std::size_t input_space_size,
                    const std::size_t output_space_size)
-    : input_space_size(input_space_size), output_space_size(output_space_size) {
-}
+    : SpaceSizesAware{input_space_size, output_space_size} {}
 
 TrainSet::TrainSet(const gauss::TrainSet &inputSamples,
-                   const gauss::TrainSet &outputSamples) {
-  this->input_space_size = inputSamples.GetSamples().front().size();
-  this->output_space_size = outputSamples.GetSamples().front().size();
+                   const gauss::TrainSet &outputSamples)
+    : SpaceSizesAware{
+          static_cast<std::size_t>(inputSamples.GetSamples().front().size()),
+          static_cast<std::size_t>(outputSamples.GetSamples().front().size())} {
   input_samples = inputSamples.GetSamples();
   output_samples = outputSamples.GetSamples();
 }
 
-TrainSet::TrainSet(const std::string &file_to_read,
-                   const std::size_t input_space_size) {
-  auto samples = import_train_set(file_to_read, input_space_size);
-  this->input_space_size = samples.first.front().size();
-  this->output_space_size = samples.second.front().size();
-  input_samples = std::move(samples.first);
-  output_samples = std::move(samples.second);
+TrainSet import_train_set(const std::string &file_to_read,
+                          const std::size_t input_space_size) {
+  std::vector<Eigen::VectorXd> input;
+  std::vector<Eigen::VectorXd> output;
+  {
+    gauss::TrainSet temp(file_to_read);
+    for (const auto &vec : temp.GetSamples()) {
+      input.push_back(get_slice(vec, 0, input_space_size));
+      output.push_back(get_slice(vec, input_space_size + 1, vec.size()));
+    }
+  }
+  TrainSet result(input.front().size(), output.front().size());
+  for (std::size_t k = 0; k < input.size(); ++k) {
+    result.addSample(input[k], output[k]);
+  }
+  return result;
 }
 
 void TrainSet::addSample(const Eigen::VectorXd &input_sample,
                          const Eigen::VectorXd &output_sample) {
-  if (input_sample.size() != input_space_size) {
+  if (input_sample.size() != getInputStateSpaceSize()) {
     throw Error{"Invalid new sample"};
   }
   input_samples.push_back(input_sample);
 
-  if (output_sample.size() != output_space_size) {
+  if (output_sample.size() != getOutputStateSpaceSize()) {
     throw Error{"Invalid new sample"};
   }
   output_samples.push_back(output_sample);
 }
 
 void TrainSet::addSample(const Eigen::VectorXd &sample) {
-  if ((input_space_size + output_space_size) !=
-      (getInputStateSpaceSize() + getOutputStateSpaceSize())) {
+  if (sample.size() != (getInputStateSpaceSize() + getOutputStateSpaceSize())) {
     throw gauss::gp::Error("Invalid new sample");
   }
   input_samples.emplace_back(get_slice(sample, 0, getInputStateSpaceSize()));
@@ -85,8 +75,8 @@ void TrainSet::addSample(const Eigen::VectorXd &sample) {
 }
 
 void TrainSet::addSamples(const gauss::gp::TrainSet &o) {
-  if ((input_space_size != o.input_space_size) ||
-      (output_space_size != o.output_space_size)) {
+  if ((getInputStateSpaceSize() != o.getInputStateSpaceSize()) ||
+      (getOutputStateSpaceSize() != o.getOutputStateSpaceSize())) {
     throw Error{"Invalid new samples"};
   }
   for (std::size_t k = 0; k < o.input_samples.size(); ++k) {

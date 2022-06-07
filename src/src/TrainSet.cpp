@@ -71,7 +71,7 @@ void TrainSet::addSample(const Eigen::VectorXd &sample) {
   }
   input_samples.emplace_back(get_slice(sample, 0, getInputStateSpaceSize()));
   output_samples.emplace_back(
-      get_slice(sample, getInputStateSpaceSize() + 1, sample.size()));
+      get_slice(sample, getInputStateSpaceSize(), sample.size()));
 }
 
 void TrainSet::addSamples(const gauss::gp::TrainSet &o) {

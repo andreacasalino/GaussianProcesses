@@ -14,7 +14,7 @@
 namespace gauss::gp {
 KernelCovariance::KernelCovariance(KernelFunctionPtr new_kernel)
     : kernelFunction(std::move(new_kernel)) {
-  if (nullptr == new_kernel) {
+  if (nullptr == kernelFunction) {
     throw Error{"Found null kernel function"};
   }
   kernel_matrix = std::make_unique<SymmetricResizableMatrix>(

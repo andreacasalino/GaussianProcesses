@@ -17,8 +17,8 @@
 
 namespace gauss::gp {
 class GaussianProcess : public KernelCovariance,
-                        protected YYMatrixTrain,
-                        protected YYMatrixPredict,
+                        public YYMatrixTrain,
+                        public YYMatrixPredict,
                         protected ::train::ParametersAware {
 public:
   template <typename... TrainSetArgs>

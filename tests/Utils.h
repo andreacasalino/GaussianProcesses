@@ -43,6 +43,8 @@ bool is_zeros(const Eigen::MatrixXd &subject);
 
 bool is_equal(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
 
+bool is_equal_vec(const Eigen::VectorXd &a, const Eigen::VectorXd &b);
+
 bool is_symmetric(const Eigen::MatrixXd &subject);
 
 bool is_inverse(const Eigen::MatrixXd &subject,

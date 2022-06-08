@@ -1,8 +1,3 @@
-// test kernel correctness
-// test kernel covariance decomposition
-// test kernel covariance is spd
-// test kernel isr ecomputed when changing kernel function
-
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 

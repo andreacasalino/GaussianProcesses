@@ -23,7 +23,7 @@ YYMatrixTrain::YYMatrixTrain() {
 
 YYMatrixTrain::~YYMatrixTrain() = default;
 
-const Eigen::MatrixXd &YYMatrixTrain::getYYtrain() const {
+const Eigen::MatrixXd &YYMatrixTrain::getYYtrain_() const {
   YYtrain->resize(getTrainSet().GetSamplesInput().size());
   return YYtrain->access();
 }
@@ -38,13 +38,11 @@ protected:
     const auto size = getSize();
     const auto computed_size = getComputedSize();
     const auto &train_set = source.getTrainSet();
-    const auto &samples_in = train_set.GetSamplesInput();
+    const auto &samples_out = train_set.GetSamplesOutput();
     Eigen::MatrixXd result =
-        Eigen::MatrixXd{train_set.getInputStateSpaceSize(), samples_in.size()};
-    result.block(0, 0, train_set.getInputStateSpaceSize(), computed_size) =
-        getComputedPortion();
-    for (Eigen::Index c = computed_size; c < size; ++c) {
-      result.col(c) = samples_in[c];
+        Eigen::MatrixXd{train_set.getInputStateSpaceSize(), samples_out.size()};
+    for (Eigen::Index c = 0; c < size; ++c) {
+      result.col(c) = samples_out[c];
     }
     return result;
   }
@@ -60,7 +58,7 @@ YYMatrixPredict::YYMatrixPredict() {
 
 YYMatrixPredict::~YYMatrixPredict() = default;
 
-const Eigen::MatrixXd &YYMatrixPredict::getYYpredict() const {
+const Eigen::MatrixXd &YYMatrixPredict::getYYpredict_() const {
   YYpredict->resize(getTrainSet().GetSamplesInput().size());
   return YYpredict->access();
 }

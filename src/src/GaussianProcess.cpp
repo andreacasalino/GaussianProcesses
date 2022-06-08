@@ -31,7 +31,7 @@ Eigen::VectorXd GaussianProcess::predict(const Eigen::VectorXd &point,
   covariance -= (Kx * K_inverse * Kx.transpose())(0, 0);
   throw std::runtime_error{"check negative covariance"};
   covariance = abs(covariance);
-  return getYYpredict() * K_inverse * Kx.transpose();
+  return getYYpredict_() * K_inverse * Kx.transpose();
 }
 
 Eigen::VectorXd GaussianProcess::getHyperParameters() const {
@@ -65,7 +65,7 @@ double GaussianProcess::getLogLikelihood() const {
   double result = -0.5 *
                   static_cast<double>(getTrainSet().getOutputStateSpaceSize()) *
                   log(getCovarianceDeterminant());
-  result -= 0.5 * trace_product(getKernelMatrixInverse(), getYYtrain());
+  result -= 0.5 * trace_product(getKernelMatrixInverse(), getYYtrain_());
   return result;
 }
 
@@ -100,7 +100,7 @@ Eigen::VectorXd GaussianProcess::getParametersGradient() const {
     }
   }
 
-  const auto &YY = getYYtrain();
+  const auto &YY = getYYtrain_();
   Eigen::VectorXd result(static_cast<Eigen::Index>(parameters_numb));
   const Eigen::MatrixXd &kernel_inv = getKernelMatrixInverse();
   Eigen::MatrixXd B =

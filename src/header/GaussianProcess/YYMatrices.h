@@ -18,10 +18,12 @@ class YYMatrixTrain : virtual public TrainSetAware {
 public:
   ~YYMatrixTrain();
 
-  const Eigen::MatrixXd &getYYtrain() const;
+  Eigen::MatrixXd getYYtrain() const { return getYYtrain_(); };
 
 protected:
   YYMatrixTrain();
+
+  const Eigen::MatrixXd &getYYtrain_() const;
 
 private:
   std::unique_ptr<SymmetricResizableMatrix> YYtrain;
@@ -33,10 +35,12 @@ class YYMatrixPredict : virtual public TrainSetAware {
 public:
   ~YYMatrixPredict();
 
-  const Eigen::MatrixXd &getYYpredict() const;
+  Eigen::MatrixXd getYYpredict() const { return getYYpredict_(); };
 
 protected:
   YYMatrixPredict();
+
+  const Eigen::MatrixXd &getYYpredict_() const;
 
 private:
   std::unique_ptr<ResizableMatrix> YYpredict;

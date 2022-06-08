@@ -53,6 +53,18 @@ bool is_equal(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {
   return is_zeros(a - b);
 }
 
+bool is_equal_vec(const Eigen::VectorXd &a, const Eigen::VectorXd &b) {
+  if (a.size() != b.size()) {
+    return false;
+  }
+  for (Eigen::Index k = 0; k < a.size(); ++k) {
+    if (std::abs(a(k) - b(k)) > TOLL) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool is_symmetric(const Eigen::MatrixXd &subject) {
   return is_equal(subject, subject.transpose());
 }

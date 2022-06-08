@@ -36,4 +36,15 @@ private:
 
 std::vector<Eigen::VectorXd> make_samples(const std::size_t samples_numb,
                                           const Eigen::Index sample_size);
+
+static constexpr double TOLL = 1e-4;
+
+bool is_zeros(const Eigen::MatrixXd &subject);
+
+bool is_equal(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
+
+bool is_symmetric(const Eigen::MatrixXd &subject);
+
+bool is_inverse(const Eigen::MatrixXd &subject,
+                const Eigen::MatrixXd &candidate);
 } // namespace gauss::gp::test

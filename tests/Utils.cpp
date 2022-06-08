@@ -37,4 +37,29 @@ std::vector<Eigen::VectorXd> make_samples(const std::size_t samples_numb,
   }
   return result;
 }
+
+bool is_zeros(const Eigen::MatrixXd &subject) {
+  for (Eigen::Index r = 0; r < subject.rows(); ++r) {
+    for (Eigen::Index c = 0; c < subject.cols(); ++c) {
+      if (std::abs(subject(r, c)) > TOLL) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool is_equal(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {
+  return is_zeros(a - b);
+}
+
+bool is_symmetric(const Eigen::MatrixXd &subject) {
+  return is_equal(subject, subject.transpose());
+}
+
+bool is_inverse(const Eigen::MatrixXd &subject,
+                const Eigen::MatrixXd &candidate) {
+  return is_equal(subject * candidate,
+                  Eigen::MatrixXd::Identity(subject.rows(), subject.cols()));
+}
 } // namespace gauss::gp::test

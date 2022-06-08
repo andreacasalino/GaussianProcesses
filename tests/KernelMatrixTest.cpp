@@ -1,4 +1,4 @@
-// test kernel covariance update
+// test kernel correctness
 // test kernel covariance decomposition
 // test kernel covariance is spd
 

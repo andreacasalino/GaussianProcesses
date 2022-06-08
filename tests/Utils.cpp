@@ -27,4 +27,17 @@ std::vector<double> TestFunction::getGradient(const Eigen::VectorXd &a,
                                               const Eigen::VectorXd &b) const {
   return {a.dot(b)};
 }
+
+std::vector<Eigen::VectorXd> make_samples(const std::size_t samples_numb,
+                                          const Eigen::Index sample_size,
+                                          const double delta) {
+  std::vector<Eigen::VectorXd> result;
+  result.reserve(samples_numb);
+  double val = 0;
+  for (std::size_t k = 0; k < samples_numb; ++k, val += delta) {
+    auto &new_sample = result.emplace_back(sample_size).setOnes();
+    new_sample *= val;
+  }
+  return result;
+}
 } // namespace gauss::gp::test

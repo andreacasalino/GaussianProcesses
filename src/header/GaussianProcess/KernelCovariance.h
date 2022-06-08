@@ -47,7 +47,9 @@ public:
     Eigen::VectorXd eigenValues;
     Eigen::VectorXd eigenValues_inv;
   };
-  Decomposition getCovarianceDecomposition() const;
+  Decomposition getCovarianceDecomposition() const {
+    return getKernelMatrixDecomposition();
+  }
 
   /**
    * @brief replace the kernel function.
@@ -77,8 +79,12 @@ private:
 
   std::unique_ptr<SymmetricResizableMatrix> kernel_matrix;
 
-  mutable std::unique_ptr<Decomposition> kernel_matrix_decomposition;
+  mutable const Eigen::MatrixXd *last_kernel_mat_4_kernel_matrix_decomposition =
+      nullptr;
+  mutable Decomposition kernel_matrix_decomposition;
 
-  mutable std::unique_ptr<Eigen::MatrixXd> kernel_matrix_inverse;
+  mutable const Eigen::MatrixXd *last_kernel_mat_4_kernel_matrix_inverse =
+      nullptr;
+  mutable Eigen::MatrixXd kernel_matrix_inverse;
 };
 } // namespace gauss::gp

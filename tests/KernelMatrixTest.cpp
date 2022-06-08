@@ -1,119 +1,77 @@
 // test kernel correctness
 // test kernel covariance decomposition
 // test kernel covariance is spd
+// test kernel isr ecomputed when changing kernel function
 
-// #include "Utils.h"
-// #include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
-// namespace gauss::gp::test {
-// template <std::size_t InputSize, std::size_t OutputSize>
-// class GaussianProcessUpdateTest
-//     : public GaussianProcessTest<InputSize, OutputSize> {
-// public:
-//   GaussianProcessUpdateTest() = default;
+#include <GaussianProcess/GaussianProcess.h>
+#include <GaussianProcess/kernel/SquaredExponential.h>
 
-// protected:
-//   void check_kernel_matrix() const {
-//     const auto &samples =
-//     this->getTrainSet()->GetSamplesInput().GetSamples(); std::size_t
-//     expected_size = samples.size(); Eigen::MatrixXd kernel =
-//     this->getCovariance(); EXPECT_EQ(kernel.rows(), expected_size);
-//     EXPECT_EQ(kernel.cols(), expected_size);
-//     for (std::size_t r = 0; r < expected_size; ++r) {
-//       for (std::size_t c = 0; c < expected_size; ++c) {
-//         EXPECT_LE(abs(kernel(r, c) -
-//                       this->kernelFunction->evaluate(samples[r],
-//                       samples[c])),
-//                   1e-3);
-//       }
-//     }
-//   };
+#include "Utils.h"
 
-//   void check_output_samples_matrix() const {
-//     const auto &samples =
-//     this->getTrainSet()->GetSamplesOutput().GetSamples(); std::size_t
-//     expected_size = samples.size(); auto out_matrix =
-//     this->getSamplesOutputMatrix(); EXPECT_EQ(out_matrix.rows(),
-//     expected_size); for (std::size_t r = 0; r < expected_size; ++r) {
-//       for (Eigen::Index i = 0; i < OutputSize; ++i) {
-//         EXPECT_EQ(out_matrix(r, i), samples[r](i));
-//       }
-//     }
-//   };
+namespace {
+static constexpr double TOLL = 1e-4;
 
-//   void check_update_single_sample() {
-//     this->pushSample(this->make_sample_input(), this->make_sample_output());
-//     EXPECT_EQ(this->getCovariance().rows(), 1);
-//     EXPECT_EQ(this->getCovariance().cols(), 1);
+bool is_zeros(const Eigen::MatrixXd &subject) {
+  for (Eigen::Index r = 0; r < subject.rows(); ++r) {
+    for (Eigen::Index c = 0; c < subject.cols(); ++c) {
+      if (std::abs(subject(r, c)) > TOLL) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
-//     this->pushSample(this->make_sample_input(), this->make_sample_output());
-//     EXPECT_EQ(this->getCovariance().rows(), 2);
-//     EXPECT_EQ(this->getCovariance().cols(), 2);
+bool is_equal(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {
+  return is_zeros(a - b);
+}
 
-//     this->check_kernel_matrix();
-//     this->check_output_samples_matrix();
+bool is_symmetric(const Eigen::MatrixXd &subject) {
+  return is_equal(subject, subject.transpose());
+}
 
-//     this->clearSamples();
-//     EXPECT_THROW(this->getCovariance(), gauss::gp::Error);
-//     EXPECT_THROW(this->getCovarianceInv(), gauss::gp::Error);
-//     EXPECT_THROW(this->getCovarianceDeterminant(), gauss::gp::Error);
-//     EXPECT_THROW(this->getSamplesOutputMatrix(), gauss::gp::Error);
+bool is_inverse(const Eigen::MatrixXd &subject,
+                const Eigen::MatrixXd &candidate) {
+  return is_equal(subject * candidate,
+                  Eigen::MatrixXd::Identity(subject.rows(), subject.cols()));
+}
+} // namespace
 
-//     this->pushSample(this->make_sample_input(), this->make_sample_output());
-//     EXPECT_EQ(this->getCovariance().rows(), 1);
-//     EXPECT_EQ(this->getCovariance().cols(), 1);
+TEST_CASE("Check covariance computation", "[kernel_matrix]") {
+  using namespace gauss::gp;
 
-//     this->check_kernel_matrix();
-//     this->check_output_samples_matrix();
-//   }
+  const std::size_t samples_numb = 10;
 
-//   void check_update_multiple_samples() {
-//     const std::size_t samples_numb = 5;
+  GaussianProcess process(std::make_unique<SquaredExponential>(1.f, 1.f), 3, 1);
+  for (const auto &sample : test::make_samples(samples_numb, 4)) {
+    process.getTrainSet().addSample(sample);
+  }
 
-//     auto samples1 = this->make_samples(samples_numb);
+  const auto kernel_cov = process.getCovariance();
 
-//     this->pushSamples(samples1.GetSamplesInput().GetSamples(),
-//                       samples1.GetSamplesOutput().GetSamples());
-//     EXPECT_EQ(this->getCovariance().rows(), samples_numb);
-//     EXPECT_EQ(this->getCovariance().cols(), samples_numb);
-//     this->check_kernel_matrix();
-//     this->check_output_samples_matrix();
+  // check sizes
+  REQUIRE(kernel_cov.rows() == samples_numb);
+  REQUIRE(kernel_cov.cols() == samples_numb);
+  CHECK(is_symmetric(kernel_cov));
 
-//     auto samples2 = this->make_samples(samples_numb);
+  const auto decomposition = process.getCovarianceDecomposition();
+  // check eigvals are positive
+  for (const auto &eig_val : decomposition.eigenValues) {
+    CHECK(TOLL < eig_val);
+  }
+  CHECK(decomposition.eigenVectors.rows() == samples_numb);
+  CHECK(decomposition.eigenVectors.cols() == samples_numb);
+  // check eigvectors are rotation matrix
+  CHECK(is_inverse(decomposition.eigenVectors,
+                   decomposition.eigenVectors.transpose()));
+  // check decomposition
+  CHECK(is_equal(kernel_cov,
+                 Eigen::MatrixXd(decomposition.eigenVectors *
+                                 decomposition.eigenValues.asDiagonal() *
+                                 decomposition.eigenVectors.transpose())));
 
-//     this->pushSamples(samples1.GetSamplesInput().GetSamples(),
-//                       samples1.GetSamplesOutput().GetSamples());
-//     EXPECT_EQ(this->getCovariance().rows(), 2 * samples_numb);
-//     EXPECT_EQ(this->getCovariance().cols(), 2 * samples_numb);
-//     this->check_kernel_matrix();
-//     this->check_output_samples_matrix();
-//   }
-// };
-// } // namespace gauss::gp::test
-
-// using Process2_1 = gauss::gp::test::GaussianProcessUpdateTest<2, 1>;
-
-// TEST_F(Process2_1, noInit) {
-//   EXPECT_EQ(getTrainSet(), nullptr);
-//   EXPECT_THROW(getCovariance(), gauss::gp::Error);
-//   EXPECT_THROW(getCovarianceInv(), gauss::gp::Error);
-//   EXPECT_THROW(getCovarianceDeterminant(), gauss::gp::Error);
-//   EXPECT_THROW(getSamplesOutputMatrix(), gauss::gp::Error);
-// }
-
-// TEST_F(Process2_1, updateSingleSamples) { check_update_single_sample(); }
-
-// TEST_F(Process2_1, updateMultipleSamples) { check_update_multiple_samples();
-// }
-
-// using Process3_2 = gauss::gp::test::GaussianProcessUpdateTest<3, 2>;
-
-// TEST_F(Process3_2, updateSingleSamples) { check_update_single_sample(); }
-
-// TEST_F(Process3_2, updateMultipleSamples) { check_update_multiple_samples();
-// }
-
-// int main(int argc, char *argv[]) {
-//   ::testing::InitGoogleTest(&argc, argv);
-//   return RUN_ALL_TESTS();
-// }
+  CHECK(is_inverse(kernel_cov, process.getCovarianceInv()));
+}

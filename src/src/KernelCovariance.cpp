@@ -34,34 +34,40 @@ const Eigen::MatrixXd &KernelCovariance::getKernelMatrix() const {
 }
 
 const Eigen::MatrixXd &KernelCovariance::getKernelMatrixInverse() const {
-  if (nullptr == kernel_matrix_inverse) {
+  const auto &kernel_mat = getKernelMatrix();
+  if ((nullptr == last_kernel_mat_4_kernel_matrix_inverse) ||
+      (&kernel_mat != last_kernel_mat_4_kernel_matrix_inverse)) {
     const auto &decomposition = getKernelMatrixDecomposition();
-    kernel_matrix_inverse = std::make_unique<Eigen::MatrixXd>(
-        decomposition.eigenVectors *
-        decomposition.eigenValues_inv.asDiagonal() *
-        decomposition.eigenVectors.transpose());
+    kernel_matrix_inverse =
+        Eigen::MatrixXd(decomposition.eigenVectors *
+                        decomposition.eigenValues_inv.asDiagonal() *
+                        decomposition.eigenVectors.transpose());
+    last_kernel_mat_4_kernel_matrix_inverse = &kernel_mat;
   }
-  return *kernel_matrix_inverse;
+  return kernel_matrix_inverse;
 }
 
 const KernelCovariance::Decomposition &
 KernelCovariance::getKernelMatrixDecomposition() const {
-  if (nullptr == kernel_matrix_decomposition) {
-    kernel_matrix_decomposition = std::make_unique<Decomposition>();
-    auto &subject = *kernel_matrix_decomposition;
-    const auto &matrix = kernel_matrix->access();
-    Eigen::EigenSolver<Eigen::MatrixXd> solver(matrix);
-    subject.eigenVectors = solver.eigenvectors().real();
-    for (Eigen::Index c = 0; c < subject.eigenVectors.cols(); ++c) {
-      subject.eigenVectors.col(c) /= subject.eigenVectors.col(c).norm();
+  const auto &kernel_mat = getKernelMatrix();
+  if ((nullptr == last_kernel_mat_4_kernel_matrix_decomposition) ||
+      (&kernel_mat != last_kernel_mat_4_kernel_matrix_decomposition)) {
+    Eigen::EigenSolver<Eigen::MatrixXd> solver(kernel_mat);
+    kernel_matrix_decomposition.eigenVectors = solver.eigenvectors().real();
+    for (Eigen::Index c = 0;
+         c < kernel_matrix_decomposition.eigenVectors.cols(); ++c) {
+      kernel_matrix_decomposition.eigenVectors.col(c) /=
+          kernel_matrix_decomposition.eigenVectors.col(c).norm();
     }
-    subject.eigenValues = solver.eigenvalues().real();
-    subject.eigenValues_inv = subject.eigenValues;
-    for (auto &val : subject.eigenValues_inv) {
+    kernel_matrix_decomposition.eigenValues = solver.eigenvalues().real();
+    kernel_matrix_decomposition.eigenValues_inv =
+        kernel_matrix_decomposition.eigenValues;
+    for (auto &val : kernel_matrix_decomposition.eigenValues_inv) {
       val = 1.0 / val;
     }
+    last_kernel_mat_4_kernel_matrix_decomposition = &kernel_mat;
   }
-  return *kernel_matrix_decomposition;
+  return kernel_matrix_decomposition;
 }
 
 double KernelCovariance::getCovarianceDeterminant() const {

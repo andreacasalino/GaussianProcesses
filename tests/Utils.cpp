@@ -29,14 +29,11 @@ std::vector<double> TestFunction::getGradient(const Eigen::VectorXd &a,
 }
 
 std::vector<Eigen::VectorXd> make_samples(const std::size_t samples_numb,
-                                          const Eigen::Index sample_size,
-                                          const double delta) {
+                                          const Eigen::Index sample_size) {
   std::vector<Eigen::VectorXd> result;
   result.reserve(samples_numb);
-  double val = 0;
-  for (std::size_t k = 0; k < samples_numb; ++k, val += delta) {
-    auto &new_sample = result.emplace_back(sample_size).setOnes();
-    new_sample *= val;
+  for (std::size_t k = 0; k < samples_numb; ++k) {
+    result.emplace_back(sample_size).setRandom();
   }
   return result;
 }

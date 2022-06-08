@@ -35,6 +35,5 @@ private:
 };
 
 std::vector<Eigen::VectorXd> make_samples(const std::size_t samples_numb,
-                                          const Eigen::Index sample_size,
-                                          const double delta = 0.1);
+                                          const Eigen::Index sample_size);
 } // namespace gauss::gp::test

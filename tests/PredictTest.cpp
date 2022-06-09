@@ -1,52 +1,152 @@
-// #include "Utils.h"
-// #include <GaussianProcess/kernel/SquaredExponential.h>
-// #include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
-// namespace gauss::gp::test {
-// template <std::size_t InputSize, std::size_t OutputSize>
-// class GaussianProcessPredictTest
-//     : public GaussianProcessTest<InputSize, OutputSize> {
-// public:
-//   GaussianProcessPredictTest()
-//       : GaussianProcessTest<InputSize, OutputSize>(
-//             std::make_unique<SquaredExponential>(1, 0.5)){};
+#include <GaussianProcess/GaussianProcess.h>
+#include <GaussianProcess/kernel/SquaredExponential.h>
 
-//   void SetUp() {
-//     auto samples = this->make_samples(5);
+#include "Utils.h"
 
-//     this->pushSamples(samples.GetSamplesInput().GetSamples(),
-//                       samples.GetSamplesOutput().GetSamples());
-//   }
+#include <math.h>
 
-// protected:
-//   void check_prediction() const {
-//     const auto &samples =
-//     this->getTrainSet()->GetSamplesInput().GetSamples();
+namespace {
+Eigen::VectorXd make_vec(const double val) {
+  Eigen::VectorXd result(1);
+  result(0) = val;
+  return result;
+}
 
-//     double prediction_covariance;
-//     for (const auto &sample : samples) {
-//       this->predict(sample, prediction_covariance);
-//       auto prediction_covariance_low = prediction_covariance;
+class EquispacedGrid {
+public:
+  EquispacedGrid(const Eigen::VectorXd &min_corner,
+                 const Eigen::VectorXd &max_corner, const std::size_t size)
+      : size(size) {
+    deltas = Eigen::VectorXd(size);
+    for (std::size_t k = 0; k < size; ++k) {
+      deltas(k) = (max_corner(k) - min_corner(k)) / static_cast<double>(size);
+    }
+  }
 
-//       auto point = sample;
-//       {
-//         Eigen::VectorXd delta(sample.size());
-//         delta.setRandom();
-//         delta *= 0.05;
-//         point += delta;
-//       }
-//       this->predict(point, prediction_covariance);
-//       EXPECT_LE(prediction_covariance_low, prediction_covariance);
-//     }
-//   };
-// };
-// } // namespace gauss::gp::test
+  void
+  gridFor(const std::function<void(const Eigen::VectorXd &)> &predicate) const {
+    gridFor_(predicate, {});
+  }
 
-// using Process3_2 = gauss::gp::test::GaussianProcessPredictTest<3, 2>;
+  const Eigen::VectorXd &getDeltas() const { return deltas; }
 
-// TEST_F(Process3_2, prediction) { check_prediction(); }
+  Eigen::VectorXd at(const std::vector<std::size_t> &indices) const {
+    Eigen::VectorXd result(deltas.size());
+    for (std::size_t k = 0; k < indices.size(); ++k) {
+      result(k) = indices[k] * deltas(k);
+    }
+    return result;
+  }
 
-// int main(int argc, char *argv[]) {
-//   ::testing::InitGoogleTest(&argc, argv);
-//   return RUN_ALL_TESTS();
-// }
+  std::vector<std::size_t> randomIndices() const {
+    std::vector<std::size_t> result;
+    for (std::size_t k = 0; k < deltas.size(); ++k) {
+      result.push_back(rand() % size);
+    }
+    return result;
+  }
+
+private:
+  void gridFor_(const std::function<void(const Eigen::VectorXd &)> &predicate,
+                const std::vector<std::size_t> &cumulated_indices) const {
+    if (cumulated_indices.size() == deltas.size()) {
+      predicate(at(cumulated_indices));
+      return;
+    }
+    for (std::size_t k = 0; k < size; ++k) {
+      auto indices = cumulated_indices;
+      indices.push_back(k);
+      gridFor_(predicate, indices);
+    }
+  }
+
+  const std::size_t size;
+  Eigen::VectorXd deltas;
+};
+} // namespace
+
+TEST_CASE("Gaussian process predictions 1d", "[predict]") {
+  using namespace gauss::gp;
+
+  EquispacedGrid grid(make_vec(-6.0), make_vec(6.0), 20);
+
+  GaussianProcessScalar<1> process(
+      std::make_unique<SquaredExponential>(1.f, 0.1f));
+  grid.gridFor([&process](const Eigen::VectorXd &sample_in) {
+    const auto sample_out = make_vec(sin(sample_in(0)));
+    process.getTrainSet().addSample(sample_in, sample_out);
+  });
+
+  for (std::size_t t = 0; t < 10; ++t) {
+    const auto point = grid.at(grid.randomIndices());
+    const auto point_prediction = process.predict2(point);
+    const auto point_perturbed_prediction =
+        process.predict2(point + 0.5 * grid.getDeltas());
+
+    CHECK(point_prediction.mean.size() == 1);
+    CHECK(std::abs(point_prediction.mean(0) - sin(point(0))) < test::TOLL);
+    CHECK(point_prediction.covariance < point_perturbed_prediction.covariance);
+  }
+}
+
+TEST_CASE("Gaussian process predictions 3d", "[predict]") {
+  using namespace gauss::gp;
+
+  Eigen::VectorXd min(3);
+  min << -6.0, -6.0, -6.0;
+  Eigen::VectorXd max(3);
+  max << 6.0, 6.0, 6.0;
+  EquispacedGrid grid(min, max, 10);
+
+  SECTION("scalar output") {
+    GaussianProcessScalar<3> process(
+        std::make_unique<SquaredExponential>(1.f, 0.1f));
+    grid.gridFor([&process](const Eigen::VectorXd &sample_in) {
+      const auto sample_out = make_vec(sin(sample_in.norm()));
+      process.getTrainSet().addSample(sample_in, sample_out);
+    });
+
+    for (std::size_t t = 0; t < 10; ++t) {
+      const auto point = grid.at(grid.randomIndices());
+      const auto point_prediction = process.predict2(point);
+      const auto point_perturbed_prediction =
+          process.predict2(point + 0.5 * grid.getDeltas());
+
+      CHECK(point_prediction.mean.size() == 1);
+      CHECK(std::abs(point_prediction.mean(0) - sin(point.norm())) <
+            test::TOLL);
+      CHECK(point_prediction.covariance <
+            point_perturbed_prediction.covariance);
+    }
+  }
+
+  SECTION("vectorial output") {
+    auto make_out = [](const Eigen::VectorXd &sample_in) {
+      const auto val = sin(sample_in.norm());
+      Eigen::VectorXd result(3);
+      result << val, val, val;
+      return result;
+    };
+
+    GaussianProcessVectorial<3, 3> process(
+        std::make_unique<SquaredExponential>(1.f, 0.1f));
+    grid.gridFor([&process, &make_out](const Eigen::VectorXd &sample_in) {
+      process.getTrainSet().addSample(sample_in, make_out(sample_in));
+    });
+
+    for (std::size_t t = 0; t < 10; ++t) {
+      const auto point = grid.at(grid.randomIndices());
+      const auto point_prediction = process.predict2(point);
+      const auto point_perturbed_prediction =
+          process.predict2(point + 0.5 * grid.getDeltas());
+
+      CHECK(point_prediction.mean.size() == 3);
+      CHECK(test::is_equal_vec(point_prediction.mean, make_out(point)));
+      CHECK(point_prediction.covariance <
+            point_perturbed_prediction.covariance);
+    }
+  }
+}

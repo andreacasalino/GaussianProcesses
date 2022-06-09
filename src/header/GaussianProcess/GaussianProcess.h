@@ -92,4 +92,14 @@ protected:
 private:
   TrainSet samples;
 };
+
+template <std::size_t InputSize, std::size_t OutputSize>
+class GaussianProcessVectorial : public GaussianProcess {
+public:
+  GaussianProcessVectorial(KernelFunctionPtr kernel)
+      : GaussianProcess(std::move(kernel), InputSize, OutputSize) {}
+};
+
+template <std::size_t InputSize>
+using GaussianProcessScalar = GaussianProcessVectorial<InputSize, 1>;
 } // namespace gauss::gp

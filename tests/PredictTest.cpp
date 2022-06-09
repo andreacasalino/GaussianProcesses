@@ -75,7 +75,7 @@ TEST_CASE("Gaussian process predictions 1d", "[predict]") {
   EquispacedGrid grid(make_vec(-6.0), make_vec(6.0), 20);
 
   GaussianProcessScalar<1> process(
-      std::make_unique<SquaredExponential>(1.f, 0.1f));
+      std::make_unique<SquaredExponential>(1.f, 0.5f));
   grid.gridFor([&process](const Eigen::VectorXd &sample_in) {
     const auto sample_out = make_vec(sin(sample_in(0)));
     process.getTrainSet().addSample(sample_in, sample_out);
@@ -106,7 +106,7 @@ TEST_CASE("Gaussian process predictions 3d", "[predict]") {
 
   SECTION("scalar output") {
     GaussianProcessScalar<3> process(
-        std::make_unique<SquaredExponential>(1.f, 0.1f));
+        std::make_unique<SquaredExponential>(1.f, 0.5f));
     grid.gridFor([&process](const Eigen::VectorXd &sample_in) {
       const auto sample_out = make_vec(sin(sample_in.norm()));
       process.getTrainSet().addSample(sample_in, sample_out);
@@ -137,7 +137,7 @@ TEST_CASE("Gaussian process predictions 3d", "[predict]") {
     };
 
     GaussianProcessVectorial<3, 3> process(
-        std::make_unique<SquaredExponential>(1.f, 0.1f));
+        std::make_unique<SquaredExponential>(1.f, 0.5f));
     grid.gridFor([&process, &make_out](const Eigen::VectorXd &sample_in) {
       process.getTrainSet().addSample(sample_in, make_out(sample_in));
     });

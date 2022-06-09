@@ -23,6 +23,10 @@ Eigen::VectorXd GaussianProcess::getKx(const Eigen::VectorXd &point) const {
   return Kx;
 }
 
+namespace {
+static constexpr float TOLL_COVARIANCE = 1e-4;
+}
+
 Eigen::VectorXd GaussianProcess::predict(const Eigen::VectorXd &point,
                                          double &covariance) const {
   Eigen::VectorXd Kx = getKx(point);
@@ -30,6 +34,11 @@ Eigen::VectorXd GaussianProcess::predict(const Eigen::VectorXd &point,
   covariance = getKernelFunction().evaluate(point, point);
   const Eigen::MatrixXd covariance_mat = Kx.transpose() * K_inverse * Kx;
   covariance -= covariance_mat(0, 0);
+  if (covariance < -TOLL_COVARIANCE) {
+    throw Error{"Invalid covariance for prediction: weights of the kernel "
+                "function are badly set"};
+  }
+  covariance = std::abs(covariance);
   return getYYpredict_() * K_inverse * Kx;
 }
 

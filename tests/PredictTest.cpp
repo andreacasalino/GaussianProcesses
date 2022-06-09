@@ -4,6 +4,7 @@
 #include <GaussianProcess/GaussianProcess.h>
 #include <GaussianProcess/kernel/SquaredExponential.h>
 
+#include "Grid.h"
 #include "Utils.h"
 
 #include <math.h>
@@ -15,62 +16,11 @@ Eigen::VectorXd make_vec(const double val) {
   return result;
 }
 
-class EquispacedGrid {
-public:
-  EquispacedGrid(const Eigen::VectorXd &min_corner,
-                 const Eigen::VectorXd &max_corner, const std::size_t size)
-      : size(size) {
-    if (0 == size) {
-      throw std::runtime_error{"Invalid grid size"};
-    }
-    deltas = max_corner - min_corner;
-    deltas /= static_cast<double>(size - 1);
-  }
-
-  void
-  gridFor(const std::function<void(const Eigen::VectorXd &)> &predicate) const {
-    gridFor_(predicate, {});
-  }
-
-  const Eigen::VectorXd &getDeltas() const { return deltas; }
-
-  Eigen::VectorXd at(const std::vector<std::size_t> &indices) const {
-    Eigen::VectorXd result(deltas.size());
-    for (std::size_t k = 0; k < indices.size(); ++k) {
-      result(k) = indices[k] * deltas(k);
-    }
-    return result;
-  }
-
-  std::vector<std::size_t> randomIndices() const {
-    std::vector<std::size_t> result;
-    for (std::size_t k = 0; k < deltas.size(); ++k) {
-      result.push_back(rand() % size);
-    }
-    return result;
-  }
-
-private:
-  void gridFor_(const std::function<void(const Eigen::VectorXd &)> &predicate,
-                const std::vector<std::size_t> &cumulated_indices) const {
-    if (cumulated_indices.size() == deltas.size()) {
-      predicate(at(cumulated_indices));
-      return;
-    }
-    for (std::size_t k = 0; k < size; ++k) {
-      auto indices = cumulated_indices;
-      indices.push_back(k);
-      gridFor_(predicate, indices);
-    }
-  }
-
-  const std::size_t size;
-  Eigen::VectorXd deltas;
-};
 } // namespace
 
 TEST_CASE("Gaussian process predictions 1d", "[predict]") {
   using namespace gauss::gp;
+  using namespace gauss::gp::test;
 
   EquispacedGrid grid(make_vec(-6.0), make_vec(6.0), 20);
 
@@ -97,6 +47,7 @@ TEST_CASE("Gaussian process predictions 1d", "[predict]") {
 
 TEST_CASE("Gaussian process predictions 3d", "[predict]") {
   using namespace gauss::gp;
+  using namespace gauss::gp::test;
 
   Eigen::VectorXd min(3);
   min << -6.0, -6.0, -6.0;

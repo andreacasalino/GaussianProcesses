@@ -28,8 +28,8 @@ TEST_CASE("Train the hyperparameters", "[train]") {
   });
 
   train::GradientDescendFixed trainer;
-  trainer.setOptimizationStep(0.05f);
-  trainer.setMaxIterations(5);
+  trainer.setOptimizationStep(0.01f);
+  trainer.setMaxIterations(10);
 
   for (std::size_t k = 0; k < 3; ++k) {
     const auto likelihood_prev = process.getLogLikelihood();

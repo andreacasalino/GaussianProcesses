@@ -37,13 +37,7 @@ jobs:
     - name: Install
       run:  cmake --install ./build --config Release
     - name: Test-01
-      run: ./artifacts/bin/Test01-construction
-    - name: Test-02
-      run: ./artifacts/bin/Test02-reset-update
-    - name: Test-03
-      run: ./artifacts/bin/Test03-predict
-    - name: Test-04
-      run: ./artifacts/bin/Test04-train
+      run: ./artifacts/bin/Tests
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts

@@ -28,10 +28,9 @@ Eigen::VectorXd GaussianProcess::predict(const Eigen::VectorXd &point,
   Eigen::VectorXd Kx = getKx(point);
   const Eigen::MatrixXd &K_inverse = getKernelMatrixInverse();
   covariance = getKernelFunction().evaluate(point, point);
-  covariance -= (Kx * K_inverse * Kx.transpose())(0, 0);
-  throw std::runtime_error{"check negative covariance"};
-  covariance = abs(covariance);
-  return getYYpredict_() * K_inverse * Kx.transpose();
+  const Eigen::MatrixXd covariance_mat = Kx.transpose() * K_inverse * Kx;
+  covariance -= covariance_mat(0, 0);
+  return getYYpredict_() * K_inverse * Kx;
 }
 
 Eigen::VectorXd GaussianProcess::getHyperParameters() const {

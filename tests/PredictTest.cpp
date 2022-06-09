@@ -11,7 +11,7 @@
 namespace {
 Eigen::VectorXd make_vec(const double val) {
   Eigen::VectorXd result(1);
-  result(0) = val;
+  result << val;
   return result;
 }
 
@@ -20,10 +20,11 @@ public:
   EquispacedGrid(const Eigen::VectorXd &min_corner,
                  const Eigen::VectorXd &max_corner, const std::size_t size)
       : size(size) {
-    deltas = Eigen::VectorXd(size);
-    for (std::size_t k = 0; k < size; ++k) {
-      deltas(k) = (max_corner(k) - min_corner(k)) / static_cast<double>(size);
+    if (0 == size) {
+      throw std::runtime_error{"Invalid grid size"};
     }
+    deltas = max_corner - min_corner;
+    deltas /= static_cast<double>(size - 1);
   }
 
   void
@@ -86,6 +87,8 @@ TEST_CASE("Gaussian process predictions 1d", "[predict]") {
     const auto point_perturbed_prediction =
         process.predict2(point + 0.5 * grid.getDeltas());
 
+    CHECK(0 < point_prediction.covariance);
+    CHECK(0 < point_perturbed_prediction.covariance);
     CHECK(point_prediction.mean.size() == 1);
     CHECK(std::abs(point_prediction.mean(0) - sin(point(0))) < test::TOLL);
     CHECK(point_prediction.covariance < point_perturbed_prediction.covariance);
@@ -115,6 +118,8 @@ TEST_CASE("Gaussian process predictions 3d", "[predict]") {
       const auto point_perturbed_prediction =
           process.predict2(point + 0.5 * grid.getDeltas());
 
+      CHECK(0 < point_prediction.covariance);
+      CHECK(0 < point_perturbed_prediction.covariance);
       CHECK(point_prediction.mean.size() == 1);
       CHECK(std::abs(point_prediction.mean(0) - sin(point.norm())) <
             test::TOLL);
@@ -143,6 +148,8 @@ TEST_CASE("Gaussian process predictions 3d", "[predict]") {
       const auto point_perturbed_prediction =
           process.predict2(point + 0.5 * grid.getDeltas());
 
+      CHECK(0 < point_prediction.covariance);
+      CHECK(0 < point_perturbed_prediction.covariance);
       CHECK(point_prediction.mean.size() == 3);
       CHECK(test::is_equal_vec(point_prediction.mean, make_out(point)));
       CHECK(point_prediction.covariance <

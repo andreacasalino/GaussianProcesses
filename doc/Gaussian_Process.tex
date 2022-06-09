@@ -76,9 +76,9 @@ The aim of a \textbf{GP} is to be able to make predictions about the output valu
 \bigg (
 \begin{bmatrix} 0 \\ \hline 0 \end{bmatrix},
 \begin{bmatrix}
-k(X,X, \Theta) & \vline & K_x(X, X_{1,\hdots,N}, \Theta)^T \\ 
+k(X,X, \Theta) & \vline & K_x(X, X_{1,\hdots,N}, \Theta) \\ 
 \hline
-K_x(X, X_{1,\hdots,N}, \Theta) & \vline & K
+K_x(X, X_{1,\hdots,N}, \Theta)^T & \vline & K
 \end{bmatrix}
 \bigg )
 \end{eqnarray}
@@ -86,7 +86,7 @@ where $K_x$ is a vector assembled in this way:
 \begin{eqnarray}
 K_x(X, X_{1,\hdots,N}, \Theta) = \begin{bmatrix}
 k(X, X_1 , \Theta) & \hdots & k(X, X_N , \Theta)
-\end{bmatrix}
+\end{bmatrix}^T
 \label{eq:additional_joint}
 \end{eqnarray}
 
@@ -94,7 +94,7 @@ Since eq. \ref{eq:additional_joint} describes a Gaussian distibution, the condit
 \begin{eqnarray}
 y(X | X_{1,\hdots,N}) 
 \sim \mathcal{N} \bigg ( 
-K_x K^{-1} \begin{bmatrix} y_1 \\ \vdots \\ y_N \end{bmatrix} , 
+K_x^T K^{-1} \begin{bmatrix} y_1 \\ \vdots \\ y_N \end{bmatrix} , 
 \sigma_K(X)
 \bigg )  
 \label{eq:scalar_prediction}
@@ -102,7 +102,7 @@ K_x K^{-1} \begin{bmatrix} y_1 \\ \vdots \\ y_N \end{bmatrix} ,
 where $\sigma_K(X)$ is the covariance of the conditioned distribution and can be computed as follows:
 \begin{eqnarray}
 \sigma_K(X) =
-k(X,X) - K_x K^{-1} K_x^T
+k(X,X) - K_x^T K^{-1} K_x
 \end{eqnarray}
 
 The distribution described by eq. \ref{eq:scalar_prediction}, actually represents the prediction made by the \textbf{GP}. Eq. \ref{eq:scalar_prediction} can also be rewritten as follows:
@@ -110,7 +110,7 @@ The distribution described by eq. \ref{eq:scalar_prediction}, actually represent
 y(X | X_{1,\hdots,N}) 
 \sim \mathcal{N} \bigg (
 \begin{bmatrix} y_1 & \hdots & y_N \end{bmatrix}
-K^{-1} K_x^T, 
+K^{-1} K_x, 
 \sigma_K(X)
 \bigg ) 
 \end{eqnarray}
@@ -215,13 +215,13 @@ The prediction is done as similarly discussed in Section \ref{sec:predictions_sc
 Y(X| X_{1,\hdots,N}) = \begin{bmatrix}
 \mathcal{N} \bigg (
 \begin{bmatrix} y^1_1 & \hdots & y^1_N \end{bmatrix}
-K^{-1} K_x^T, 
+K^{-1} K_x, 
 \sigma_K(X)
 \bigg ) \\ 
 \vdots \\
 \mathcal{N} \bigg (
 \begin{bmatrix} y^o_1 & \hdots & y^o_N \end{bmatrix}
-K^{-1} K_x^T, 
+K^{-1} K_x, 
 \sigma_K(X)
 \bigg ) 
 \end{bmatrix} 
@@ -235,13 +235,13 @@ Y(X| X_{1,\hdots,N})
 y^1_1 & \hdots & y^1_N \\
 \vdots & \ddots & \vdots \\
 y^o_1 & \hdots & y^o_N
-\end{bmatrix} K^{-1} K_x^T
+\end{bmatrix} K^{-1} K_x
 , \sigma_K(X) I_{o \times o}
 \bigg )
 \\
 &\sim &
 \mathcal{N} \bigg (
-\begin{bmatrix} Y_1 | & \hdots & | Y_N \end{bmatrix} K^{-1} K_x^T
+\begin{bmatrix} Y_1 | & \hdots & | Y_N \end{bmatrix} K^{-1} K_x
 , \sigma_K(X) I_{o \times o}
 \bigg )
 \end{eqnarray}

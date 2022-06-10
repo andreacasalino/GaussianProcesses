@@ -10,9 +10,14 @@
 #include <GaussianProcess/kernel/RadialFunction.h>
 
 namespace gauss::gp {
+/**
+ * @brief refer to
+ * https://peterroelants.github.io/posts/gaussian-process-kernels/#Exponentiated-quadratic-kernel
+ *
+ */
 class RadialExponential : public RadialFunction {
 public:
-  RadialExponential(double teta0, double teta1);
+  RadialExponential(const double sigma, const double length);
 
   RadialFunctionPtr copy() const final;
 
@@ -21,16 +26,16 @@ public:
   std::vector<double> getGradient(const double squared_distance) const final;
 
 private:
-  double teta0_squared;
-  double teta1_squared;
+  double sigma_squared;
+  double length_squared;
 };
 
 /**
- * @brief Kernel function k(x1, x2) assumed equal to:
- * teta0^2 * exp(-teta1^2 * (x1-x2).dot(x1-x2))
+ * @brief
+ * https://peterroelants.github.io/posts/gaussian-process-kernels/#Exponentiated-quadratic-kernel
  */
 class SquaredExponential : public RadialKernelFunction {
 public:
-  SquaredExponential(const double teta0, const double teta1);
+  SquaredExponential(const double sigma, const double length);
 };
 } // namespace gauss::gp

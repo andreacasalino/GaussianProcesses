@@ -371,27 +371,20 @@ Function gradient:
 
 Hyperparameters:
 \begin{eqnarray}
-\Theta = \begin{bmatrix} \theta_0 & \theta_1 \end{bmatrix}
+\Theta = \begin{bmatrix} \sigma & d \end{bmatrix}
 \end{eqnarray}
 
 Fuction evaluation:
 \begin{eqnarray}
-k(a,b,\Theta) 
-&=& 
-\theta_0^2 exp \big ( -\theta_1^2 \left \| a - b \right \| ^2_2 \big ) \\
-&=&
-\theta_0^2 exp \big ( -\theta_1^2 (a-b)^T (a-b) \big )
+k(a,b,\Theta) =
+\sigma^2 exp \bigg ( - \frac{\left \| a - b \right \| ^2_2}{d^2}  \bigg ) 
 \end{eqnarray}
 
 Function gradient:
 \begin{eqnarray}
-\frac{\partial k (a,b)}{\partial \theta_0} &=& 2 \theta_0 exp \big ( 
--\theta_1^2 \left \| a - b \right \| ^2_2 
-\big ) \\
-\frac{\partial k (a,b)}{\partial \theta_1} &=& \theta_0^2 exp \big ( 
--\theta_1^2 \left \| a - b \right \| ^2_2 
-\big )
-\big ( -2 \theta_1(a-b)^T(a-b) \big )
+\frac{\partial k (a,b)}{\partial \sigma} &=& 2 \sigma exp \bigg ( - \frac{\left \| a - b \right \| ^2_2}{d^2}  \bigg ) \\
+\frac{\partial k (a,b)}{\partial d} &=& \sigma^2 exp \bigg ( - \frac{\left \| a - b \right \| ^2_2}{d^2}  \bigg )
+2 \frac{\left \| a - b \right \| ^2_2}{d^3}
 \end{eqnarray}
 
 \subsection{What to expect from the predictions}

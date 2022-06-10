@@ -12,10 +12,14 @@ TEST_CASE("Check YY matrix computation", "[YY_matrix]") {
 
   const std::size_t samples_numb = 10;
 
-  GaussianProcess process(std::make_unique<SquaredExponential>(1.f, 1.f), 3, 3);
+  const std::size_t input_size = 3;
+  auto output_size = GENERATE(2, 3, 4);
 
-  const auto samples_in = test::make_samples(samples_numb, 3);
-  const auto samples_out = test::make_samples(samples_numb, 3);
+  GaussianProcess process(std::make_unique<SquaredExponential>(1.f, 1.f),
+                          input_size, output_size);
+
+  const auto samples_in = test::make_samples(samples_numb, input_size);
+  const auto samples_out = test::make_samples(samples_numb, output_size);
   for (std::size_t k = 0; k < samples_numb; ++k) {
     process.getTrainSet().addSample(samples_in[k], samples_out[k]);
   }
@@ -36,7 +40,7 @@ TEST_CASE("Check YY matrix computation", "[YY_matrix]") {
 
   SECTION("YY predict matrix") {
     const auto YY_predict_matrix = process.getYYpredict();
-    REQUIRE(YY_predict_matrix.rows() == 3);
+    REQUIRE(YY_predict_matrix.rows() == output_size);
     REQUIRE(YY_predict_matrix.cols() == samples_numb);
     for (Eigen::Index k = 0; k < samples_numb; ++k) {
       CHECK(is_equal_vec(YY_predict_matrix.col(k), samples_out[k]));

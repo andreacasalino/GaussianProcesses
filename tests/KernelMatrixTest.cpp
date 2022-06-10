@@ -14,7 +14,9 @@ TEST_CASE("Check covariance computation", "[kernel_matrix]") {
 
   auto kernel_function = std::make_unique<SquaredExponential>(1.f, 1.f);
 
-  GaussianProcess process(kernel_function->copy(), 3, 1);
+  const std::size_t input_size = 3;
+
+  GaussianProcess process(kernel_function->copy(), input_size, 1);
   const auto samples = test::make_samples(samples_numb, 4);
   for (const auto &sample : samples) {
     process.getTrainSet().addSample(sample);
@@ -27,8 +29,10 @@ TEST_CASE("Check covariance computation", "[kernel_matrix]") {
   // check kernel_cov was correctly computed
   for (Eigen::Index r = 0; r < kernel_cov.rows(); ++r) {
     for (Eigen::Index c = r; c < kernel_cov.cols(); ++c) {
-      auto sample_r = samples[static_cast<std::size_t>(r)].block(0, 0, 3, 1);
-      auto sample_c = samples[static_cast<std::size_t>(c)].block(0, 0, 3, 1);
+      auto sample_r =
+          samples[static_cast<std::size_t>(r)].block(0, 0, input_size, 1);
+      auto sample_c =
+          samples[static_cast<std::size_t>(c)].block(0, 0, input_size, 1);
       CHECK(abs(kernel_cov(r, c) -
                 kernel_function->evaluate(sample_r, sample_c)) < TOLL);
     }

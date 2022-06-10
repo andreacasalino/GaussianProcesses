@@ -39,8 +39,8 @@ protected:
     const auto computed_size = getComputedSize();
     const auto &train_set = source.getTrainSet();
     const auto &samples_out = train_set.GetSamplesOutput();
-    Eigen::MatrixXd result =
-        Eigen::MatrixXd{train_set.getInputStateSpaceSize(), samples_out.size()};
+    Eigen::MatrixXd result = Eigen::MatrixXd{
+        train_set.getOutputStateSpaceSize(), samples_out.size()};
     for (Eigen::Index c = 0; c < size; ++c) {
       result.col(c) = samples_out[c];
     }

@@ -25,7 +25,7 @@ bool is_well_formed(const Eigen::MatrixXd &mat,
 }
 } // namespace
 
-TEST_CASE("Extendable matrix resize", "[resize]") {
+TEST_CASE("Extendable matrix resize", "[resizable]") {
   using namespace gauss::gp;
 
   SymmetricResizableMatrix matrix(eval);

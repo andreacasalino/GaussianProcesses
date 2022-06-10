@@ -26,6 +26,12 @@ if(BUILD_GaussianProcess_SAMPLES)
     add_subdirectory(samples)
 endif()
 
+option(BUILD_GaussianProcess_KERNEL_VIZ "Build applications that visualizes kernel functions shape" ON)
+if(BUILD_GaussianProcess_KERNEL_VIZ)
+    project(GaussianProcessKernel-Visualizations)
+    add_subdirectory(kernels_viz)
+endif()
+
 option(BUILD_GaussianProcess_TESTS "" OFF)
 if(BUILD_GaussianProcess_TESTS)
 	project(GaussianProcess-Tests)

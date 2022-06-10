@@ -23,12 +23,6 @@ Eigen::VectorXd GaussianProcess::getKx(const Eigen::VectorXd &point) const {
   return Kx;
 }
 
-const double SuspiciousCovarianceError::COVARIANCE_TOLLERANCE = -1e-4;
-
-SuspiciousCovarianceError::SuspiciousCovarianceError()
-    : Error("Invalid covariance for prediction: weights of the kernel "
-            "function are badly set") {}
-
 Eigen::VectorXd
 GaussianProcess::predict(const Eigen::VectorXd &point, double &covariance,
                          const bool accept_bad_covariance) const {
@@ -39,7 +33,7 @@ GaussianProcess::predict(const Eigen::VectorXd &point, double &covariance,
   covariance -= covariance_mat(0, 0);
   if ((covariance < SuspiciousCovarianceError::COVARIANCE_TOLLERANCE) &&
       (!accept_bad_covariance)) {
-    throw SuspiciousCovarianceError{};
+    throw SuspiciousCovarianceError{"Negative covariance for prediction"};
   }
   covariance = std::abs(covariance);
   return getYYpredict_() * K_inverse * Kx;

@@ -65,6 +65,12 @@ KernelCovariance::getKernelMatrixDecomposition() const {
     for (auto &val : kernel_matrix_decomposition.eigenValues_inv) {
       val = 1.0 / val;
     }
+    for (const auto &eig : kernel_matrix_decomposition.eigenValues) {
+      if (eig < SuspiciousCovarianceError::COVARIANCE_TOLLERANCE) {
+        throw SuspiciousCovarianceError{
+            "Kernel covariance is not positive definite"};
+      }
+    }
     last_kernel_mat_4_kernel_matrix_decomposition = &kernel_mat;
   }
   return kernel_matrix_decomposition;

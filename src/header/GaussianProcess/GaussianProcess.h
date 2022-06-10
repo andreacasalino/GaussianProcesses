@@ -16,13 +16,6 @@
 #include <GaussianUtils/GaussianDistribution.h>
 
 namespace gauss::gp {
-class SuspiciousCovarianceError : public Error {
-public:
-  SuspiciousCovarianceError();
-
-  static const double COVARIANCE_TOLLERANCE;
-};
-
 class GaussianProcess : public KernelCovariance,
                         public YYMatrixTrain,
                         public YYMatrixPredict,

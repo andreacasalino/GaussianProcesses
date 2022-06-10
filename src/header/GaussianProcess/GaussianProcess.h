@@ -16,6 +16,13 @@
 #include <GaussianUtils/GaussianDistribution.h>
 
 namespace gauss::gp {
+class SuspiciousCovarianceError : public Error {
+public:
+  SuspiciousCovarianceError();
+
+  static const double COVARIANCE_TOLLERANCE;
+};
+
 class GaussianProcess : public KernelCovariance,
                         public YYMatrixTrain,
                         public YYMatrixPredict,
@@ -64,7 +71,8 @@ public:
    * process w.r.t the passed input point.
    */
   std::vector<gauss::GaussianDistribution>
-  predict(const Eigen::VectorXd &point) const;
+  predict(const Eigen::VectorXd &point,
+          const bool accept_bad_covariance = true) const;
 
   struct Prediction {
     Eigen::VectorXd mean;
@@ -75,13 +83,15 @@ public:
    * @return The vectorial distribution parameters describing the possible
    * output of the process w.r.t the passed input point.
    */
-  Prediction predict2(const Eigen::VectorXd &point) const;
+  Prediction predict2(const Eigen::VectorXd &point,
+                      const bool accept_bad_covariance = true) const;
 
-  GaussianDistribution predict3(const Eigen::VectorXd &point) const;
+  GaussianDistribution predict3(const Eigen::VectorXd &point,
+                                const bool accept_bad_covariance = true) const;
 
 protected:
-  Eigen::VectorXd predict(const Eigen::VectorXd &point,
-                          double &covariance) const;
+  Eigen::VectorXd predict(const Eigen::VectorXd &point, double &covariance,
+                          const bool accept_bad_covariance) const;
 
   ::train::Vect getParameters() const final { return getHyperParameters(); }
   void setParameters(const ::train::Vect &parameters) final {

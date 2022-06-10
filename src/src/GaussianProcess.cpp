@@ -23,20 +23,23 @@ Eigen::VectorXd GaussianProcess::getKx(const Eigen::VectorXd &point) const {
   return Kx;
 }
 
-namespace {
-static constexpr float TOLL_COVARIANCE = 1e-4;
-}
+const double SuspiciousCovarianceError::COVARIANCE_TOLLERANCE = -1e-4;
 
-Eigen::VectorXd GaussianProcess::predict(const Eigen::VectorXd &point,
-                                         double &covariance) const {
+SuspiciousCovarianceError::SuspiciousCovarianceError()
+    : Error("Invalid covariance for prediction: weights of the kernel "
+            "function are badly set") {}
+
+Eigen::VectorXd
+GaussianProcess::predict(const Eigen::VectorXd &point, double &covariance,
+                         const bool accept_bad_covariance) const {
   Eigen::VectorXd Kx = getKx(point);
   const Eigen::MatrixXd &K_inverse = getKernelMatrixInverse();
   covariance = getKernelFunction().evaluate(point, point);
   const Eigen::MatrixXd covariance_mat = Kx.transpose() * K_inverse * Kx;
   covariance -= covariance_mat(0, 0);
-  if (covariance < -TOLL_COVARIANCE) {
-    throw Error{"Invalid covariance for prediction: weights of the kernel "
-                "function are badly set"};
+  if ((covariance < SuspiciousCovarianceError::COVARIANCE_TOLLERANCE) &&
+      (!accept_bad_covariance)) {
+    throw SuspiciousCovarianceError{};
   }
   covariance = std::abs(covariance);
   return getYYpredict_() * K_inverse * Kx;
@@ -132,10 +135,11 @@ void GaussianProcess::train(::train::Trainer &trainer) {
 }
 
 std::vector<gauss::GaussianDistribution>
-GaussianProcess::predict(const Eigen::VectorXd &point) const {
+GaussianProcess::predict(const Eigen::VectorXd &point,
+                         const bool accept_bad_covariance) const {
   double prediction_covariance;
-  Eigen::VectorXd prediction_mean =
-      GaussianProcess::predict(point, prediction_covariance);
+  Eigen::VectorXd prediction_mean = GaussianProcess::predict(
+      point, prediction_covariance, accept_bad_covariance);
   Eigen::MatrixXd prediction_covariance_mat(1, 1);
   prediction_covariance_mat << prediction_covariance;
   std::vector<gauss::GaussianDistribution> result;
@@ -149,16 +153,20 @@ GaussianProcess::predict(const Eigen::VectorXd &point) const {
 }
 
 GaussianProcess::Prediction
-GaussianProcess::predict2(const Eigen::VectorXd &point) const {
+GaussianProcess::predict2(const Eigen::VectorXd &point,
+                          const bool accept_bad_covariance) const {
   double covariance;
-  Eigen::VectorXd mean = GaussianProcess::predict(point, covariance);
+  Eigen::VectorXd mean =
+      GaussianProcess::predict(point, covariance, accept_bad_covariance);
   return Prediction{mean, covariance};
 }
 
 GaussianDistribution
-GaussianProcess::predict3(const Eigen::VectorXd &point) const {
+GaussianProcess::predict3(const Eigen::VectorXd &point,
+                          const bool accept_bad_covariance) const {
   double covariance;
-  Eigen::VectorXd mean = GaussianProcess::predict(point, covariance);
+  Eigen::VectorXd mean =
+      GaussianProcess::predict(point, covariance, accept_bad_covariance);
   Eigen::MatrixXd big_cov(mean.size(), mean.size());
   big_cov.setZero();
   for (Eigen::Index i = 0; i < big_cov.size(); ++i) {

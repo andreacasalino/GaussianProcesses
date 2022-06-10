@@ -31,15 +31,13 @@ TEST_CASE("Gaussian process predictions", "[gp_slow]") {
     process.getTrainSet().addSample(sample_in, sample_out);
   });
 
-  for (std::size_t t = 0; t < 10; ++t) {
+  for (std::size_t t = 0; t < 5; ++t) {
     const auto point = grid.at(grid.randomIndices());
     const auto point_prediction = process.predict2(point);
     const auto point_perturbed_prediction =
         process.predict2(point + 0.5 * grid.getDeltas());
 
-    CHECK(0 < point_prediction.covariance);
-    CHECK(0 < point_perturbed_prediction.covariance);
-    CHECK(point_prediction.mean.size() == 1);
+    CHECK(point_prediction.mean.size() == output_size);
     Eigen::VectorXd expected_mean = Eigen::VectorXd::Ones(output_size);
     expected_mean *= sin(point.norm());
     CHECK(is_equal_vec(point_prediction.mean, expected_mean));

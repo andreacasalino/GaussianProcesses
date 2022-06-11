@@ -20,9 +20,13 @@ KernelCovariance::KernelCovariance(KernelFunctionPtr new_kernel)
   kernel_matrix = std::make_unique<SymmetricResizableMatrix>(
       [this](const Eigen::Index row, const Eigen::Index col) {
         const auto samples = this->getTrainSet().GetSamplesInput();
-        return this->kernelFunction->evaluate(
+        auto result = this->kernelFunction->evaluate(
             samples[static_cast<std::size_t>(row)],
             samples[static_cast<std::size_t>(col)]);
+        if (row == col) {
+          result += this->white_noise_cov;
+        }
+        return result;
       });
 }
 

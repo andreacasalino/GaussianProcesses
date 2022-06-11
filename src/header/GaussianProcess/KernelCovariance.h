@@ -64,6 +64,11 @@ public:
    */
   const KernelFunction &getKernelFunction() const { return *kernelFunction; }
 
+  double getWhiteNoiseCovariance() const { return white_noise_cov; }
+  void setWhiteNoiseStandardDeviation(const double val) {
+    white_noise_cov = val * val;
+  }
+
 protected:
   KernelCovariance(KernelFunctionPtr new_kernel);
 
@@ -86,5 +91,7 @@ private:
   mutable const Eigen::MatrixXd *last_kernel_mat_4_kernel_matrix_inverse =
       nullptr;
   mutable Eigen::MatrixXd kernel_matrix_inverse;
+
+  double white_noise_cov = 0.1;
 };
 } // namespace gauss::gp

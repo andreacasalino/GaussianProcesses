@@ -1,49 +1,81 @@
 #include <GaussianProcess/kernel/Linear.h>
+#include <GaussianProcess/kernel/PeriodicFunction.h>
 #include <GaussianProcess/kernel/SquaredExponential.h>
 
 #include "KernelVisualizer.h"
 
 #include <fstream>
 #include <iostream>
+#include <unordered_map>
 
 int main() {
   const std::size_t size = 100;
 
-  nlohmann::json kernels_log = nlohmann::json::array();
+  struct KernelAndTitle {
+    gauss::gp::KernelFunctionPtr kernel;
+    const std::string title;
+  };
+
+  std::unordered_map<std::string, std::vector<KernelAndTitle>> cases;
 
   ///////////// squared exponential function /////////////
-  kernels_log.push_back(gauss::gp::make_kernel_viz_log(
-      size, gauss::gp::SquaredExponential(1.0, 0.1),
-      "squared exponential d = 0.1", "squared_exp"));
-  std::cout << "squared exponential  d = 0.1" << std::endl;
+  {
+    auto &tag = cases["exponential"];
+    tag.push_back(KernelAndTitle{
+        std::make_unique<gauss::gp::SquaredExponential>(1.0, 0.1),
+        "squared exponential d = 0.1"});
+    tag.push_back(KernelAndTitle{
+        std::make_unique<gauss::gp::SquaredExponential>(1.0, 0.5),
+        "squared exponential d = 0.5"});
+    tag.push_back(KernelAndTitle{
+        std::make_unique<gauss::gp::SquaredExponential>(1.0, 1.0),
+        "squared exponential d = 1.0"});
+  }
 
-  kernels_log.push_back(gauss::gp::make_kernel_viz_log(
-      size, gauss::gp::SquaredExponential(1.0, 0.5),
-      "squared exponential d = 0.5", "squared_exp"));
-  std::cout << "squared exponential  d = 0.5" << std::endl;
-
-  kernels_log.push_back(gauss::gp::make_kernel_viz_log(
-      size, gauss::gp::SquaredExponential(1.0, 1.0),
-      "squared exponential d = 1.0", "squared_exp"));
-  std::cout << "squared exponential  d = 1.0" << std::endl;
+  ///////////// periodic function /////////////
+  {
+    auto &tag = cases["periodic"];
+    tag.push_back(KernelAndTitle{
+        std::make_unique<gauss::gp::PeriodicFunction>(1.0, 0.5, 0.1),
+        "periodic d = 0.5 p = 0.1"});
+    tag.push_back(KernelAndTitle{
+        std::make_unique<gauss::gp::PeriodicFunction>(1.0, 0.5, 0.5),
+        "periodic d = 0.5 p = 0.5"});
+    tag.push_back(KernelAndTitle{
+        std::make_unique<gauss::gp::PeriodicFunction>(1.0, 0.5, 1.0),
+        "periodic d = 0.5 p = 1.0"});
+    tag.push_back(KernelAndTitle{
+        std::make_unique<gauss::gp::PeriodicFunction>(1.0, 0.1, 0.5),
+        "periodic d = 0.1 p = 0.5"});
+    tag.push_back(KernelAndTitle{
+        std::make_unique<gauss::gp::PeriodicFunction>(1.0, 1.0, 0.5),
+        "periodic d = 1.0 p = 0.5"});
+  }
 
   ///////////// linear function /////////////
-  kernels_log.push_back(gauss::gp::make_kernel_viz_log(
-      size, gauss::gp::LinearFunction(1.0, 1.0, Eigen::VectorXd::Zero(1)),
-      "linear function mean = 0", "linear"));
-  std::cout << "linear function mean = 0" << std::endl;
+  {
+    auto &tag = cases["linear"];
+    tag.push_back(
+        KernelAndTitle{std::make_unique<gauss::gp::LinearFunction>(1.0, 1.0, 1),
+                       "linear function mean = 0"});
+    tag.push_back(KernelAndTitle{std::make_unique<gauss::gp::LinearFunction>(
+                                     1.0, 1.0, -Eigen::VectorXd::Ones(1) * 0.7),
+                                 "linear function mean = -0.7"});
+    tag.push_back(KernelAndTitle{std::make_unique<gauss::gp::LinearFunction>(
+                                     1.0, 1.0, Eigen::VectorXd::Ones(1) * 0.7),
+                                 "linear function mean = 0.7"});
+  }
 
-  kernels_log.push_back(gauss::gp::make_kernel_viz_log(
-      size,
-      gauss::gp::LinearFunction(1.0, 1.0, -Eigen::VectorXd::Ones(1) * 0.7),
-      "linear function mean = -0.7", "linear"));
-  std::cout << "linear function mean = -0.7" << std::endl;
-
-  kernels_log.push_back(gauss::gp::make_kernel_viz_log(
-      size, gauss::gp::LinearFunction(1.0, 1.0, Eigen::VectorXd::Ones(1) * 0.7),
-      "linear function mean = 0.7", "linear"));
-  std::cout << "linear function mean = 0.7" << std::endl;
-
+  nlohmann::json kernels_log = nlohmann::json::array();
+  for (const auto &[tag, data] : cases) {
+    std::cout << "<========== " << tag << " ==========>" << std::endl;
+    for (const auto &[function, title] : data) {
+      std::cout << title;
+      kernels_log.push_back(
+          gauss::gp::make_kernel_viz_log(size, *function, title, tag));
+      std::cout << " done" << std::endl;
+    }
+  }
   std::ofstream stream("kernels_log.json");
   stream << kernels_log.dump();
 

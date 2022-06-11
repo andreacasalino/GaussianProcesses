@@ -25,8 +25,8 @@ void CompositeFunction::addElement(KernelFunctionPtr element) {
   if (nullptr == element) {
     throw Error{"can't add null element to CombinedFunction kernel"};
   }
-  elements.emplace_back(std::move(element));
-  params_numb += element->numberOfParameters();
+  params_numb +=
+      elements.emplace_back(std::move(element))->numberOfParameters();
 }
 
 std::vector<double> CompositeFunction::getParameters() const {

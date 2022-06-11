@@ -391,6 +391,50 @@ Function gradient:
 
 TODO spiegare che incertezza aumenta tanto piu sonon lontano da punti in training set
 
+\subsection{Combining kernel functions}
+
+Clearly, you can also combine the kernel functions described in this Section to create more complex one.
+
+\subsubsection{Summation}
+
+You can sum more kernel functions $k_{1,\hdots,m}$ together, each having its own group of hyperparameters $\Theta_{1,\hdots,m}$:
+\begin{eqnarray}
+\Theta &=& \begin{bmatrix} \Theta_1^T & \hdots & \Theta_m^T \end{bmatrix}^T \\
+k(a,b,\Theta) &=& \sum_{i=1}^m k_i(a,b,\Theta_i)
+\end{eqnarray}
+
+The gradient is clearly computed as follows:
+\begin{eqnarray}
+\frac{\partial k(a,b)}{\partial \Theta}^T = \begin{bmatrix}
+\frac{\partial k_1(a,b)}{\partial \Theta_1}^T
+\\ 
+\vdots
+\\ 
+\frac{\partial k_m(a,b)}{\partial \Theta_m}^T
+\end{bmatrix}
+\end{eqnarray}
+
+\subsubsection{Product}
+
+You can multiply bunch of kernel functions $k_{1,\hdots,m}$ together, each having its own group of hyperparameters $\Theta_{1,\hdots,m}$:
+\begin{eqnarray}
+\Theta &=& \begin{bmatrix} \Theta_1^T & \hdots & \Theta_m^T \end{bmatrix}^T \\
+k(a,b,\Theta) &=& \prod_{i=1}^m k_i(a,b,\Theta_i)
+\end{eqnarray}
+
+The gradient is clearly computed as follows:
+\begin{eqnarray}
+\frac{\partial k(a,b)}{\partial \Theta}^T = 
+\bigg( \prod_{i=1}^m k_i(a,b) \bigg)
+\begin{bmatrix}
+\frac{\partial k_1(a,b)}{\partial \Theta_1}^T \frac{1}{k_1(a,b)}
+\\ 
+\vdots
+\\ 
+\frac{\partial k_m(a,b)}{\partial \Theta_m}^T \frac{1}{k_m(a,b)}
+\end{bmatrix}
+\end{eqnarray}
+
 \appendix
 
 \section{Trace property}

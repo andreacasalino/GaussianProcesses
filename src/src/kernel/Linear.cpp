@@ -16,8 +16,6 @@ LinearFunction::LinearFunction(const double teta0, const double teta1,
     throw Error{"Invalid mean size"};
   }
   mean.setZero();
-  teta0_squared = teta0 * teta0;
-  teta1_squared = teta1 * teta1;
 }
 
 LinearFunction::LinearFunction(const double teta0, const double teta1,
@@ -40,8 +38,6 @@ void LinearFunction::setParameters(const std::vector<double> &values) {
   }
   teta0 = values[0];
   teta1 = values[1];
-  teta0_squared = teta0 * teta0;
-  teta1_squared = teta1 * teta1;
   std::size_t k = 2;
   for (auto &val : mean) {
     val = values[k];
@@ -58,7 +54,7 @@ double dot_mean(const Eigen::VectorXd &a, const Eigen::VectorXd &b,
 
 double LinearFunction::evaluate(const Eigen::VectorXd &a,
                                 const Eigen::VectorXd &b) const {
-  return teta0_squared * teta1_squared * dot_mean(a, b, mean);
+  return teta0 * teta0 + teta1 * teta1 * dot_mean(a, b, mean);
 }
 
 std::vector<double>
@@ -68,7 +64,7 @@ LinearFunction::getGradient(const Eigen::VectorXd &a,
   std::vector<double> result;
   result.push_back(2.0 * teta0);
   result.push_back(2.0 * teta1 * dot_mean(a, b, mean));
-  const auto result_back = teta1_squared * (2.0 * mean - a - b);
+  const auto result_back = teta1 * teta1 * (2.0 * mean - a - b);
   for (const auto &val : result_back) {
     result.push_back(val);
   }

@@ -387,6 +387,31 @@ Function gradient:
 2 \frac{\left \| a - b \right \| ^2_2}{d^3}
 \end{eqnarray}
 
+\subsection{Periodic kernel}
+
+This function is able to well express the periodicity in the function to approximate. The yyperparameters are:
+\begin{eqnarray}
+\Theta = \begin{bmatrix} \sigma & d & p \end{bmatrix}
+\end{eqnarray}
+$p$ represents the period of the kernel function.
+
+Fuction evaluation:
+\begin{eqnarray}
+k(a,b,\Theta) =
+\sigma^2 exp \bigg ( -\frac{sin^2 \big( \frac{2 \pi}{p} \left \| a - b \right \| _2 \big)}{d^2}  \bigg )
+= \sigma^2 exp \bigg ( -\frac{sin^2 \big( \alpha \big)}{d^2}  \bigg )
+\end{eqnarray}
+
+Function gradient:
+\begin{eqnarray}
+\frac{\partial k (a,b)}{\partial \sigma} &=& 2 \sigma exp \bigg ( -\frac{sin^2 \big( \alpha \big)}{d^2}  \bigg ) \\
+\frac{\partial k (a,b)}{\partial d} &=& \sigma^2 exp \bigg ( -\frac{sin^2 \big( \alpha \big)}{d^2}  \bigg ) 2 \frac{sin^2 \big( \alpha \big)}{d^3} \\
+\frac{\partial k (a,b)}{\partial p} 
+&=&  \sigma^2 exp \bigg ( -\frac{sin^2 \big( \alpha \big)}{d^2}  \bigg ) \bigg ( - \frac{2 sin \big( \alpha \big) cos \big( \alpha \big)}{ d^2} \bigg ) \frac{\partial \alpha}{ \partial p} \nonumber \\
+&=& \sigma^2 exp \bigg ( -\frac{sin^2 \big( \alpha \big)}{d^2}  \bigg ) \bigg ( - \frac{2 sin \big( \alpha \big) cos \big( \alpha \big)}{ d^2} \bigg ) \bigg ( - \frac{2 \pi \left \| a - b \right \| _2}{p^2} \bigg ) \nonumber \\
+&=& \sigma^2 exp \bigg ( -\frac{sin^2 \big( \alpha \big)}{d^2}  \bigg ) \frac{2 sin \big( \alpha \big) cos \big( \alpha \big) \alpha}{p d^2}  
+\end{eqnarray}
+
 \subsection{What to expect from the predictions}
 
 TODO spiegare che incertezza aumenta tanto piu sonon lontano da punti in training set

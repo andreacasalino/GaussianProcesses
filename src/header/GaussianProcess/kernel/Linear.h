@@ -42,9 +42,7 @@ public:
 
 private:
   double teta0;
-  double teta0_squared;
   double teta1;
-  double teta1_squared;
   Eigen::VectorXd mean;
 };
 } // namespace gauss::gp

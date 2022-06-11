@@ -12,12 +12,12 @@
 namespace gauss::gp {
 /**
  * @brief refer to
- * https://peterroelants.github.io/posts/gaussian-process-kernels/#Exponentiated-quadratic-kernel
+ * https://peterroelants.github.io/posts/gaussian-process-kernels/#Periodic-kernel
  *
  */
-class RadialExponential : public RadialFunction {
+class RadialPeriodic : public RadialFunction {
 public:
-  RadialExponential(const double sigma, const double length);
+  RadialPeriodic(const double sigma, const double length, const double period);
 
   RadialFunctionPtr copy() const final;
 
@@ -28,10 +28,11 @@ public:
 
 /**
  * @brief
- * https://peterroelants.github.io/posts/gaussian-process-kernels/#Exponentiated-quadratic-kernel
+ * https://peterroelants.github.io/posts/gaussian-process-kernels/#Periodic-kernel
  */
-class SquaredExponential : public RadialKernelFunction {
+class PeriodicFunction : public RadialKernelFunction {
 public:
-  SquaredExponential(const double sigma, const double length);
+  PeriodicFunction(const double sigma, const double length,
+                   const double period);
 };
 } // namespace gauss::gp

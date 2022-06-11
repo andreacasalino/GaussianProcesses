@@ -3,6 +3,7 @@
 
 #include <GaussianProcess/kernel/CompositeFunction.h>
 #include <GaussianProcess/kernel/Linear.h>
+#include <GaussianProcess/kernel/PeriodicFunction.h>
 #include <GaussianProcess/kernel/SquaredExponential.h>
 
 #include "Utils.h"
@@ -46,11 +47,15 @@ TEST_CASE("Check kernel functions", "[kernel-functions]") {
       make_kernel_function<SquaredExponential>(1, 0.2),
       make_kernel_function<LinearFunction>(0.5, 1.0, 4),
       make_kernel_function<LinearFunction>(0.5, 1.0, Eigen::VectorXd::Ones(4)),
+      make_kernel_function<PeriodicFunction>(1, 0.2, 0.1),
       make_kernel_function<Summation>(
           std::make_unique<SquaredExponential>(1, 0.2),
           std::make_unique<LinearFunction>(0.5, 1.0, 4)),
       std::make_shared<Product>(std::make_unique<SquaredExponential>(1, 0.2),
-                                std::make_unique<LinearFunction>(0.5, 1.0, 4)));
+                                std::make_unique<LinearFunction>(0.5, 1.0, 4)),
+      std::make_shared<Product>(
+          std::make_unique<SquaredExponential>(1, 0.2),
+          std::make_unique<PeriodicFunction>(1, 0.2, 0.1)));
 
   const std::size_t size = 30;
   const auto samples = gauss::gp::test::make_samples(size, 4);

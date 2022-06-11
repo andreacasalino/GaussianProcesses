@@ -11,10 +11,7 @@
 
 namespace gauss::gp {
 RadialExponential::RadialExponential(const double sigma, const double length)
-    : RadialFunction(std::vector<double>{sigma, length}) {
-  sigma_squared = sigma * sigma;
-  length_squared = length * length;
-}
+    : RadialFunction(std::vector<double>{sigma, length}) {}
 
 RadialFunctionPtr RadialExponential::copy() const {
   const auto &params = getParameters();
@@ -29,17 +26,19 @@ double evaluate_exp_part(const double &squared_distance,
 } // namespace
 
 double RadialExponential::evaluate(const double squared_distance) const {
-  return sigma_squared * evaluate_exp_part(squared_distance, length_squared);
+  const auto &sigma = getParameters().front();
+  const auto &length = getParameters().back();
+  return sigma * sigma * evaluate_exp_part(squared_distance, length * length);
 }
 
 std::vector<double>
 RadialExponential::getGradient(const double squared_distance) const {
-  const auto exp_part = evaluate_exp_part(squared_distance, length_squared);
+  const auto &sigma = getParameters().front();
+  const auto &length = getParameters().back();
+  const auto exp_part = evaluate_exp_part(squared_distance, length * length);
   const auto &params = getParameters();
-  const auto &sigma = params.front();
-  const auto &length = params.back();
   return {2.0 * sigma * exp_part,
-          sigma_squared * exp_part * 2.0 * squared_distance / pow(length, 3)};
+          sigma * sigma * exp_part * 2.0 * squared_distance / pow(length, 3)};
 }
 
 SquaredExponential::SquaredExponential(const double sigma, const double length)

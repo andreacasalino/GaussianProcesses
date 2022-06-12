@@ -67,9 +67,12 @@ void GaussianProcess::setHyperParameters(const Eigen::VectorXd &parameters) {
 }
 
 double GaussianProcess::getLogLikelihood() const {
-  double result = -0.5 *
-                  static_cast<double>(getTrainSet().getOutputStateSpaceSize()) *
-                  log(getCovarianceDeterminant());
+  double result = 0;
+  const auto coeff =
+      0.5 * static_cast<double>(getTrainSet().getOutputStateSpaceSize());
+  for (const auto &eig_val : getCovarianceDecomposition().eigenValues) {
+    result -= coeff * log(eig_val);
+  }
   result -= 0.5 * trace_product(getKernelMatrixInverse(), getYYtrain_());
   return result;
 }

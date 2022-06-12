@@ -52,23 +52,25 @@ TEST_CASE("Train the hyperparameters", "[gp_slow]") {
   using namespace gauss::gp;
   using namespace gauss::gp::test;
 
-  Eigen::VectorXd min(3);
-  min << -6.0, -6.0, -6.0;
-  Eigen::VectorXd max(3);
-  max << 6.0, 6.0, 6.0;
-  EquispacedGrid grid(min, max, 10);
+  const std::size_t input_size = 3;
+  const std::size_t output_size = 2; // GENERATE(1, 2);
 
-  GaussianProcessVectorial<3, 2> process(
-      std::make_unique<SquaredExponential>(1.f, 0.5f));
+  const Eigen::VectorXd max = 6.0 * Eigen::VectorXd::Ones(input_size);
+  const Eigen::VectorXd min = (-6.0) * Eigen::VectorXd::Ones(input_size);
+
+  GaussianProcess process(std::make_unique<SquaredExponential>(2.0, 1.0),
+                          input_size, output_size);
+
+  EquispacedGrid grid(min, max, 5);
   grid.gridFor([&process](const Eigen::VectorXd &sample_in) {
     const double value = sin(sample_in.norm());
-    Eigen::VectorXd sample_out(2);
-    sample_out << value, value;
+    const Eigen::VectorXd sample_out =
+        value * Eigen::VectorXd::Ones(static_cast<Eigen::Index>(output_size));
     process.getTrainSet().addSample(sample_in, sample_out);
   });
 
   train::GradientDescendFixed trainer;
-  trainer.setOptimizationStep(0.01f);
+  trainer.setOptimizationStep(0.1);
   trainer.setMaxIterations(10);
 
   for (std::size_t k = 0; k < 3; ++k) {

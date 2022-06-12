@@ -23,35 +23,37 @@ TEST_CASE("Construction of Gaussian processes", "[gp]") {
 
 #include "Utils.h"
 
-TEST_CASE("Check covariance computation", "[gp]") {
+TEST_CASE("Check covariance computation and decompositiion", "[gp]") {
   using namespace gauss::gp;
   using namespace gauss::gp::test;
 
-  const std::size_t samples_numb = 10;
+  const std::size_t samples_numb = 4; // 10;
 
   auto kernel_function = std::make_unique<SquaredExponential>(1.f, 1.f);
 
   const std::size_t input_size = 3;
 
   GaussianProcess process(kernel_function->copy(), input_size, 1);
-  const auto samples = test::make_samples(samples_numb, 4);
-  for (const auto &sample : samples) {
-    process.getTrainSet().addSample(sample);
+  process.setWhiteNoiseStandardDeviation(0);
+  const auto samples_in = test::make_samples(samples_numb, input_size);
+  const auto samples_out = test::make_samples(samples_numb, 1);
+  for (std::size_t k = 0; k < samples_numb; ++k) {
+    process.getTrainSet().addSample(samples_in[k], samples_out[k]);
   }
 
   const auto kernel_cov = process.getCovariance();
   REQUIRE(kernel_cov.rows() == samples_numb);
   REQUIRE(kernel_cov.cols() == samples_numb);
   CHECK(is_symmetric(kernel_cov));
+
   // check kernel_cov was correctly computed
   for (Eigen::Index r = 0; r < kernel_cov.rows(); ++r) {
     for (Eigen::Index c = r; c < kernel_cov.cols(); ++c) {
-      auto sample_r =
-          samples[static_cast<std::size_t>(r)].block(0, 0, input_size, 1);
-      auto sample_c =
-          samples[static_cast<std::size_t>(c)].block(0, 0, input_size, 1);
-      CHECK(abs(kernel_cov(r, c) -
-                kernel_function->evaluate(sample_r, sample_c)) < TOLL);
+      const auto &sample_r = samples_in[static_cast<std::size_t>(r)];
+      const auto &sample_c = samples_in[static_cast<std::size_t>(c)];
+      const auto val = kernel_cov(r, c);
+      const auto val_expected = kernel_function->evaluate(sample_r, sample_c);
+      CHECK(abs(val - val_expected) < TOLL);
     }
   }
 

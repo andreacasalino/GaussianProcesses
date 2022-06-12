@@ -29,8 +29,6 @@ TEST_CASE("Train set ctor", "[train_set]") {
   TrainSet{make_samples(10, 5), make_samples(10, 3)};
 }
 
-#include <iostream>
-
 TEST_CASE("Samples addition", "[train_set]") {
   using namespace gauss::gp;
 
@@ -54,13 +52,7 @@ TEST_CASE("Samples addition", "[train_set]") {
   SECTION("merged vector") {
     Eigen::VectorXd sample(8);
     sample << sample_in, sample_out;
-    std::cout << sample.transpose() << std::endl;
     train_set.addSample(sample);
-
-    std::cout << train_set.GetSamplesInput().size() << "   "
-              << train_set.GetSamplesInput().front().transpose() << std::endl;
-    std::cout << train_set.GetSamplesOutput().size() << "   "
-              << train_set.GetSamplesOutput().front().transpose() << std::endl;
 
     const auto &samples_in = train_set.GetSamplesInput();
     REQUIRE(samples_in.size() == 1);

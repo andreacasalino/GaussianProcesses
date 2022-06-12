@@ -9,6 +9,9 @@
 #include "Utils.h"
 #include <Eigen/Dense>
 
+#include <iostream>
+#include <unordered_map>
+
 namespace {
 Eigen::VectorXcd compute_eigvalues(const Eigen::MatrixXd &subject) {
   Eigen::EigenSolver<Eigen::MatrixXd> solver(subject);
@@ -43,32 +46,48 @@ TEST_CASE("Check kernel functions", "[kernel-functions]") {
   using namespace gauss::gp;
   using namespace gauss::gp::test;
 
-  auto function = GENERATE(
-      make_kernel_function<SquaredExponential>(1, 0.2),
-      make_kernel_function<LinearFunction>(0.5, 1.0, 4),
-      make_kernel_function<LinearFunction>(0.5, 1.0, Eigen::VectorXd::Ones(4)),
-      make_kernel_function<PeriodicFunction>(1, 0.2, 0.1),
-      make_kernel_function<Summation>(
+  std::unordered_map<std::string, KernelFunctionPtr> labels_and_functions;
+  labels_and_functions.emplace("exponential",
+                               std::make_unique<SquaredExponential>(1, 0.2));
+  labels_and_functions.emplace("linear 0 mean",
+                               std::make_unique<LinearFunction>(0.5, 1.0, 4));
+  labels_and_functions.emplace(
+      "linear",
+      std::make_unique<LinearFunction>(0.5, 1.0, Eigen::VectorXd::Ones(4)));
+  // labels_and_functions.emplace("periodic",
+  //                              std::make_unique<PeriodicFunction>(1, 0.2,
+  //                              0.1));
+  labels_and_functions.emplace(
+      "summation of linear and exponential",
+      std::make_unique<Summation>(
           std::make_unique<SquaredExponential>(1, 0.2),
-          std::make_unique<LinearFunction>(0.5, 1.0, 4)),
-      std::make_shared<Product>(std::make_unique<SquaredExponential>(1, 0.2),
-                                std::make_unique<LinearFunction>(0.5, 1.0, 4)),
-      std::make_shared<Product>(
+          std::make_unique<LinearFunction>(0.5, 1.0, 4)));
+  labels_and_functions.emplace(
+      "product of linear and exponential",
+      std::make_unique<Product>(std::make_unique<SquaredExponential>(1, 0.2),
+                                std::make_unique<LinearFunction>(0.5, 1.0, 4)));
+  labels_and_functions.emplace(
+      "product of periodic and exponential",
+      std::make_unique<Product>(
           std::make_unique<SquaredExponential>(1, 0.2),
           std::make_unique<PeriodicFunction>(1, 0.2, 0.1)));
 
   const std::size_t size = 30;
   const auto samples = gauss::gp::test::make_samples(size, 4);
-  Eigen::MatrixXd kernel_matrix(size, size);
-  for (Eigen::Index r = 0; r < size; ++r) {
-    for (Eigen::Index c = 0; c < size; ++c) {
-      kernel_matrix(r, c) =
-          function->evaluate(samples[static_cast<std::size_t>(r)],
-                             samples[static_cast<std::size_t>(c)]);
+
+  for (const auto &[label, function] : labels_and_functions) {
+    std::cout << "checking " << label << std::endl;
+    Eigen::MatrixXd kernel_matrix(size, size);
+    for (Eigen::Index r = 0; r < size; ++r) {
+      for (Eigen::Index c = 0; c < size; ++c) {
+        kernel_matrix(r, c) =
+            function->evaluate(samples[static_cast<std::size_t>(r)],
+                               samples[static_cast<std::size_t>(c)]);
+      }
     }
+    CHECK(is_symmetric(kernel_matrix));
+    const auto eig_values = compute_eigvalues(kernel_matrix);
+    CHECK(are_real(eig_values));
+    CHECK(are_positive(eig_values.real()));
   }
-  CHECK(is_symmetric(kernel_matrix));
-  const auto eig_values = compute_eigvalues(kernel_matrix);
-  CHECK(are_real(eig_values));
-  CHECK(are_positive(eig_values.real()));
 }

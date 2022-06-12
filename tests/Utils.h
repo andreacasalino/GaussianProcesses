@@ -13,16 +13,20 @@ namespace gauss::gp::test {
 std::vector<Eigen::VectorXd> make_samples(const std::size_t samples_numb,
                                           const Eigen::Index sample_size);
 
-static constexpr double TOLL = 1e-4;
+static constexpr double DEFAULT_TOLL = 1e-4;
 
-bool is_zeros(const Eigen::MatrixXd &subject);
+bool is_zeros(const Eigen::MatrixXd &subject, const double toll = DEFAULT_TOLL);
 
-bool is_equal(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
+bool is_equal(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b,
+              const double toll = DEFAULT_TOLL);
 
-bool is_equal_vec(const Eigen::VectorXd &a, const Eigen::VectorXd &b);
+bool is_equal_vec(const Eigen::VectorXd &a, const Eigen::VectorXd &b,
+                  const double toll = DEFAULT_TOLL);
 
-bool is_symmetric(const Eigen::MatrixXd &subject);
+bool is_symmetric(const Eigen::MatrixXd &subject,
+                  const double toll = DEFAULT_TOLL);
 
 bool is_inverse(const Eigen::MatrixXd &subject,
-                const Eigen::MatrixXd &candidate);
+                const Eigen::MatrixXd &candidate,
+                const double toll = DEFAULT_TOLL);
 } // namespace gauss::gp::test

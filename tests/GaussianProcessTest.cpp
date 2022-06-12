@@ -27,7 +27,7 @@ TEST_CASE("Check covariance computation and decompositiion", "[gp]") {
   using namespace gauss::gp;
   using namespace gauss::gp::test;
 
-  const std::size_t samples_numb = 4; // 10;
+  const std::size_t samples_numb = 10;
 
   auto kernel_function = std::make_unique<SquaredExponential>(1.f, 1.f);
 
@@ -53,14 +53,14 @@ TEST_CASE("Check covariance computation and decompositiion", "[gp]") {
       const auto &sample_c = samples_in[static_cast<std::size_t>(c)];
       const auto val = kernel_cov(r, c);
       const auto val_expected = kernel_function->evaluate(sample_r, sample_c);
-      CHECK(abs(val - val_expected) < TOLL);
+      CHECK(abs(val - val_expected) < DEFAULT_TOLL);
     }
   }
 
   const auto decomposition = process.getCovarianceDecomposition();
   // check eigvals are positive
   for (const auto &eig_val : decomposition.eigenValues) {
-    CHECK(TOLL < eig_val);
+    CHECK(DEFAULT_TOLL < eig_val);
   }
   CHECK(decomposition.eigenVectors.rows() == samples_numb);
   CHECK(decomposition.eigenVectors.cols() == samples_numb);
@@ -103,7 +103,8 @@ TEST_CASE("Check YY matrices computation", "[gp]") {
       for (Eigen::Index c = r; c < YY_train_matrix.cols(); ++c) {
         auto sample_r = samples_out[static_cast<std::size_t>(r)];
         auto sample_c = samples_out[static_cast<std::size_t>(c)];
-        CHECK(abs(sample_r.dot(sample_c) - YY_train_matrix(r, c)) < TOLL);
+        CHECK(abs(sample_r.dot(sample_c) - YY_train_matrix(r, c)) <
+              DEFAULT_TOLL);
       }
     }
   }

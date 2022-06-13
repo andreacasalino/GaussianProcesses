@@ -23,15 +23,17 @@ int main() {
       functions_to_approximate;
   functions_to_approximate.emplace(
       "polinomial_function", [](const Eigen::VectorXd &point) {
-        return 0.05 * pow(point.norm(), 3.0) - 0.1 * pow(point.norm(), 2.0);
+        const auto val = point.norm() + 12.0;
+        return 0.05 * pow(val, 3.0) - 0.1 * pow(val, 2.0);
       });
   functions_to_approximate.emplace(
       "periodic_function",
       [](const Eigen::VectorXd &point) { return 3.0 * sin(point.norm()); });
   functions_to_approximate.emplace(
       "composite_function", [](const Eigen::VectorXd &point) {
-        return 0.05 * pow(point.norm(), 3.0) - 0.1 * pow(point.norm(), 2.0) +
-               3.0 * sin(point.norm());
+        const auto val = point.norm();
+        return 0.05 * pow(val + 12, 3.0) - 0.1 * pow(val + 12, 2.0) +
+               3.0 * sin(val);
       });
 
   const auto input_samples = gauss::gp::samples::make_equispaced_input_samples(
@@ -53,7 +55,7 @@ int main() {
       auto &output_samples_row = output_samples.emplace_back();
       for (const auto input_sample : row) {
         output_samples_row.push_back(function(input_sample));
-        Eigen::VectorXd output_sample(2);
+        Eigen::VectorXd output_sample(1);
         output_sample << output_samples_row.back();
         gauss_proc.getTrainSet().addSample(input_sample, output_sample);
       }
@@ -87,7 +89,7 @@ int main() {
     pred["expected"] = expected_means;
     pred["sigmas"] = prediction_uncertainties;
 
-    std::cout << "call 'python Visualize.py Log.json " << title
+    std::cout << "call 'python Visualize-2D.py Log.json " << title
               << "' to visualize the results" << std::endl;
   }
 

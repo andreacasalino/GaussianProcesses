@@ -71,7 +71,7 @@ int main() {
     pred["means"] = prediction_means;
     pred["sigmas"] = prediction_uncertainties;
 
-    std::cout << "call 'python Visualize.py Log.json " << title
+    std::cout << "call 'python Visualize-1D.py Log.json " << title
               << "' to visualize the results" << std::endl;
   }
 

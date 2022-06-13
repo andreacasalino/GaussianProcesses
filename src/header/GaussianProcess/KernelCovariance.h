@@ -79,6 +79,8 @@ protected:
   void updateKernelFuction(KernelFunctionPtr new_kernel);
   void resetKernelMatrix();
 
+  KernelFunction &getKernelFunction_() { return *kernelFunction; }
+
 private:
   KernelFunctionPtr kernelFunction;
 

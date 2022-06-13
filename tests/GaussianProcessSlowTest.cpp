@@ -8,6 +8,7 @@
 #include "Grid.h"
 #include "Utils.h"
 
+#include <iostream>
 #include <math.h>
 
 TEST_CASE("Gaussian process predictions", "[gp_slow]") {
@@ -70,10 +71,11 @@ TEST_CASE("Train the hyperparameters", "[gp_slow]") {
   });
 
   train::GradientDescendFixed trainer;
-  trainer.setOptimizationStep(0.1);
+  trainer.setOptimizationStep(0.01);
   trainer.setMaxIterations(10);
 
   for (std::size_t k = 0; k < 3; ++k) {
+    std::cout << process.getHyperParameters().transpose() << std::endl;
     const auto likelihood_prev = process.getLogLikelihood();
     process.train(trainer);
     const auto likelihood = process.getLogLikelihood();

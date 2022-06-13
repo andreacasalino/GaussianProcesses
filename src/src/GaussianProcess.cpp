@@ -63,6 +63,7 @@ void GaussianProcess::setHyperParameters(const Eigen::VectorXd &parameters) {
     params_vec.push_back(parameters(i));
     ++i;
   }
+  getKernelFunction_().setParameters(params_vec);
   resetKernelMatrix();
 }
 

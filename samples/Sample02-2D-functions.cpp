@@ -1,71 +1,112 @@
-#include "Utils.h"
-#include <GaussianProcess/kernel/SquaredExponential.h>
-#include <TrainingTools/iterative/solvers/GradientDescend.h>
-#include <iostream>
+/**
+ * Author:    Andrea Casalino
+ * Created:   29.11.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-const std::function<double(const Eigen::VectorXd &)> function_to_approximate =
-    [](const Eigen::VectorXd &point) { return 5 * cos(point.norm()); };
+#include <GaussianProcess/GaussianProcess.h>
+#include <GaussianProcess/kernel/SquaredExponential.h>
+
+// just a bunch of functionalities to generate and visualize the predictions
+// made by gaussian processes
+#include "Utils.h"
+
+#include <iostream>
+#include <unordered_map>
+
+void convert(nlohmann::json &recipient,
+             const std::vector<std::vector<Eigen::VectorXd>> &grid_2D);
 
 int main() {
-  const std::size_t samples_in_train_set = 100;
-  const std::size_t samples_for_preditive_grid = 25;
-  const double ray = 4.5;
+  std::unordered_map<std::string, gauss::gp::samples::Function>
+      functions_to_approximate;
+  functions_to_approximate.emplace(
+      "polinomial_function", [](const Eigen::VectorXd &point) {
+        return 0.05 * pow(point.norm(), 3.0) - 0.1 * pow(point.norm(), 2.0);
+      });
+  functions_to_approximate.emplace(
+      "periodic_function",
+      [](const Eigen::VectorXd &point) { return 3.0 * sin(point.norm()); });
+  functions_to_approximate.emplace(
+      "composite_function", [](const Eigen::VectorXd &point) {
+        return 0.05 * pow(point.norm(), 3.0) - 0.1 * pow(point.norm(), 2.0) +
+               3.0 * sin(point.norm());
+      });
 
-  // generate samples from the real function
-  auto input_samples = get_input_samples(ray, samples_in_train_set);
+  const auto input_samples = gauss::gp::samples::make_equispaced_input_samples(
+      {-6.0, -6.0}, {6.0, 6.0}, 20);
 
-  std::vector<double> output_samples;
-  output_samples.reserve(input_samples.size());
-  for (const auto &input_sample : input_samples) {
-    output_samples.push_back(function_to_approximate(input_sample));
-  }
-  std::cout << "samples generated" << std::endl;
+  const auto input_for_predictions =
+      gauss::gp::samples::make_equispaced_input_samples({-6.0, -6.0},
+                                                        {6.0, 6.0}, 75);
 
-  // generate the approximating gaussian process
-  gauss::gp::GaussianProcess process(
-      std::make_unique<gauss::gp::SquaredExponential>(1.0, 1.0),
-      gauss::gp::TrainSet{input_samples, convert(output_samples)});
-  std::cout << "Gaussian process generated" << std::endl;
+  nlohmann::json log_json;
 
-  // generate the predictions
-  std::vector<std::vector<double>> input_x_coord_predictions,
-      input_y_coord_predictions;
-  {
-    auto grid = get_grid(ray, samples_for_preditive_grid);
-    input_x_coord_predictions = std::move(grid.first);
-    input_y_coord_predictions = std::move(grid.second);
-  }
-  std::vector<std::vector<double>> output_predictions, prediction_means,
-      prediction_covariances;
-  for (std::size_t r = 0; r < samples_for_preditive_grid; ++r) {
-    output_predictions.emplace_back();
-    prediction_means.emplace_back();
-    prediction_covariances.emplace_back();
-    for (std::size_t c = 0; c < samples_for_preditive_grid; ++c) {
-      Eigen::VectorXd point(2);
-      point << input_x_coord_predictions[r][c], input_y_coord_predictions[r][c];
-      output_predictions.back().push_back(function_to_approximate(point));
-      auto temp = process.predict2(point);
-      prediction_means.back().push_back(temp.mean);
-      prediction_covariances.back().push_back(temp.covariance);
+  for (auto &[title, function] : functions_to_approximate) {
+    gauss::gp::GaussianProcessVectorial<2, 1> gauss_proc(
+        std::make_unique<gauss::gp::SquaredExponential>(1.0, 1.0));
+    gauss_proc.setWhiteNoiseStandardDeviation(0.001);
+
+    std::vector<std::vector<double>> output_samples;
+    for (const auto &row : input_samples) {
+      auto &output_samples_row = output_samples.emplace_back();
+      for (const auto input_sample : row) {
+        output_samples_row.push_back(function(input_sample));
+        Eigen::VectorXd output_sample(2);
+        output_sample << output_samples_row.back();
+        gauss_proc.getTrainSet().addSample(input_sample, output_sample);
+      }
     }
-  }
-  std::cout << "predictions generated" << std::endl;
 
-  // log the predictions
-  {
-    LoggerExtra logger;
-    logger.add_samples(input_samples, output_samples);
-    logger.add_field(input_x_coord_predictions, "input_x_coord_predictions");
-    logger.add_field(input_y_coord_predictions, "input_y_coord_predictions");
-    logger.add_field(output_predictions, "output_predictions");
-    logger.add_field(prediction_means, "prediction_means");
-    logger.add_field(prediction_covariances, "prediction_covariances");
-    logger.print("predictions.json");
+    std::vector<std::vector<double>> prediction_uncertainties;
+    std::vector<std::vector<double>> prediction_means;
+    std::vector<std::vector<double>> expected_means;
+
+    for (const auto &row : input_for_predictions) {
+      auto &prediction_uncertainties_row =
+          prediction_uncertainties.emplace_back();
+      auto &prediction_means_row = prediction_means.emplace_back();
+      auto &expected_means_row = expected_means.emplace_back();
+      for (const auto point : row) {
+        auto prediction = gauss_proc.predict2(point);
+        prediction_uncertainties_row.push_back(sqrt(prediction.covariance));
+        prediction_means_row.push_back(prediction.mean(0));
+        expected_means_row.push_back(function(point));
+      }
+    }
+
+    // log the results
+    auto &new_log = log_json[title];
+    auto &train_set = new_log["train_set"];
+    convert(train_set["inputs"], input_samples);
+    train_set["outputs"] = output_samples;
+    auto &pred = new_log["predictions"];
+    convert(pred["inputs"], input_for_predictions);
+    pred["means"] = prediction_means;
+    pred["expected"] = expected_means;
+    pred["sigmas"] = prediction_uncertainties;
+
+    std::cout << "call 'python Visualize.py Log.json " << title
+              << "' to visualize the results" << std::endl;
   }
 
-  std::cout << "call 'python Visualize02.py' to visualize the results"
-            << std::endl;
+  gauss::gp::samples::print(log_json, "Log.json");
 
   return EXIT_SUCCESS;
+}
+
+void convert(nlohmann::json &recipient,
+             const std::vector<std::vector<Eigen::VectorXd>> &grid_2D) {
+  std::vector<std::vector<double>> xs, ys;
+  for (const auto &row : grid_2D) {
+    auto &xs_row = xs.emplace_back();
+    auto &ys_row = ys.emplace_back();
+    for (const auto &point : row) {
+      xs_row.push_back(point(0));
+      ys_row.push_back(point(1));
+    }
+  }
+  recipient["x"] = xs;
+  recipient["y"] = ys;
 }

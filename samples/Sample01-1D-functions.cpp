@@ -40,14 +40,16 @@ int main() {
   nlohmann::json log_json;
 
   for (auto &[title, function] : functions_to_approximate) {
-    gauss::gp::GaussianProcess gauss_proc(
-        std::make_unique<gauss::gp::SquaredExponential>(1.0, 1.0), 1, 1);
+    gauss::gp::GaussianProcessScalar<1> gauss_proc(
+        std::make_unique<gauss::gp::SquaredExponential>(1.0, 1.0));
     gauss_proc.setWhiteNoiseStandardDeviation(0.001);
 
-    const auto output_samples =
-        gauss::gp::samples::make_output_samples(function, input_samples);
-    for (std::size_t k = 0; k < input_samples.size(); ++k) {
-      gauss_proc.getTrainSet().addSample(input_samples[k], output_samples[k]);
+    std::vector<double> output_samples;
+    for (const auto input_sample : input_samples) {
+      output_samples.push_back(function(input_sample));
+      Eigen::VectorXd output_sample(1);
+      output_sample << output_samples.back();
+      gauss_proc.getTrainSet().addSample(input_sample, output_sample);
     }
 
     std::vector<double> prediction_uncertainties;
@@ -63,7 +65,7 @@ int main() {
     auto &new_log = log_json[title];
     auto &train_set = new_log["train_set"];
     gauss::gp::samples::convert(train_set["inputs"], input_samples);
-    gauss::gp::samples::convert(train_set["outputs"], output_samples);
+    train_set["outputs"] = output_samples;
     auto &pred = new_log["predictions"];
     gauss::gp::samples::convert(pred["inputs"], input_for_predictions);
     pred["means"] = prediction_means;

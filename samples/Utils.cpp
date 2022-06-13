@@ -22,59 +22,30 @@ std::vector<double> linspace(const double min, const double max,
   }
   return result;
 }
-
-void fill(std::vector<Eigen::VectorXd> &recipient,
-          const std::vector<std::vector<double>> &intervals, std::size_t index,
-          const std::vector<double> &cumulated) {
-  if ((index + 1) == intervals.size()) {
-    for (const auto &val : intervals[index]) {
-      auto cumulated_next = cumulated;
-      cumulated_next.push_back(val);
-      Eigen::VectorXd point(cumulated_next.size());
-      point.setZero();
-      for (std::size_t k = 0; k < cumulated_next.size(); ++k) {
-        point(k) = cumulated_next[k];
-      }
-      recipient.push_back(point);
-    }
-    return;
-  }
-  for (const auto &val : intervals[index]) {
-    auto cumulated_next = cumulated;
-    cumulated_next.push_back(val);
-    fill(recipient, intervals, index + 1, cumulated_next);
-  }
-}
 } // namespace
 
 std::vector<Eigen::VectorXd>
 make_equispaced_input_samples(const double min, const double max,
                               const std::size_t size) {
   std::vector<Eigen::VectorXd> result;
-  fill(result, {linspace(min, max, size)}, 0, std::vector<double>{});
+  for (const auto &val : linspace(min, max, size)) {
+    result.emplace_back(1) << val;
+  }
   return result;
 }
 
-std::vector<Eigen::VectorXd>
-make_equispaced_input_samples(const Eigen::VectorXd &min,
-                              const Eigen::VectorXd &max,
+std::vector<std::vector<Eigen::VectorXd>>
+make_equispaced_input_samples(const std::array<double, 2> &min,
+                              const std::array<double, 2> &max,
                               const std::size_t size) {
-  std::vector<std::vector<double>> intervals;
-
-  std::vector<Eigen::VectorXd> result;
-  fill(result, intervals, 0, std::vector<double>{});
-  return result;
-}
-
-std::vector<Eigen::VectorXd>
-make_output_samples(const Function &function,
-                    const std::vector<Eigen::VectorXd> &input_samples) {
-  std::vector<Eigen::VectorXd> result;
-  result.reserve(input_samples.size());
-  for (const auto &sample : input_samples) {
-    Eigen::VectorXd temp(1);
-    temp << function(sample);
-    result.push_back(temp);
+  const auto xs = linspace(min[0], max[0], size);
+  const auto ys = linspace(min[1], max[1], size);
+  std::vector<std::vector<Eigen::VectorXd>> result;
+  for (const auto &x : xs) {
+    auto &row = result.emplace_back();
+    for (const auto &y : ys) {
+      row.emplace_back(2) << x, y;
+    }
   }
   return result;
 }

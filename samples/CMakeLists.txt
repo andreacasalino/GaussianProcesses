@@ -16,8 +16,5 @@ macro(MAKE_SAMPLE NAME SCRIPT)
     ADD_SCRIPT(${NAME} ${SCRIPT})
 endmacro()
 
-MAKE_SAMPLE(Sample01-1D-functions Visualize)
-# ADD_SCRIPT(Sample01-R1-function VisualizeEvolution)
-
-# MAKE_SAMPLE(Sample02-R2-functionA Visualize02)
-# MAKE_SAMPLE(Sample03-R2-functionB Visualize02)
+MAKE_SAMPLE(Sample01-1D-functions Visualize-1D)
+MAKE_SAMPLE(Sample02-2D-functions Visualize-2D)

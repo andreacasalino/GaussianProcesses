@@ -9,6 +9,7 @@
 
 #include <GaussianProcess/GaussianProcess.h>
 
+#include <array>
 #include <functional>
 #include <nlohmann/json.hpp>
 
@@ -17,16 +18,12 @@ std::vector<Eigen::VectorXd>
 make_equispaced_input_samples(const double min, const double max,
                               const std::size_t size);
 
-std::vector<Eigen::VectorXd>
-make_equispaced_input_samples(const Eigen::VectorXd &min,
-                              const Eigen::VectorXd &max,
+std::vector<std::vector<Eigen::VectorXd>>
+make_equispaced_input_samples(const std::array<double, 2> &min,
+                              const std::array<double, 2> &max,
                               const std::size_t size);
 
 using Function = std::function<double(const Eigen::VectorXd &)>;
-
-std::vector<Eigen::VectorXd>
-make_output_samples(const Function &function,
-                    const std::vector<Eigen::VectorXd> &input_samples);
 
 void convert(nlohmann::json &recipient,
              const std::vector<Eigen::VectorXd> &subject);

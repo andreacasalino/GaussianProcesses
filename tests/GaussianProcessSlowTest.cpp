@@ -47,8 +47,6 @@ TEST_CASE("Gaussian process predictions", "[gp_slow]") {
   }
 }
 
-#include <TrainingTools/iterative/solvers/GradientDescend.h>
-
 TEST_CASE("Check gradient direction", "[gp_slow]") {
   using namespace gauss::gp;
   using namespace gauss::gp::test;
@@ -103,6 +101,8 @@ TEST_CASE("Check gradient direction", "[gp_slow]") {
     CHECK(initial_L < new_L);
   }
 }
+
+#include <TrainingTools/iterative/solvers/GradientDescend.h>
 
 TEST_CASE("Train session the hyperparameters", "[gp_slow]") {
   using namespace gauss::gp;

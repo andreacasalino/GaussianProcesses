@@ -54,7 +54,7 @@ public:
    * @return The gradient of the tunable parameters w.r.t. to the logarithmic
    * likelihood
    */
-  Eigen::VectorXd getParametersGradient() const;
+  Eigen::VectorXd getHyperParametersGradient() const;
 
   void train(::train::Trainer &trainer);
 
@@ -90,7 +90,9 @@ protected:
   void setParameters(const ::train::Vect &parameters) final {
     setHyperParameters(parameters);
   }
-  ::train::Vect getGradient() const final { return getParametersGradient(); };
+  ::train::Vect getGradient() const final {
+    return getHyperParametersGradient();
+  };
 
 private:
   TrainSet samples;

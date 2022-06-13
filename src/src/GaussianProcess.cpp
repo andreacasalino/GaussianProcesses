@@ -10,6 +10,8 @@
 
 #include "Common.h"
 
+// #include <fstream>
+
 namespace gauss::gp {
 Eigen::VectorXd GaussianProcess::getKx(const Eigen::VectorXd &point) const {
   const auto &input_samples = getTrainSet().GetSamplesInput();
@@ -78,7 +80,7 @@ double GaussianProcess::getLogLikelihood() const {
   return result;
 }
 
-Eigen::VectorXd GaussianProcess::getParametersGradient() const {
+Eigen::VectorXd GaussianProcess::getHyperParametersGradient() const {
   const auto parameters_numb = getKernelFunction().numberOfParameters();
   const auto &samples_in = getTrainSet().GetSamplesInput();
 
@@ -109,9 +111,24 @@ Eigen::VectorXd GaussianProcess::getParametersGradient() const {
     }
   }
 
+  // {
+  //   std::ofstream stream("kernel_gradients");
+  //   for (const auto &kernel_matrix_gradient : kernel_matrix_gradients) {
+  //     stream << kernel_matrix_gradient << std::endl;
+  //   }
+  // }
+
   const auto &YY = getYYtrain_();
   Eigen::VectorXd result(static_cast<Eigen::Index>(parameters_numb));
   const Eigen::MatrixXd &kernel_inv = getKernelMatrixInverse();
+  // {
+  //   std::ofstream stream("kernel");
+  //   stream << getKernelMatrix() << std::endl;
+  // }
+  // {
+  //   std::ofstream stream("kernel_inverse");
+  //   stream << kernel_inv << std::endl;
+  // }
   Eigen::MatrixXd B =
       kernel_inv * YY -
       Eigen::MatrixXd::Identity(YY.rows(), YY.rows()) *

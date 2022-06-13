@@ -24,6 +24,8 @@ data = import_json('kernels_log.json')
 for log in data:
     if not show_log(log['tag']):
         continue;
-    plt.matshow(log['kernel'])
     plt.title(log['title'])
+    fig, ax = plt.subplots()
+    shw = ax.imshow(log['kernel'])
+    bar = plt.colorbar(shw)
 plt.show()

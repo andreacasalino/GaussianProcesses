@@ -81,13 +81,21 @@ make_output_samples(const Function &function,
 
 void convert(nlohmann::json &recipient,
              const std::vector<Eigen::VectorXd> &subject) {
-  recipient = nlohmann::json::array();
-  for (const auto v : subject) {
+  if (subject.front().size() == 1) {
     std::vector<double> as_vec;
-    for (Eigen::Index k = 0; k < v.size(); ++k) {
-      as_vec.push_back(v(k));
+    for (const auto &sample : subject) {
+      as_vec.push_back(sample(0));
     }
-    recipient.push_back(as_vec);
+    recipient = as_vec;
+  } else {
+    recipient = nlohmann::json::array();
+    for (const auto v : subject) {
+      std::vector<double> as_vec;
+      for (Eigen::Index k = 0; k < v.size(); ++k) {
+        as_vec.push_back(v(k));
+      }
+      recipient.push_back(as_vec);
+    }
   }
 }
 

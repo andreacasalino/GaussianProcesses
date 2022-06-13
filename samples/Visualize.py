@@ -1,31 +1,42 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import json
+import sys
 
+def import_json(file_name):
+    f = open(file_name)
+    result = json.load(f)
+    return result
 
-f = open('predictions.json')
-data1 = json.load(f)
-f = open('predictions_after_tune.json')
-data2 = json.load(f)
+def plot_result(title, data):
+    fig, axis = plt.subplots(1, 1)
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
+    plt.title(title)
 
-def plot_data(data_, axis):
-    input_predictions = np.array(data_['input_predictions'])
-    prediction_covariances = np.array(data_['prediction_covariances'])
-    prediction_means = np.array(data_['prediction_means'])
+    axis.scatter(np.array(data['train_set']['inputs']), np.array(data['train_set']['outputs']), color='red', marker='o', label='train set')
+    pred_in = np.array(data['predictions']['inputs'])
+    pred_mean = np.array(data['predictions']['means'])
+    pred_sigmas = np.array(data['predictions']['sigmas'])
+    axis.plot(pred_in, pred_mean, color='red', label='GP predictions')
+    axis.fill_between(pred_in, 
+            pred_mean - 2.5 * pred_sigmas, 
+            pred_mean + 2.5 * pred_sigmas, 
+        alpha=0.2, color='red', label="GP prediction uncertainty")
 
-    axis.plot(input_predictions, data_['output_predictions'], color='blue', label='real function')
-    axis.plot(input_predictions, prediction_means, color='red', label='GP predictions')
-    axis.fill_between(input_predictions, prediction_means - 2.5 * prediction_covariances, prediction_means + 2.5 * prediction_covariances, alpha=0.2, color='red', label="GP prediction uncertainty")
-    axis.scatter(data_['input_samples'], data_['output_samples'], color='red', marker='o', label="train set")
+    axis.legend()
 
-ax1.set_title('Predictions un-tuned hyperparameters')
-plot_data(data1, ax1)
-ax1.legend()
+file_name = 'Log.json'
+if(1 < len(sys.argv)):
+    file_name = sys.argv[1]
 
-ax2.set_title('Predictions tunining the hyperparameters')
-plot_data(data2, ax2)
-ax2.legend()
+title_passed = ''
+if(2 < len(sys.argv)):
+    title_passed = sys.argv[2]
 
+data = import_json(file_name)
+if len(title_passed) == 0:
+    for title in data:
+        plot_result(title, data[title])
+else:
+    plot_result(title_passed, data[title_passed])
 plt.show()

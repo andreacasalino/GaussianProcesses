@@ -14,6 +14,7 @@ set(WITH_SOURCE_TREE ON)
 include(GroupSources)
 include(AutoCollect)
 include(MakeLibrary)
+include(FecthJSONlib)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 

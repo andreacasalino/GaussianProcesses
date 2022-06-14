@@ -2,13 +2,7 @@ file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR
 
 add_executable(KernelsViz ${SRC_FILES})
 
-include(FetchContent)
-FetchContent_Declare(
-json_lib
-GIT_REPOSITORY https://github.com/nlohmann/json.git
-GIT_TAG        v3.10.5
-)
-FetchContent_MakeAvailable(json_lib)
+FECTH_JSON_LIB()
 
 target_link_libraries(KernelsViz
     PUBLIC GaussianProcess

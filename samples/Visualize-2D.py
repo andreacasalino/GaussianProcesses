@@ -32,16 +32,16 @@ def plot_result(title, data):
     axis_real.legend()
 
     axis_pred = fig.add_subplot(2, 2, 2, projection='3d')
-    axis_pred.set_title('predicted values using GP')
+    axis_pred.set_title('gaussian process predicted values')
     axis_pred.plot_surface(pred_xy_grid['x'], pred_xy_grid['y'], pred_mean, color='red', alpha=0.5)
 
     axis_error = fig.add_subplot(2, 2, 3)
-    axis_error.set_title('prediction error')
+    axis_error.set_title('predictions error')
     shw = axis_error.imshow(pred_mean - pred_expected)
     bar = plt.colorbar(shw)
 
     axis_sigmas = fig.add_subplot(2, 2, 4)
-    axis_sigmas.set_title('standard deviation of the predictions')
+    axis_sigmas.set_title('predictions standard deviation')
     shw = axis_sigmas.imshow(pred_sigmas)
     bar = plt.colorbar(shw)
 

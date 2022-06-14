@@ -23,6 +23,7 @@ double polinomial_fun(const Eigen::VectorXd &point);
 double periodic_fun(const Eigen::VectorXd &point);
 
 int main() {
+  // set of functions to approximate using gaussian processes
   std::unordered_map<std::string, gauss::gp::samples::Function>
       functions_to_approximate;
   functions_to_approximate.emplace(
@@ -36,9 +37,14 @@ int main() {
         return polinomial_fun(point) + periodic_fun(point);
       });
 
+  // equispaced grid of points forming the training set for the
+  // gaussian process
   const auto input_samples = gauss::gp::samples::make_equispaced_input_samples(
       {-6.0, -6.0}, {6.0, 6.0}, 15);
 
+  // equispaced grid of points where the prediction of the gaussian process will
+  // be checked to be similar to the function where the training set samples
+  // were taken
   const auto input_for_predictions =
       gauss::gp::samples::make_equispaced_input_samples({-6.0, -6.0},
                                                         {6.0, 6.0}, 75);
@@ -46,10 +52,12 @@ int main() {
   nlohmann::json log_json;
 
   for (auto &[title, function] : functions_to_approximate) {
+    // an empty gaussian process is initially built
     gauss::gp::GaussianProcessVectorial<2, 1> gauss_proc(
         std::make_unique<gauss::gp::SquaredExponential>(1.0, 1.0));
     gauss_proc.setWhiteNoiseStandardDeviation(0.001);
 
+    // fill the training set of the gaussian process
     std::vector<std::vector<double>> output_samples;
     for (const auto &row : input_samples) {
       auto &output_samples_row = output_samples.emplace_back();
@@ -61,10 +69,10 @@ int main() {
       }
     }
 
+    // predict values using the gaussian process
     std::vector<std::vector<double>> prediction_uncertainties;
     std::vector<std::vector<double>> prediction_means;
     std::vector<std::vector<double>> expected_means;
-
     for (const auto &row : input_for_predictions) {
       auto &prediction_uncertainties_row =
           prediction_uncertainties.emplace_back();

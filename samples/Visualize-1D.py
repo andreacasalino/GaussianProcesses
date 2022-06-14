@@ -9,21 +9,33 @@ def import_json(file_name):
     return result
 
 def plot_result(title, data):
-    fig, axis = plt.subplots(1, 1)
+    fig, axis = plt.subplots(2, 2)
+    fig.suptitle(title)
 
-    plt.title(title)
-
-    axis.scatter(np.array(data['train_set']['inputs']), np.array(data['train_set']['outputs']), color='red', marker='o', label='train set')
     pred_in = np.array(data['predictions']['inputs'])
+
+    axis[0][0].set_title('function to approximate')
+    axis[0][0].scatter(np.array(data['train_set']['inputs']), np.array(data['train_set']['outputs']), color='green', marker='o', label='train set')
+    axis[0][0].plot(pred_in, np.array(data['predictions']['expected']), color='red')
+    axis[0][0].legend()
+
+    axis[0][1].set_title('Gaussian process predictions')
     pred_mean = np.array(data['predictions']['means'])
     pred_sigmas = np.array(data['predictions']['sigmas'])
-    axis.plot(pred_in, pred_mean, color='red', label='GP predictions')
-    axis.fill_between(pred_in, 
+    axis[0][1].scatter(np.array(data['train_set']['inputs']), np.array(data['train_set']['outputs']), color='green', marker='o', label='train set')
+    axis[0][1].plot(pred_in, pred_mean, color='red', label='GP predictions mean')
+    axis[0][1].fill_between(pred_in, 
             pred_mean - 2.5 * pred_sigmas, 
             pred_mean + 2.5 * pred_sigmas, 
-        alpha=0.2, color='red', label="GP prediction uncertainty")
+        alpha=0.2, color='red', label="GP predictions uncertainty")
+    axis[0][1].legend()
 
-    axis.legend()
+    axis[1][0].set_title('Prediction error')
+    axis[1][0].plot(pred_in, pred_mean - np.array(data['predictions']['expected']))
+
+    axis[1][1].set_title('Prediction uncertainty')
+    axis[1][1].plot(pred_in, np.array(data['predictions']['sigmas']))
+
 
 file_name = 'Log.json'
 if(1 < len(sys.argv)):

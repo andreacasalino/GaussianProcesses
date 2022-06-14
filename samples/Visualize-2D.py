@@ -11,24 +11,39 @@ def import_json(file_name):
 
 def plot_result(title, data):
     fig = plt.figure()
-    axis = fig.add_subplot(111, projection='3d')
-
     plt.title(title)
 
-    axis.scatter(np.matrix(data['train_set']['inputs']['x']), np.matrix(data['train_set']['inputs']['y']), np.matrix(data['train_set']['outputs']), color='green', marker='o')
+    samples_xy_grid = {}
+    samples_xy_grid['x'] = np.matrix(data['train_set']['inputs']['x'])
+    samples_xy_grid['y'] = np.matrix(data['train_set']['inputs']['y'])
 
     pred_xy_grid = {}
     pred_xy_grid['x'] = np.matrix(data['predictions']['inputs']['x'])
     pred_xy_grid['y'] = np.matrix(data['predictions']['inputs']['y'])
 
-    axis.plot_surface(pred_xy_grid['x'], pred_xy_grid['y'], np.matrix(data['predictions']['expected']), color='red')
-
+    pred_expected = np.matrix(data['predictions']['expected'])
     pred_mean = np.matrix(data['predictions']['means'])
-    axis.plot_surface(pred_xy_grid['x'], pred_xy_grid['y'], pred_mean, color='blue', alpha=0.5)
-
     pred_sigmas = np.matrix(data['predictions']['sigmas'])
-    axis.plot_surface(pred_xy_grid['x'], pred_xy_grid['y'], pred_mean - 2.5 * pred_sigmas, color='blue', alpha=0.3)
-    axis.plot_surface(pred_xy_grid['x'], pred_xy_grid['y'], pred_mean + 2.5 * pred_sigmas, color='blue', alpha=0.3)
+
+    axis_real = fig.add_subplot(2, 2, 1, projection='3d')
+    axis_real.set_title('function to approximate')
+    axis_real.scatter(samples_xy_grid['x'], samples_xy_grid['y'], np.matrix(data['train_set']['outputs']), color='green', marker='o', label='train set samples')
+    axis_real.plot_surface(pred_xy_grid['x'], pred_xy_grid['y'], pred_expected, color='red', alpha=0.5)
+    axis_real.legend()
+
+    axis_pred = fig.add_subplot(2, 2, 2, projection='3d')
+    axis_pred.set_title('predicted values using GP')
+    axis_pred.plot_surface(pred_xy_grid['x'], pred_xy_grid['y'], pred_mean, color='red', alpha=0.5)
+
+    axis_error = fig.add_subplot(2, 2, 3)
+    axis_error.set_title('prediction error')
+    shw = axis_error.imshow(pred_mean - pred_expected)
+    bar = plt.colorbar(shw)
+
+    axis_sigmas = fig.add_subplot(2, 2, 4)
+    axis_sigmas.set_title('standard deviation of the predictions')
+    shw = axis_sigmas.imshow(pred_sigmas)
+    bar = plt.colorbar(shw)
 
     # axis.legend()
 

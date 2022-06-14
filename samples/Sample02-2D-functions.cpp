@@ -18,26 +18,26 @@
 void convert(nlohmann::json &recipient,
              const std::vector<std::vector<Eigen::VectorXd>> &grid_2D);
 
+double polinomial_fun(const Eigen::VectorXd &point);
+
+double periodic_fun(const Eigen::VectorXd &point);
+
 int main() {
   std::unordered_map<std::string, gauss::gp::samples::Function>
       functions_to_approximate;
   functions_to_approximate.emplace(
-      "polinomial_function", [](const Eigen::VectorXd &point) {
-        const auto val = point.norm() + 12.0;
-        return 0.05 * pow(val, 3.0) - 0.1 * pow(val, 2.0);
-      });
+      "polinomial_function",
+      [](const Eigen::VectorXd &point) { return polinomial_fun(point); });
   functions_to_approximate.emplace(
       "periodic_function",
-      [](const Eigen::VectorXd &point) { return 3.0 * sin(point.norm()); });
+      [](const Eigen::VectorXd &point) { return periodic_fun(point); });
   functions_to_approximate.emplace(
       "composite_function", [](const Eigen::VectorXd &point) {
-        const auto val = point.norm();
-        return 0.05 * pow(val + 12, 3.0) - 0.1 * pow(val + 12, 2.0) +
-               3.0 * sin(val);
+        return polinomial_fun(point) + periodic_fun(point);
       });
 
   const auto input_samples = gauss::gp::samples::make_equispaced_input_samples(
-      {-6.0, -6.0}, {6.0, 6.0}, 20);
+      {-6.0, -6.0}, {6.0, 6.0}, 15);
 
   const auto input_for_predictions =
       gauss::gp::samples::make_equispaced_input_samples({-6.0, -6.0},
@@ -112,3 +112,10 @@ void convert(nlohmann::json &recipient,
   recipient["x"] = xs;
   recipient["y"] = ys;
 }
+
+double polinomial_fun(const Eigen::VectorXd &point) {
+  return point(0) * 0.5 - point(1) * point(1) * 0.1 +
+         point(0) * point(0) * 0.05;
+}
+
+double periodic_fun(const Eigen::VectorXd &point) { return sin(point.norm()); }

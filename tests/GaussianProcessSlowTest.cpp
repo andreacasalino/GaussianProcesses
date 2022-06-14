@@ -133,7 +133,7 @@ TEST_CASE("Train session the hyperparameters", "[gp_slow]") {
     std::cout << process.getHyperParameters().transpose() << std::endl;
     std::cout << process.getHyperParametersGradient().transpose() << std::endl;
     const auto likelihood_prev = process.getLogLikelihood();
-    process.train(trainer);
+    gauss::gp::train(process, trainer);
     const auto likelihood = process.getLogLikelihood();
     CHECK(likelihood_prev < likelihood);
   }

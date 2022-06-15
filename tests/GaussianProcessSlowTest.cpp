@@ -114,8 +114,14 @@ TEST_CASE("Train session the hyperparameters", "[gp_slow]") {
   const Eigen::VectorXd max = 6.0 * Eigen::VectorXd::Ones(input_size);
   const Eigen::VectorXd min = (-6.0) * Eigen::VectorXd::Ones(input_size);
 
-  GaussianProcess process(std::make_unique<SquaredExponential>(2.0, 5.0),
+  GaussianProcess process(std::make_unique<SquaredExponential>(2.0, 0.2),
                           input_size, output_size);
+
+  Eigen::VectorXd prior_mean(2);
+  prior_mean << 1.0, 1.0;
+  Eigen::MatrixXd prior_cov(2, 2);
+  prior_cov << 0.2 * 0.2, 0, 0, 0.2 * 0.2;
+  gauss::GaussianDistribution prior(prior_mean, prior_cov);
 
   EquispacedGrid grid(min, max, 5);
   grid.gridFor([&process](const Eigen::VectorXd &sample_in) {
@@ -133,7 +139,7 @@ TEST_CASE("Train session the hyperparameters", "[gp_slow]") {
     std::cout << process.getHyperParameters().transpose() << std::endl;
     std::cout << process.getHyperParametersGradient().transpose() << std::endl;
     const auto likelihood_prev = process.getLogLikelihood();
-    process.train(trainer);
+    gauss::gp::train(process, trainer, prior);
     const auto likelihood = process.getLogLikelihood();
     CHECK(likelihood_prev < likelihood);
   }

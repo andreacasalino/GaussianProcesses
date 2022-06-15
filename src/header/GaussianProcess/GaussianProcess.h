@@ -10,7 +10,6 @@
 #include <GaussianProcess/KernelCovariance.h>
 #include <GaussianProcess/YYMatrices.h>
 
-#include <TrainingTools/ParametersAware.h>
 #include <TrainingTools/Trainer.h>
 
 #include <GaussianUtils/GaussianDistribution.h>
@@ -18,8 +17,7 @@
 namespace gauss::gp {
 class GaussianProcess : public KernelCovariance,
                         public YYMatrixTrain,
-                        public YYMatrixPredict,
-                        protected ::train::ParametersAware {
+                        public YYMatrixPredict {
 public:
   template <typename... TrainSetArgs>
   GaussianProcess(KernelFunctionPtr kernel, TrainSetArgs... args)
@@ -56,8 +54,6 @@ public:
    */
   Eigen::VectorXd getHyperParametersGradient() const;
 
-  void train(::train::Trainer &trainer);
-
   /**
    * @param point
    * @return The vectorial distribution describing the possible output of the
@@ -86,14 +82,6 @@ protected:
   Eigen::VectorXd predict(const Eigen::VectorXd &point, double &covariance,
                           const bool accept_bad_covariance) const;
 
-  ::train::Vect getParameters() const final { return getHyperParameters(); }
-  void setParameters(const ::train::Vect &parameters) final {
-    setHyperParameters(parameters);
-  }
-  ::train::Vect getGradient() const final {
-    return getHyperParametersGradient();
-  };
-
 private:
   TrainSet samples;
 };
@@ -107,4 +95,8 @@ public:
 
 template <std::size_t InputSize>
 using GaussianProcessScalar = GaussianProcessVectorial<InputSize, 1>;
+
+void train(GaussianProcess &subject, ::train::Trainer &trainer,
+           const std::optional<gauss::GaussianDistribution>
+               &hyperparameters_prior = std::nullopt);
 } // namespace gauss::gp

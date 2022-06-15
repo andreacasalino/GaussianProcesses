@@ -8,6 +8,8 @@
 #include <GaussianProcess/Error.h>
 #include <GaussianProcess/GaussianProcess.h>
 
+#include <TrainingTools/ParametersAware.h>
+
 #include "Common.h"
 
 // #include <fstream>
@@ -144,9 +146,57 @@ Eigen::VectorXd GaussianProcess::getHyperParametersGradient() const {
   return result;
 };
 
-void GaussianProcess::train(::train::Trainer &trainer) {
+namespace {
+class GaussianProcessTrainWrapper : public ::train::ParametersAware {
+public:
+  GaussianProcessTrainWrapper(
+      GaussianProcess &subject,
+      const std::optional<gauss::GaussianDistribution> &hyperparameters_prior)
+      : subject(subject) {
+    if (std::nullopt != hyperparameters_prior) {
+      if (subject.getKernelFunction().numberOfParameters() !=
+          hyperparameters_prior->getStateSpaceSize()) {
+        throw Error{"Invalid size for the gaussian distribution describing "
+                    "prior knowledge of hyperparameters"};
+      }
+      auto &prior = prior_distribution.emplace();
+      prior.cov_inv = hyperparameters_prior->getCovarianceInv();
+      prior.mean = hyperparameters_prior->getMean();
+    }
+  }
+
+  ::train::Vect getParameters() const final {
+    return subject.getHyperParameters();
+  }
+  void setParameters(const ::train::Vect &parameters) final {
+    subject.setHyperParameters(parameters);
+  }
+  ::train::Vect getGradient() const final {
+    auto result = subject.getHyperParametersGradient();
+    if (std::nullopt != prior_distribution) {
+      result += prior_distribution->cov_inv *
+                (subject.getHyperParameters() - prior_distribution->mean);
+    }
+    return result;
+  };
+
+private:
+  GaussianProcess &subject;
+
+  struct CovInvAndMean {
+    Eigen::VectorXd mean;
+    Eigen::MatrixXd cov_inv;
+  };
+  std::optional<CovInvAndMean> prior_distribution;
+};
+} // namespace
+
+void train(
+    GaussianProcess &subject, ::train::Trainer &trainer,
+    const std::optional<gauss::GaussianDistribution> &hyperparameters_prior) {
+  GaussianProcessTrainWrapper wrapper(subject, hyperparameters_prior);
   trainer.maximize();
-  trainer.train(*this);
+  trainer.train(wrapper);
 }
 
 std::vector<gauss::GaussianDistribution>

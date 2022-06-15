@@ -154,6 +154,11 @@ public:
       const std::optional<gauss::GaussianDistribution> &hyperparameters_prior)
       : subject(subject) {
     if (std::nullopt != hyperparameters_prior) {
+      if (subject.getKernelFunction().numberOfParameters() !=
+          hyperparameters_prior->getStateSpaceSize()) {
+        throw Error{"Invalid size for the gaussian distribution describing "
+                    "prior knowledge of hyperparameters"};
+      }
       auto &prior = prior_distribution.emplace();
       prior.cov_inv = hyperparameters_prior->getCovarianceInv();
       prior.mean = hyperparameters_prior->getMean();

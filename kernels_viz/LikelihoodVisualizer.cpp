@@ -4,10 +4,10 @@
 // #include <GaussianProcess/kernel/PeriodicFunction.h>
 #include <GaussianProcess/kernel/SquaredExponential.h>
 
-#include <fstream>
+#include "../samples/LogUtils.h"
+#include "../samples/Ranges.h"
+
 #include <iostream>
-#include <nlohmann/json.hpp>
-#include <string>
 #include <unordered_map>
 
 void make_gradient_viz_log(nlohmann::json &recipient,
@@ -16,10 +16,8 @@ void make_gradient_viz_log(nlohmann::json &recipient,
                            const Eigen::VectorXd &max_corner,
                            const std::size_t size);
 
-Eigen::VectorXd make_vector(const std::vector<double> &vals);
-
 int main() {
-  const std::size_t size = 50;
+  const std::size_t size = 100;
 
   struct KernelAndTitle {
     gauss::gp::KernelFunctionPtr kernel;
@@ -32,7 +30,7 @@ int main() {
   cases.emplace(
       "exponential",
       KernelAndTitle{std::make_unique<gauss::gp::SquaredExponential>(1.0, 1.0),
-                     make_vector({-2, -2}), make_vector({2, 2})});
+                     make_vector({0.2, 10.0}), make_vector({10.0, 10.0})});
 
   nlohmann::json gradients_log;
   for (auto &[tag, data] : cases) {
@@ -41,58 +39,12 @@ int main() {
                           data.min_corner, data.max_corner, size);
     std::cout << " done" << std::endl;
   }
-  std::ofstream stream("gradients_log.json");
-  stream << gradients_log.dump();
+  gauss::gp::samples::print(gradients_log, "gradients_log.json");
 
-  std::cout << "python3 GradientVisualizer.py" << std::endl;
+  std::cout << "python3 LikelihoodVisualizer.py" << std::endl;
 
   return EXIT_SUCCESS;
 }
-
-Eigen::VectorXd make_vector(const std::vector<double> &vals) {
-  Eigen::VectorXd result(vals.size());
-  result.setZero();
-  for (std::size_t k = 0; k < vals.size(); ++k) {
-    result(k) = vals[k];
-  }
-  return result;
-}
-
-namespace {
-class Range {
-public:
-  Range(const double min, const double max, const std::size_t size)
-      : val(min), delta((max - min) / static_cast<double>(size - 1)),
-        size(size), counter(0) {}
-
-  std::size_t getCounter() const { return counter; }
-  Range &operator++() {
-    ++counter;
-    val += delta;
-    return *this;
-  }
-  double operator()() const { return val; };
-  bool ongoing() const { return counter < size; };
-
-private:
-  double val;
-  const double delta;
-  const std::size_t size;
-  std::size_t counter;
-};
-
-using Matrix = std::vector<std::vector<double>>;
-Matrix make_matrix(const std::size_t size) {
-  Matrix result;
-  for (std::size_t r = 0; r < size; ++r) {
-    auto &row = result.emplace_back();
-    for (std::size_t c = 0; c < size; ++c) {
-      row.push_back(0);
-    }
-  }
-  return result;
-}
-} // namespace
 
 void make_gradient_viz_log(nlohmann::json &recipient,
                            gauss::gp::KernelFunctionPtr kernel,

@@ -10,22 +10,21 @@
 
 // just a bunch of functionalities to generate and visualize the predictions
 // made by gaussian processes
-#include "Utils.h"
+#include "LogUtils.h"
 
+#include <functional>
 #include <iostream>
 #include <unordered_map>
-
-void convert(nlohmann::json &recipient,
-             const std::vector<std::vector<Eigen::VectorXd>> &grid_2D);
 
 double polinomial_fun(const Eigen::VectorXd &point);
 
 double periodic_fun(const Eigen::VectorXd &point);
 
 int main() {
+  using Function = std::function<double(const Eigen::Vector2d &)>;
+
   // set of functions to approximate using gaussian processes
-  std::unordered_map<std::string, gauss::gp::samples::Function>
-      functions_to_approximate;
+  std::unordered_map<std::string, Function> functions_to_approximate;
   functions_to_approximate.emplace(
       "polinomial_function",
       [](const Eigen::VectorXd &point) { return polinomial_fun(point); });
@@ -39,15 +38,14 @@ int main() {
 
   // equispaced grid of points forming the training set for the
   // gaussian process
-  const auto input_samples = gauss::gp::samples::make_equispaced_input_samples(
-      {-6.0, -6.0}, {6.0, 6.0}, 15);
+  const auto input_samples =
+      gauss::gp::samples::grid({-6.0, -6.0}, {6.0, 6.0}, 15);
 
   // equispaced grid of points where the prediction of the gaussian process will
   // be checked to be similar to the function where the training set samples
   // were taken
   const auto input_for_predictions =
-      gauss::gp::samples::make_equispaced_input_samples({-6.0, -6.0},
-                                                        {6.0, 6.0}, 75);
+      gauss::gp::samples::grid({-6.0, -6.0}, {6.0, 6.0}, 75);
 
   nlohmann::json log_json;
 
@@ -89,10 +87,10 @@ int main() {
     // log the results
     auto &new_log = log_json[title];
     auto &train_set = new_log["train_set"];
-    convert(train_set["inputs"], input_samples);
+    gauss::gp::samples::load(train_set["inputs"], input_samples);
     train_set["outputs"] = output_samples;
     auto &pred = new_log["predictions"];
-    convert(pred["inputs"], input_for_predictions);
+    gauss::gp::samples::load(pred["inputs"], input_for_predictions);
     pred["means"] = prediction_means;
     pred["expected"] = expected_means;
     pred["sigmas"] = prediction_uncertainties;
@@ -104,21 +102,6 @@ int main() {
   gauss::gp::samples::print(log_json, "Log.json");
 
   return EXIT_SUCCESS;
-}
-
-void convert(nlohmann::json &recipient,
-             const std::vector<std::vector<Eigen::VectorXd>> &grid_2D) {
-  std::vector<std::vector<double>> xs, ys;
-  for (const auto &row : grid_2D) {
-    auto &xs_row = xs.emplace_back();
-    auto &ys_row = ys.emplace_back();
-    for (const auto &point : row) {
-      xs_row.push_back(point(0));
-      ys_row.push_back(point(1));
-    }
-  }
-  recipient["x"] = xs;
-  recipient["y"] = ys;
 }
 
 double polinomial_fun(const Eigen::VectorXd &point) {

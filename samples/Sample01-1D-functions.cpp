@@ -10,15 +10,17 @@
 
 // just a bunch of functionalities to generate and visualize the predictions
 // made by gaussian processes
-#include "Utils.h"
+#include "LogUtils.h"
 
+#include <functional>
 #include <iostream>
 #include <unordered_map>
 
 int main() {
+  using Function = std::function<double(const Eigen::VectorXd &)>;
+
   // set of functions to approximate using gaussian processes
-  std::unordered_map<std::string, gauss::gp::samples::Function>
-      functions_to_approximate;
+  std::unordered_map<std::string, Function> functions_to_approximate;
   functions_to_approximate.emplace(
       "polinomial_function", [](const Eigen::VectorXd &point) {
         return 0.05 * pow(point(0), 3.0) - 0.1 * pow(point(0), 2.0);
@@ -34,14 +36,13 @@ int main() {
 
   // equispaced grid of points forming the training set for the
   // gaussian process
-  const auto input_samples =
-      gauss::gp::samples::make_equispaced_input_samples(-6.0, 6.0, 15);
+  const auto input_samples = gauss::gp::samples::linspace(-6.0, 6.0, 15);
 
   // equispaced grid of points where the prediction of the gaussian process will
   // be checked to be similar to the function where the training set samples
   // were taken
   const auto input_for_predictions =
-      gauss::gp::samples::make_equispaced_input_samples(-6.0, 6.0, 250);
+      gauss::gp::samples::linspace(-6.0, 6.0, 250);
 
   nlohmann::json log_json;
 
@@ -74,10 +75,10 @@ int main() {
     // log the results
     auto &new_log = log_json[title];
     auto &train_set = new_log["train_set"];
-    gauss::gp::samples::convert(train_set["inputs"], input_samples);
+    gauss::gp::samples::load(train_set["inputs"], input_samples);
     train_set["outputs"] = output_samples;
     auto &pred = new_log["predictions"];
-    gauss::gp::samples::convert(pred["inputs"], input_for_predictions);
+    gauss::gp::samples::load(pred["inputs"], input_for_predictions);
     pred["expected"] = expected_means;
     pred["means"] = prediction_means;
     pred["sigmas"] = prediction_uncertainties;

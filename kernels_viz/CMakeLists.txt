@@ -1,7 +1,12 @@
 FECTH_JSON_LIB()
 
 function(MAKE_VIZ NAME)
-    add_executable(${NAME} ${NAME}.cpp)
+    add_executable(${NAME} ${NAME}.cpp 
+        ${CMAKE_CURRENT_SOURCE_DIR}/../samples/Ranges.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../samples/Ranges.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../samples/LogUtils.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../samples/LogUtils.cpp
+    )
     target_link_libraries(${NAME}
         PUBLIC GaussianProcess
         PRIVATE nlohmann_json::nlohmann_json
@@ -11,4 +16,4 @@ function(MAKE_VIZ NAME)
 endfunction()
 
 MAKE_VIZ(KernelsVisualizer)
-MAKE_VIZ(GradientVisualizer)
+MAKE_VIZ(LikelihoodVisualizer)

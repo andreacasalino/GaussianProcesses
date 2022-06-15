@@ -7,7 +7,10 @@ endmacro()
 
 
 macro(MAKE_SAMPLE NAME SCRIPT)
-    add_executable(${NAME} ${NAME}.cpp Utils.h Utils.cpp)
+    add_executable(${NAME} ${NAME}.cpp 
+        Ranges.h Ranges.cpp
+        LogUtils.h LogUtils.cpp
+    )
     target_link_libraries(${NAME} PUBLIC 
         GaussianProcess
         nlohmann_json::nlohmann_json

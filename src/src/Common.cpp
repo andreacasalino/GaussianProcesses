@@ -10,11 +10,6 @@
 
 namespace gauss::gp {
 void ResizableMatrix::resize(const Eigen::Index new_size) {
-  if (0 == new_size) {
-    computed_portion_size = 0;
-    computed_portion = Eigen::MatrixXd{0, 0};
-    return;
-  }
   if (new_size < size) {
     throw Error{"Invalid new size for SymmetricMatrixExpandable"};
   }

@@ -24,16 +24,14 @@ public:
    * actually adding samples to the process.
    * @throw In case the kernel was not computed as no samples are available
    */
-  Eigen::MatrixXd getCovariance() const override { return getKernelMatrix(); }
+  Eigen::MatrixXd getCovariance() const override;
   /**
    * @return The inverse of the kernel of the process
    * The kernel is lazy computed, as is assumed equal to null before actually
    * adding samples to the process.
    * @throw In case the kernel was not computed as no samples are available
    */
-  Eigen::MatrixXd getCovarianceInv() const override {
-    return getKernelMatrixInverse();
-  }
+  Eigen::MatrixXd getCovarianceInv() const override;
   /**
    * @return The determinant of the kernel of the process
    * The kernel is lazy computed, as is assumed equal to null before actually
@@ -47,9 +45,7 @@ public:
     Eigen::VectorXd eigenValues;
     Eigen::VectorXd eigenValues_inv;
   };
-  Decomposition getCovarianceDecomposition() const {
-    return getKernelMatrixDecomposition();
-  }
+  Decomposition getCovarianceDecomposition() const;
 
   /**
    * @brief replace the kernel function.
@@ -76,7 +72,6 @@ protected:
   const Eigen::MatrixXd &getKernelMatrixInverse() const;
   const Decomposition &getKernelMatrixDecomposition() const;
 
-  void updateKernelFuction(KernelFunctionPtr new_kernel);
   void resetKernelMatrix();
 
   KernelFunction &getKernelFunction_() { return *kernelFunction; }
@@ -84,15 +79,13 @@ protected:
 private:
   KernelFunctionPtr kernelFunction;
 
-  std::unique_ptr<SymmetricResizableMatrix> kernel_matrix;
-
-  mutable const Eigen::MatrixXd *last_kernel_mat_4_kernel_matrix_decomposition =
-      nullptr;
-  mutable Decomposition kernel_matrix_decomposition;
-
-  mutable const Eigen::MatrixXd *last_kernel_mat_4_kernel_matrix_inverse =
-      nullptr;
-  mutable Eigen::MatrixXd kernel_matrix_inverse;
+  struct KernelRepresentation {
+    std::unique_ptr<SymmetricResizableMatrix> kernel_matrix;
+    Decomposition kernel_matrix_decomposition;
+    Eigen::MatrixXd kernel_matrix_inverse;
+  };
+  const KernelRepresentation &accessKernelRepresentation() const;
+  mutable std::unique_ptr<KernelRepresentation> kernel_representation;
 
   double white_noise_cov = 0.1;
 };

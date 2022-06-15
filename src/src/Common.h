@@ -13,7 +13,7 @@
 namespace gauss::gp {
 class ResizableMatrix {
 public:
-  void resize(const Eigen::Index new_size = 0);
+  void resize(const Eigen::Index new_size);
 
   const Eigen::MatrixXd &access() const;
 

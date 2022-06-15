@@ -9,23 +9,20 @@ def import_json(file_name):
     f.close()
     return data
 
-def show_log(tag):
-    if(len(sys.argv) == 1):
-        return True
-    for arg in sys.argv:
-        if(arg == tag):
-            return True
-    return False
-
-print('arguments:', sys.argv)
-
-data = import_json('kernels_log.json')
-
-for log in data:
-    if not show_log(log['tag']):
-        continue;
-    plt.title(log['title'])
+def print_log(log):
     fig, ax = plt.subplots()
+    plt.title(log['title'])
     shw = ax.imshow(log['kernel'])
     bar = plt.colorbar(shw)
+
+def print_logs(logs):
+    for log in logs:
+        print_log(log)
+
+data = import_json('kernels_log.json')
+if 1 < len(sys.argv):
+    print_logs(data[sys.argv[1]])
+else:
+    for tag in data:
+        print_logs(data[tag])
 plt.show()

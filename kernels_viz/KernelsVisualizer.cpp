@@ -9,20 +9,19 @@
 #include <string>
 #include <unordered_map>
 
+struct KernelAndTitle {
+  gauss::gp::KernelFunctionPtr kernel;
+  const std::string title;
+};
+
 namespace gauss::gp {
-nlohmann::json make_kernel_viz_log(const std::size_t samples_numb,
-                                   const KernelFunction &kernel,
-                                   const std::string &title,
-                                   const std::string &tag);
+void make_kernel_viz_log(nlohmann::json &recipient,
+                         const std::size_t samples_numb,
+                         const std::vector<KernelAndTitle> &cases);
 } // namespace gauss::gp
 
 int main() {
   const std::size_t size = 100;
-
-  struct KernelAndTitle {
-    gauss::gp::KernelFunctionPtr kernel;
-    const std::string title;
-  };
 
   std::unordered_map<std::string, std::vector<KernelAndTitle>> cases;
 
@@ -74,15 +73,10 @@ int main() {
                                  "linear function mean = 0.7"});
   }
 
-  nlohmann::json kernels_log = nlohmann::json::array();
+  nlohmann::json kernels_log;
   for (const auto &[tag, data] : cases) {
     std::cout << "<========== " << tag << " ==========>" << std::endl;
-    for (const auto &[function, title] : data) {
-      std::cout << title;
-      kernels_log.push_back(
-          gauss::gp::make_kernel_viz_log(size, *function, title, tag));
-      std::cout << " done" << std::endl;
-    }
+    gauss::gp::make_kernel_viz_log(kernels_log[tag], size, data);
   }
   gauss::gp::samples::print(kernels_log, "kernels_log.json");
 
@@ -92,26 +86,27 @@ int main() {
 }
 
 namespace gauss::gp {
-nlohmann::json make_kernel_viz_log(const std::size_t samples_numb,
-                                   const KernelFunction &kernel,
-                                   const std::string &title,
-                                   const std::string &tag) {
+void make_kernel_viz_log(nlohmann::json &recipient,
+                         const std::size_t samples_numb,
+                         const std::vector<KernelAndTitle> &cases) {
   const auto samples = gauss::gp::samples::linspace(-1.0, 1.0, samples_numb);
 
-  std::vector<std::vector<double>> kernel_matrix;
-  kernel_matrix.reserve(samples_numb);
-  for (Eigen::Index r = 0; r < samples_numb; ++r) {
-    auto &row = kernel_matrix.emplace_back();
-    row.reserve(samples_numb);
-    for (Eigen::Index c = 0; c < samples_numb; ++c) {
-      row.push_back(kernel.evaluate(samples[r], samples[c]));
+  for (const auto &[kernel, title] : cases) {
+    std::cout << title;
+    std::vector<std::vector<double>> kernel_matrix;
+    kernel_matrix.reserve(samples_numb);
+    for (Eigen::Index r = 0; r < samples_numb; ++r) {
+      auto &row = kernel_matrix.emplace_back();
+      row.reserve(samples_numb);
+      for (Eigen::Index c = 0; c < samples_numb; ++c) {
+        row.push_back(kernel->evaluate(samples[r], samples[c]));
+      }
     }
-  }
+    std::cout << " done" << std::endl;
 
-  nlohmann::json recipient;
-  recipient["kernel"] = kernel_matrix;
-  recipient["title"] = title;
-  recipient["tag"] = tag;
-  return recipient;
+    auto &log = recipient.emplace_back();
+    log["kernel"] = kernel_matrix;
+    log["title"] = title;
+  }
 }
 } // namespace gauss::gp

@@ -59,7 +59,8 @@ TEST_CASE("Check kernel functions", "[kernel-functions]") {
       std::make_unique<LinearFunction>(0.5, 1.0, Eigen::VectorXd::Ones(4)));
   // labels_and_functions.emplace("periodic",
   //                              std::make_unique<PeriodicFunction>(1, 0.2,
-  //                              0.1));
+  //                              0.1)); // periodic stand alone should never be
+  //                              used
   labels_and_functions.emplace(
       "summation of linear and exponential",
       std::make_unique<Summation>(

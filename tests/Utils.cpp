@@ -63,7 +63,7 @@ bool is_inverse(const Eigen::MatrixXd &subject,
 GridMultiDimensional::GridMultiDimensional(
     const std::size_t size,
     const std::vector<std::array<double, 2>> &intervals) {
-  if (intervals.size() < 3) {
+  if (intervals.size() < 2) {
     throw std::runtime_error{"too few intervals"};
   }
   for (const auto &interval : intervals) {

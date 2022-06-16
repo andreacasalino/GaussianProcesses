@@ -49,11 +49,11 @@ int main() {
           std::make_unique<gauss::gp::SquaredExponential>(1.0, 1.0),
           {std::array<double, 2>{0.5, 2.0}, std::array<double, 2>{0.5, 10.0}}});
 
-  cases.emplace("periodic",
-                KernelAndTitle{std::make_unique<gauss::gp::PeriodicFunction>(
-                                   1.0, 1.0, 0.1),
-                               {std::array<double, 2>{0.5, 2.0},
-                                std::array<double, 2>{0.5, 10.0}, 0.1}});
+  // cases.emplace("periodic",
+  //               KernelAndTitle{std::make_unique<gauss::gp::PeriodicFunction>(
+  //                                  1.0, 1.0, 0.1),
+  //                              {std::array<double, 2>{0.5, 2.0},
+  //                               std::array<double, 2>{0.5, 10.0}, 0.1}});
 
   nlohmann::json gradients_log;
   for (auto &[tag, data] : cases) {

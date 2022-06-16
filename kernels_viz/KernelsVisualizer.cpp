@@ -77,6 +77,8 @@ int main() {
   for (const auto &[tag, data] : cases) {
     std::cout << "<========== " << tag << " ==========>" << std::endl;
     gauss::gp::make_kernel_viz_log(kernels_log[tag], size, data);
+    std::cout << "python3 KernelsVisualizer.py " << tag << std::endl
+              << std::endl;
   }
   gauss::gp::samples::print(kernels_log, "kernels_log.json");
 

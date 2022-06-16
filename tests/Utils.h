@@ -9,6 +9,8 @@
 
 #include <GaussianProcess/kernel/KernelFunction.h>
 
+#include "../samples/Ranges.h"
+
 namespace gauss::gp::test {
 std::vector<Eigen::VectorXd> make_samples(const std::size_t samples_numb,
                                           const Eigen::Index sample_size);
@@ -29,4 +31,49 @@ bool is_symmetric(const Eigen::MatrixXd &subject,
 bool is_inverse(const Eigen::MatrixXd &subject,
                 const Eigen::MatrixXd &candidate,
                 const double toll = DEFAULT_TOLL);
+
+class GridMultiDimensional {
+public:
+  template <typename... Intervals>
+  GridMultiDimensional(const std::size_t size,
+                       const std::array<double, 2> &first,
+                       const std::array<double, 2> &second,
+                       Intervals... intervals) {
+    addAxis(size, first, second, std::forward<Intervals>(intervals)...);
+  }
+
+  GridMultiDimensional(const std::size_t size,
+                       const std::vector<std::array<double, 2>> &intervals);
+
+  bool operator()() const { return (*axis_ranges.front())(); }
+  Eigen::VectorXd eval() const;
+  std::vector<std::size_t> indices() const;
+
+  std::size_t getSize() const { return axis_ranges.front()->getSize(); }
+
+  GridMultiDimensional &operator++();
+
+  Eigen::VectorXd getDeltas() const;
+
+private:
+  void addAxis(const std::size_t size, const std::array<double, 2> &inteval) {
+
+    axis_ranges.emplace_back(
+        std::make_unique<samples::Linspace>(inteval[0], inteval[1], size));
+  }
+
+  template <typename... Intervals>
+  void addAxis(const std::size_t size, const std::array<double, 2> &inteval,
+               Intervals... intervals) {
+    addAxis(size, inteval);
+    addAxis(size, std::forward<Intervals>(intervals)...);
+  }
+
+  using LinspacePtr = std::unique_ptr<samples::Linspace>;
+  std::vector<LinspacePtr> axis_ranges;
+};
+
+std::vector<std::array<double, 2>>
+make_intervals(const Eigen::VectorXd &min_corner,
+               const Eigen::VectorXd &max_corner);
 } // namespace gauss::gp::test

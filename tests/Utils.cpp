@@ -59,4 +59,61 @@ bool is_inverse(const Eigen::MatrixXd &subject,
                   Eigen::MatrixXd::Identity(subject.rows(), subject.cols()),
                   toll);
 }
+
+GridMultiDimensional::GridMultiDimensional(
+    const std::size_t size,
+    const std::vector<std::array<double, 2>> &intervals) {
+  if (intervals.size() < 3) {
+    throw std::runtime_error{"too few intervals"};
+  }
+  for (const auto &interval : intervals) {
+    addAxis(size, interval);
+  }
+}
+
+Eigen::VectorXd GridMultiDimensional::eval() const {
+  Eigen::VectorXd result(axis_ranges.size());
+  for (std::size_t k = 0; k < axis_ranges.size(); ++k) {
+    result(k) = axis_ranges[k]->eval();
+  }
+  return result;
+}
+
+std::vector<std::size_t> GridMultiDimensional::indices() const {
+  std::vector<std::size_t> result;
+  for (const auto &range : axis_ranges) {
+    result.push_back(range->index());
+  }
+  return result;
+}
+
+GridMultiDimensional &GridMultiDimensional::operator++() {
+  for (int k = axis_ranges.size() - 1; k > -1; --k) {
+    ++(*axis_ranges[k]);
+    if ((*axis_ranges[k])() && (k != 0)) {
+      axis_ranges[k] = std::make_unique<samples::Linspace>(*axis_ranges[k]);
+      continue;
+    }
+    break;
+  }
+  return *this;
+}
+
+Eigen::VectorXd GridMultiDimensional::getDeltas() const {
+  Eigen::VectorXd result(axis_ranges.size());
+  for (std::size_t k = 0; k < axis_ranges.size(); ++k) {
+    result(k) = axis_ranges[k]->getDelta();
+  }
+  return result;
+}
+
+std::vector<std::array<double, 2>>
+make_intervals(const Eigen::VectorXd &min_corner,
+               const Eigen::VectorXd &max_corner) {
+  std::vector<std::array<double, 2>> result;
+  for (Eigen::Index k = 0; k < min_corner.size(); ++k) {
+    result.emplace_back(std::array<double, 2>{min_corner(k), max_corner(k)});
+  }
+  return result;
+}
 } // namespace gauss::gp::test

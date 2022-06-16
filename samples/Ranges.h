@@ -28,6 +28,8 @@ public:
 
   Linspace &operator++();
 
+  double getDelta() const { return delta; }
+
 private:
   const double min;
   const double delta;
@@ -43,7 +45,7 @@ public:
   Grid(const std::array<double, 2> &min_corner,
        const std::array<double, 2> &max_corner, const std::size_t size);
 
-  bool operator()() const { return row() && (*col)(); };
+  bool operator()() const { return row(); };
   Eigen::Vector2d eval() const;
   std::array<std::size_t, 2> indices() const {
     return {row.index(), col->index()};

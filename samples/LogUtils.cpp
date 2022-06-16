@@ -23,10 +23,10 @@ void load(nlohmann::json &recipient,
           const std::vector<std::vector<Eigen::Vector2d>> &subject) {
   std::vector<std::vector<double>> x_coordinates;
   std::vector<std::vector<double>> y_coordinates;
-  for (const auto row : subject) {
-    auto x_row = x_coordinates.emplace_back();
-    auto y_row = y_coordinates.emplace_back();
-    for (const auto point : row) {
+  for (const auto &row : subject) {
+    auto &x_row = x_coordinates.emplace_back();
+    auto &y_row = y_coordinates.emplace_back();
+    for (const auto &point : row) {
       x_row.push_back(point.x());
       y_row.push_back(point.y());
     }

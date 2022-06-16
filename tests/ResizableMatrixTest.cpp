@@ -45,10 +45,4 @@ TEST_CASE("Extendable matrix resize", "[resizable]") {
     CHECK(matrix.getSize() == size);
     CHECK(matrix.getComputedSize() == size);
   }
-
-  matrix.resize(0);
-  CHECK(matrix.getSize() == size);
-  CHECK(matrix.getComputedSize() == 0);
-  CHECK_THROWS_AS(matrix.resize(10), Error);
-  CHECK(is_well_formed(matrix.access(), size));
 }

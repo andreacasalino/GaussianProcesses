@@ -13,7 +13,7 @@ Linspace::Linspace(const double min, const double max, const std::size_t size)
       size(size) {}
 
 Linspace::Linspace(const Linspace &o)
-    : Linspace(min, min + (size - 1) * delta, size) {}
+    : Linspace(o.min, o.min + (o.size - 1) * o.delta, o.size) {}
 
 Linspace &Linspace::operator++() {
   ++i;
@@ -45,7 +45,8 @@ Eigen::Vector2d Grid::eval() const {
 Grid &Grid::operator++() {
   ++(*col);
   if (!(*col)()) {
-    col = std::make_unique<Linspace>(*col);
+    std::unique_ptr<Linspace> col_updated = std::make_unique<Linspace>(*col);
+    col = std::move(col_updated);
     ++row;
   }
   return *this;

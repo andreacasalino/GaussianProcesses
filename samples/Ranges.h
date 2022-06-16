@@ -24,6 +24,8 @@ public:
   double eval() const { return min + delta * i; };
   std::size_t index() const { return i; };
 
+  std::size_t getSize() const { return size; }
+
   Linspace &operator++();
 
 private:
@@ -46,6 +48,8 @@ public:
   std::array<std::size_t, 2> indices() const {
     return {row.index(), col->index()};
   }
+
+  std::size_t getSize() const { return row.getSize(); }
 
   Grid &operator++();
 

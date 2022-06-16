@@ -6,7 +6,8 @@
 #include <GaussianProcess/kernel/PeriodicFunction.h>
 #include <GaussianProcess/kernel/SquaredExponential.h>
 
-#include "Utils.h"
+#include "../samples/Ranges.h"
+
 #include <Eigen/Dense>
 
 #include <iostream>
@@ -41,6 +42,8 @@ std::shared_ptr<gauss::gp::KernelFunction> make_kernel_function(Args... args) {
   return std::make_shared<KernelT>(std::forward<Args>(args)...);
 }
 } // namespace
+
+#include "Utils.h"
 
 TEST_CASE("Check kernel functions", "[kernel-functions]") {
   using namespace gauss::gp;

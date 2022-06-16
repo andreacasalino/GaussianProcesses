@@ -22,7 +22,7 @@ def print_log(title, data):
         plot_mat(grad, 'gradient at ' + str(c))
         c += 1
 
-data = import_json('gradients_log.json')
+data = import_json('likelihhod_log.json')
 
 if len(sys.argv) == 1:
     for log in data:

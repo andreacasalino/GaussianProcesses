@@ -8,7 +8,10 @@ FetchContent_MakeAvailable(catch2)
 
 set(TEST_NAME "Tests")
 
-file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/../samples/Ranges.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/../samples/Ranges.cpp
+)
 add_executable(${TEST_NAME} ${SRC_FILES})
 
 target_link_libraries(${TEST_NAME} PUBLIC 

@@ -36,7 +36,7 @@ jobs:
       run:  cmake --build ./build --config Release
     - name: Install
       run:  cmake --install ./build --config Release
-    - name: Test-01
+    - name: Tests
       run: ./artifacts/bin/Tests
     - uses: actions/upload-artifact@v2
       with:

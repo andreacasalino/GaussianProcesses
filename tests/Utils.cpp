@@ -117,11 +117,13 @@ std::vector<std::size_t> GridMultiDimensional::indices() const {
 GridMultiDimensional &GridMultiDimensional::operator++() {
   for (int k = axis_ranges.size() - 1; k > -1; --k) {
     ++(*axis_ranges[k]);
-    if ((*axis_ranges[k])() && (k != 0)) {
-      axis_ranges[k] = std::make_unique<samples::Linspace>(*axis_ranges[k]);
-      continue;
+    if ((*axis_ranges[k])()) {
+      break;
     }
-    break;
+
+    if (k != 0) {
+      axis_ranges[k] = std::make_unique<samples::Linspace>(*axis_ranges[k]);
+    }
   }
   return *this;
 }

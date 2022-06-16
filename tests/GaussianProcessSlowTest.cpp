@@ -33,13 +33,10 @@ TEST_CASE("Gaussian process predictions", "[gp_slow]") {
   }
 
   const auto &samples_in = process.getTrainSet().GetSamplesInput();
-  for (std::size_t t = 0; t < 10; ++t) {
-    Eigen::VectorXd point;
-    {
-      auto it = samples_in.begin();
-      std::advance(it, rand() % samples_in.size());
-      point = *it;
-    }
+  const std::size_t t_delta = static_cast<std::size_t>(
+      floor(static_cast<double>(samples_in.size()) / static_cast<double>(13)));
+  for (std::size_t t = 0; t < samples_in.size(); t += t_delta) {
+    Eigen::VectorXd point = samples_in[t];
     const auto point_prediction = process.predict2(point);
     const auto point_perturbed_prediction =
         process.predict2(point + 0.4 * grid.getDeltas());
@@ -74,10 +71,8 @@ TEST_CASE("Check gradient and training", "[gp_slow]") {
     }
   } else {
     auto samples_size = GENERATE(10, 50);
-    for (std::size_t k = 0; k < samples_size; ++k) {
-      Eigen::VectorXd sample_in(input_size);
-      sample_in.setRandom();
-      sample_in *= 6.0;
+    for (const auto sample_in :
+         test::make_samples(samples_size, 6.0, input_size)) {
       const double value = sin(sample_in.norm());
       const Eigen::VectorXd sample_out =
           value * Eigen::VectorXd::Ones(static_cast<Eigen::Index>(output_size));

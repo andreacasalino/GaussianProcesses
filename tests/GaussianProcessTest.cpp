@@ -36,8 +36,8 @@ TEST_CASE("Check covariance computation and decompositiion", "[gp]") {
 
   GaussianProcess process(kernel_function->copy(), input_size, 1);
   process.setWhiteNoiseStandardDeviation(0);
-  const auto samples_in = make_samples(samples_numb, input_size);
-  const auto samples_out = make_samples(samples_numb, 1);
+  const auto samples_in = make_samples(samples_numb, 1.0, input_size);
+  const auto samples_out = make_samples(samples_numb, 1.0, 1);
   for (std::size_t k = 0; k < samples_numb; ++k) {
     process.getTrainSet().addSample(samples_in[k], samples_out[k]);
   }
@@ -89,8 +89,8 @@ TEST_CASE("Check YY matrices computation", "[gp]") {
   GaussianProcess process(std::make_unique<SquaredExponential>(1.f, 1.f),
                           input_size, output_size);
 
-  const auto samples_in = test::make_samples(samples_numb, input_size);
-  const auto samples_out = test::make_samples(samples_numb, output_size);
+  const auto samples_in = test::make_samples(samples_numb, 1.0, input_size);
+  const auto samples_out = test::make_samples(samples_numb, 1.0, output_size);
   for (std::size_t k = 0; k < samples_numb; ++k) {
     process.getTrainSet().addSample(samples_in[k], samples_out[k]);
   }

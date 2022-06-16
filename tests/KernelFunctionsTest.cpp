@@ -76,7 +76,7 @@ TEST_CASE("Check kernel functions", "[kernel-functions]") {
           std::make_unique<PeriodicFunction>(1, 0.2, 0.1)));
 
   const std::size_t size = 30;
-  const auto samples = gauss::gp::test::make_samples(size, 4);
+  const auto samples = gauss::gp::test::make_samples(size, 1.0, 4);
 
   for (const auto &[label, function] : labels_and_functions) {
     std::cout << "checking " << label << std::endl;

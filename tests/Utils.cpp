@@ -9,13 +9,40 @@
 
 #include <GaussianProcess/Error.h>
 
+#include <atomic>
+#include <random>
+
 namespace gauss::gp::test {
+namespace {
+static std::atomic<std::size_t> UNIFORM_SEED = 0;
+
+class UniformSampler {
+public:
+  UniformSampler() : distribution(-1.0, 1.0) {
+    this->generator.seed(static_cast<unsigned int>(UNIFORM_SEED));
+    UNIFORM_SEED += 10;
+  }
+
+  double operator()() const { return this->distribution(this->generator); };
+
+private:
+  mutable std::default_random_engine generator;
+  mutable std::uniform_real_distribution<double> distribution;
+};
+} // namespace
+
 std::vector<Eigen::VectorXd> make_samples(const std::size_t samples_numb,
+                                          const double lenght,
                                           const Eigen::Index sample_size) {
   std::vector<Eigen::VectorXd> result;
   result.reserve(samples_numb);
+  UniformSampler sampler;
   for (std::size_t k = 0; k < samples_numb; ++k) {
-    result.emplace_back(sample_size).setRandom();
+    auto &sample = result.emplace_back(sample_size);
+    sample.setZero();
+    for (Eigen::Index p = 0; p < sample.size(); ++p) {
+      sample(p) = lenght * sampler();
+    }
   }
   return result;
 }

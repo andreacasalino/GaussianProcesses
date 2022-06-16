@@ -13,6 +13,7 @@
 
 namespace gauss::gp::test {
 std::vector<Eigen::VectorXd> make_samples(const std::size_t samples_numb,
+                                          const double lenght,
                                           const Eigen::Index sample_size);
 
 static constexpr double DEFAULT_TOLL = 1e-4;

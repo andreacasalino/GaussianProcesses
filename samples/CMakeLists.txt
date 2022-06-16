@@ -21,3 +21,4 @@ endmacro()
 
 MAKE_SAMPLE(Sample01-1D-functions Visualize-1D)
 MAKE_SAMPLE(Sample02-2D-functions Visualize-2D)
+MAKE_SAMPLE(Sample03-training Visualize-train)

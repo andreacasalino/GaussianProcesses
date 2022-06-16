@@ -14,6 +14,8 @@
 
 #include <GaussianUtils/GaussianDistribution.h>
 
+#include <optional>
+
 namespace gauss::gp {
 class GaussianProcess : public KernelCovariance,
                         public YYMatrixTrain,

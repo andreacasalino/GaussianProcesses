@@ -16,27 +16,19 @@ class SymmetricResizableMatrix;
 
 class KernelCovariance : virtual public TrainSetAware, public CovarianceAware {
 public:
-  ~KernelCovariance();
+  ~KernelCovariance() override;
 
   /**
-   * @return The kernel of the process.
-   * The kernel is lazy computed, as is assumed equal to null before
-   * actually adding samples to the process.
-   * @throw In case the kernel was not computed as no samples are available
+   * @return The covariance matrix characterizing the process.
    */
   Eigen::MatrixXd getCovariance() const override;
   /**
-   * @return The inverse of the kernel of the process
-   * The kernel is lazy computed, as is assumed equal to null before actually
-   * adding samples to the process.
-   * @throw In case the kernel was not computed as no samples are available
+   * @return The inverse of the covariance matrix characterizing the process.
    */
   Eigen::MatrixXd getCovarianceInv() const override;
   /**
-   * @return The determinant of the kernel of the process
-   * The kernel is lazy computed, as is assumed equal to null before actually
-   * adding samples to the process.
-   * @throw In case the kernel was not computed as no samples are available
+   * @return The determinant of the covariance matrix characterizing the
+   * process.
    */
   double getCovarianceDeterminant() const override;
 
@@ -45,22 +37,37 @@ public:
     Eigen::VectorXd eigenValues;
     Eigen::VectorXd eigenValues_inv;
   };
+  /**
+   * @return The decomposition of the covariance matrix characterizing the
+   * process.
+   */
   Decomposition getCovarianceDecomposition() const;
 
   /**
    * @brief replace the kernel function.
    *
-   * @param new_kernel
+   * @param new_kernel the new kernel function to use for describing the
+   * covariance of the process
    * @throw passing a null kernel
    */
   void updateKernelFunction(KernelFunctionPtr new_kernel);
 
   /**
-   * @return The kernel function used to compute the kernel of the process
+   * @return The current abosrbed kernel function
    */
   const KernelFunction &getKernelFunction() const { return *kernelFunction; }
 
+  /**
+   * @return The white noise covariance contribution. This value should be tuned
+   * according to the noise level in the training set. Refer also to the pdf
+   * documentation
+   */
   double getWhiteNoiseCovariance() const { return white_noise_cov; }
+  /**
+   * @brief Sets the white noise covariance contribution. This value should be
+   * tuned according to the noise level in the training set. Refer also to the
+   * pdf documentation
+   */
   void setWhiteNoiseStandardDeviation(const double val) {
     white_noise_cov = val * val;
   }

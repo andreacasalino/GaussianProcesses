@@ -16,7 +16,7 @@ class SymmetricResizableMatrix;
 
 class YYMatrixTrain : virtual public TrainSetAware {
 public:
-  ~YYMatrixTrain();
+  ~YYMatrixTrain() override;
 
   Eigen::MatrixXd getYYtrain() const { return getYYtrain_(); };
 
@@ -33,7 +33,7 @@ class ResizableMatrix;
 
 class YYMatrixPredict : virtual public TrainSetAware {
 public:
-  ~YYMatrixPredict();
+  ~YYMatrixPredict() override;
 
   Eigen::MatrixXd getYYpredict() const { return getYYpredict_(); };
 

@@ -34,9 +34,6 @@ private:
   std::vector<double> parameters;
 };
 
-/**
- * @brief TODO explain
- */
 class RadialKernelFunction : public KernelFunction {
 public:
   RadialKernelFunction(RadialFunctionPtr radial_function);

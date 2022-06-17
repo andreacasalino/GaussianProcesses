@@ -21,6 +21,9 @@ public:
   TrainSet(TrainSet &&o) = default;
   TrainSet &operator=(TrainSet &&o) = default;
 
+  /**
+   * @brief An empty train set with no samples is actually built.
+   */
   TrainSet(const std::size_t input_space_size,
            const std::size_t output_space_size);
 
@@ -37,30 +40,38 @@ public:
   TrainSet(const gauss::TrainSet &input_samples,
            const gauss::TrainSet &output_samples);
 
+  /**
+   * @brief adds a new pair of input-output samples.
+   * @throw in case the sizes of the input or the output sample are inconsistent
+   * with the input output sizes of the training set.
+   */
   void addSample(const Eigen::VectorXd &input_sample,
                  const Eigen::VectorXd &output_sample);
-
+  /**
+   * @throw in case the sizes of the training set to absorb are inconsistent
+   * with the input output sizes of the training set.
+   */
   void addSamples(const gauss::gp::TrainSet &o);
 
   /**
-   * @brief Add a new pair input-output sample.
-   * The values of the input part is assumed as the initial values of the passed
-   * vector, while the remaining values are assumed to make the output part.
-   *
-   * @param sample
+   * @brief similar to TrainSet::addSample, but passing a single vector whose
+   * first components are the ones pertaining to the input and the others to the
+   * output.
+   * Components are distingusihed according to the sizes of the trainig set
+   * (defined when building the train set object).
+   * @throw in case the size of the passed vector is inconsistent
+   * with the input output sizes of the training set.
    */
   void addSample(const Eigen::VectorXd &sample);
 
   /**
    * @return the input realizations
-   * @throw when no samples are available
    */
   const std::vector<Eigen::VectorXd> &GetSamplesInput() const {
     return input_samples;
   }
   /**
    * @return the output realizations
-   * @throw when no samples are available
    */
   const std::vector<Eigen::VectorXd> &GetSamplesOutput() const {
     return output_samples;
@@ -73,9 +84,9 @@ private:
 
 /**
  * @brief Creates a new Train Set object, with
- * input_samples and output_samples are red from file.
- * In each row of such a file, the initial columns represent the inpuy
- * realization, while the remaining the output one. The size of th input
+ * input_samples and output_samples red from a file.
+ * In each row of such a file, the initial columns represent the input
+ * realization, while the remaining the output one. The size of the input
  * samples are assumed equal to input_space_size
  *
  * @param file_to_read
@@ -88,6 +99,8 @@ TrainSet import_train_set(const std::string &file_to_read,
 
 class TrainSetAware {
 public:
+  virtual ~TrainSetAware() = default;
+
   virtual const TrainSet &getTrainSet() const = 0;
 
 protected:

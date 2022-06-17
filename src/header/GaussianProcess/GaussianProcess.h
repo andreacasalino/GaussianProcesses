@@ -109,6 +109,18 @@ public:
 template <std::size_t InputSize>
 using GaussianProcessScalar = GaussianProcessVectorial<InputSize, 1>;
 
+/**
+ * @brief tune the hyperparameters of the process by learning
+ *
+ * @param subject
+ * @param trainer
+ * @param hyperparameters_prior when specified, represents a multivariate prior
+ * gaussian distribution (refer also to the pdf documentation) over the
+ * hyperparamters which is accounted for computing the gradient (and actually
+ * find the optimum point).
+ * @throw in case the size of hyperparameters_prior (if specified) is
+ * inconsistent with the number of hyperparameters of the process
+ */
 void train(GaussianProcess &subject, ::train::Trainer &trainer,
            const std::optional<gauss::GaussianDistribution>
                &hyperparameters_prior = std::nullopt);

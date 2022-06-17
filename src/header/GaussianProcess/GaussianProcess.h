@@ -17,6 +17,13 @@
 #include <optional>
 
 namespace gauss::gp {
+class NegativeCovariancePredictionError : public Error {
+public:
+  NegativeCovariancePredictionError();
+
+  static const double TOLLERANCE;
+};
+
 class GaussianProcess : public KernelCovariance,
                         public YYMatrixTrain,
                         public YYMatrixPredict {

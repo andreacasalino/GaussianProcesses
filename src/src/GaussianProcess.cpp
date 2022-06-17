@@ -12,9 +12,14 @@
 
 #include "Common.h"
 
-// #include <fstream>
-
 namespace gauss::gp {
+NegativeCovariancePredictionError::NegativeCovariancePredictionError()
+    : Error("Covariance of predicted distribution for a certain input is "
+            "negative" +
+            BAD_KERNEL_FUNCTION_ERROR_MESSAGE) {}
+
+const double NegativeCovariancePredictionError::TOLLERANCE = 1e-8;
+
 Eigen::VectorXd GaussianProcess::getKx(const Eigen::VectorXd &point) const {
   const auto &input_samples = getTrainSet().GetSamplesInput();
   Eigen::VectorXd Kx(input_samples.size());
@@ -35,11 +40,11 @@ GaussianProcess::predict(const Eigen::VectorXd &point, double &covariance,
   covariance = getKernelFunction().evaluate(point, point);
   const Eigen::MatrixXd covariance_mat = Kx.transpose() * K_inverse * Kx;
   covariance -= covariance_mat(0, 0);
-  if ((covariance < SuspiciousCovarianceError::COVARIANCE_TOLLERANCE) &&
-      (!accept_bad_covariance)) {
-    throw SuspiciousCovarianceError{"Negative covariance for prediction"};
+  if (accept_bad_covariance) {
+    covariance = std::abs(covariance);
+  } else if (covariance < NegativeCovariancePredictionError::TOLLERANCE) {
+    throw NegativeCovariancePredictionError{};
   }
-  covariance = std::abs(covariance);
   return getYYpredict_() * K_inverse * Kx;
 }
 
@@ -113,24 +118,10 @@ Eigen::VectorXd GaussianProcess::getHyperParametersGradient() const {
     }
   }
 
-  // {
-  //   std::ofstream stream("kernel_gradients");
-  //   for (const auto &kernel_matrix_gradient : kernel_matrix_gradients) {
-  //     stream << kernel_matrix_gradient << std::endl;
-  //   }
-  // }
-
   const auto &YY = getYYtrain_();
   Eigen::VectorXd result(static_cast<Eigen::Index>(parameters_numb));
   const Eigen::MatrixXd &kernel_inv = getKernelMatrixInverse();
-  // {
-  //   std::ofstream stream("kernel");
-  //   stream << getKernelMatrix() << std::endl;
-  // }
-  // {
-  //   std::ofstream stream("kernel_inverse");
-  //   stream << kernel_inv << std::endl;
-  // }
+
   Eigen::MatrixXd B =
       kernel_inv * YY -
       Eigen::MatrixXd::Identity(YY.rows(), YY.rows()) *

@@ -8,7 +8,9 @@
 #pragma once
 
 #include <Eigen/Core>
+
 #include <functional>
+#include <string>
 
 namespace gauss::gp {
 class ResizableMatrix {
@@ -46,4 +48,8 @@ private:
 };
 
 double trace_product(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
+
+static std::string BAD_KERNEL_FUNCTION_ERROR_MESSAGE =
+    " : a bad defined kernel function was passed or its hyperparameters are "
+    "badly set.";
 } // namespace gauss::gp

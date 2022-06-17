@@ -12,6 +12,13 @@
 #include <GaussianUtils/components/CoviarianceAware.h>
 
 namespace gauss::gp {
+class NotPositiveDefiniteKernelCovarianceError : public Error {
+public:
+  NotPositiveDefiniteKernelCovarianceError();
+
+  static const double TOLLERANCE;
+};
+
 class SymmetricResizableMatrix;
 
 class KernelCovariance : virtual public TrainSetAware, public CovarianceAware {

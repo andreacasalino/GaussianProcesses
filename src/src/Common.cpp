@@ -85,4 +85,5 @@ double trace_product(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {
   }
   return result;
 }
+
 } // namespace gauss::gp

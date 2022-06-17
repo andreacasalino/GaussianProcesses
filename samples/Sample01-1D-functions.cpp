@@ -66,7 +66,8 @@ int main() {
     std::vector<double> prediction_means;
     std::vector<double> expected_means;
     for (const auto &point : input_for_predictions) {
-      auto prediction = gauss_proc.predict2(point);
+      auto prediction =
+          gauss_proc.predict(point, gauss::gp::RAW_VALUES_PREDICTION_TAG);
       prediction_uncertainties.push_back(sqrt(prediction.covariance));
       prediction_means.push_back(prediction.mean(0));
       expected_means.push_back(function(point));

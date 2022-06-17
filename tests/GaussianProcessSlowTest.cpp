@@ -37,9 +37,10 @@ TEST_CASE("Gaussian process predictions", "[gp_slow]") {
       floor(static_cast<double>(samples_in.size()) / static_cast<double>(13)));
   for (std::size_t t = 0; t < samples_in.size(); t += t_delta) {
     Eigen::VectorXd point = samples_in[t];
-    const auto point_prediction = process.predict2(point);
-    const auto point_perturbed_prediction =
-        process.predict2(point + 0.4 * grid.getDeltas());
+    const auto point_prediction =
+        process.predict(point, RAW_VALUES_PREDICTION_TAG);
+    const auto point_perturbed_prediction = process.predict(
+        point + 0.4 * grid.getDeltas(), RAW_VALUES_PREDICTION_TAG);
 
     CHECK(point_prediction.mean.size() == output_size);
     Eigen::VectorXd expected_mean = Eigen::VectorXd::Ones(output_size);

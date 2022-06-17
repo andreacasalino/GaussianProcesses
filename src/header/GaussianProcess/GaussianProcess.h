@@ -24,6 +24,14 @@ public:
   static const double TOLLERANCE;
 };
 
+struct RawValuesPredictionTag {};
+static constexpr RawValuesPredictionTag RAW_VALUES_PREDICTION_TAG =
+    RawValuesPredictionTag{};
+
+struct SinglePredictiveDistributionTag {};
+static constexpr SinglePredictiveDistributionTag
+    SINGLE_PREDICTIVE_DISTRIBUTION_TAG = SinglePredictiveDistributionTag{};
+
 class GaussianProcess : public KernelCovariance,
                         public YYMatrixTrain,
                         public YYMatrixPredict {
@@ -89,19 +97,23 @@ public:
    * @brief similar to GaussianProcess::predict, but returning the prediction
    * into a data structure storing the mean and the covariance.
    */
-  Prediction predict2(const Eigen::VectorXd &point,
-                      const bool accept_bad_covariance = true) const;
+  Prediction
+  predict(const Eigen::VectorXd &point,
+          const RawValuesPredictionTag &tag = RAW_VALUES_PREDICTION_TAG,
+          const bool accept_bad_covariance = true) const;
 
   /**
    * @brief similar to GaussianProcess::predict, but returning the prediction
    * into a single multivariate Gaussian distribution
    */
-  GaussianDistribution predict3(const Eigen::VectorXd &point,
-                                const bool accept_bad_covariance = true) const;
+  GaussianDistribution predict(const Eigen::VectorXd &point,
+                               const SinglePredictiveDistributionTag &tag =
+                                   SINGLE_PREDICTIVE_DISTRIBUTION_TAG,
+                               const bool accept_bad_covariance = true) const;
 
 protected:
-  Eigen::VectorXd predict(const Eigen::VectorXd &point, double &covariance,
-                          const bool accept_bad_covariance) const;
+  Eigen::VectorXd predict_(const Eigen::VectorXd &point, double &covariance,
+                           const bool accept_bad_covariance) const;
 
 private:
   TrainSet samples;

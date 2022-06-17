@@ -79,7 +79,8 @@ void log_predictions(
   std::vector<double> prediction_means;
   std::vector<double> expected_means;
   for (const auto &point : input_for_predictions) {
-    auto prediction = process.predict2(point);
+    auto prediction =
+        process.predict(point, gauss::gp::RAW_VALUES_PREDICTION_TAG);
     prediction_uncertainties.push_back(sqrt(prediction.covariance));
     prediction_means.push_back(prediction.mean(0));
     expected_means.push_back(function_to_approximate(point));

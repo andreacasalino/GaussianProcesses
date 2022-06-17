@@ -16,11 +16,4 @@ class Error : public std::runtime_error {
 public:
   explicit Error(const std::string &what) : std::runtime_error(what){};
 };
-
-class SuspiciousCovarianceError : public Error {
-public:
-  SuspiciousCovarianceError(const std::string &what);
-
-  static const double COVARIANCE_TOLLERANCE;
-};
 } // namespace gauss::gp

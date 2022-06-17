@@ -12,9 +12,14 @@
 
 #include "Common.h"
 
-// #include <fstream>
-
 namespace gauss::gp {
+NegativeCovariancePredictionError::NegativeCovariancePredictionError()
+    : Error("Covariance of predicted distribution for a certain input is "
+            "negative" +
+            BAD_KERNEL_FUNCTION_ERROR_MESSAGE) {}
+
+const double NegativeCovariancePredictionError::TOLLERANCE = 1e-8;
+
 Eigen::VectorXd GaussianProcess::getKx(const Eigen::VectorXd &point) const {
   const auto &input_samples = getTrainSet().GetSamplesInput();
   Eigen::VectorXd Kx(input_samples.size());
@@ -28,18 +33,18 @@ Eigen::VectorXd GaussianProcess::getKx(const Eigen::VectorXd &point) const {
 }
 
 Eigen::VectorXd
-GaussianProcess::predict(const Eigen::VectorXd &point, double &covariance,
-                         const bool accept_bad_covariance) const {
+GaussianProcess::predict_(const Eigen::VectorXd &point, double &covariance,
+                          const bool accept_bad_covariance) const {
   Eigen::VectorXd Kx = getKx(point);
   const Eigen::MatrixXd &K_inverse = getKernelMatrixInverse();
   covariance = getKernelFunction().evaluate(point, point);
   const Eigen::MatrixXd covariance_mat = Kx.transpose() * K_inverse * Kx;
   covariance -= covariance_mat(0, 0);
-  if ((covariance < SuspiciousCovarianceError::COVARIANCE_TOLLERANCE) &&
-      (!accept_bad_covariance)) {
-    throw SuspiciousCovarianceError{"Negative covariance for prediction"};
+  if (accept_bad_covariance) {
+    covariance = std::abs(covariance);
+  } else if (covariance < NegativeCovariancePredictionError::TOLLERANCE) {
+    throw NegativeCovariancePredictionError{};
   }
-  covariance = std::abs(covariance);
   return getYYpredict_() * K_inverse * Kx;
 }
 
@@ -113,24 +118,10 @@ Eigen::VectorXd GaussianProcess::getHyperParametersGradient() const {
     }
   }
 
-  // {
-  //   std::ofstream stream("kernel_gradients");
-  //   for (const auto &kernel_matrix_gradient : kernel_matrix_gradients) {
-  //     stream << kernel_matrix_gradient << std::endl;
-  //   }
-  // }
-
   const auto &YY = getYYtrain_();
   Eigen::VectorXd result(static_cast<Eigen::Index>(parameters_numb));
   const Eigen::MatrixXd &kernel_inv = getKernelMatrixInverse();
-  // {
-  //   std::ofstream stream("kernel");
-  //   stream << getKernelMatrix() << std::endl;
-  // }
-  // {
-  //   std::ofstream stream("kernel_inverse");
-  //   stream << kernel_inv << std::endl;
-  // }
+
   Eigen::MatrixXd B =
       kernel_inv * YY -
       Eigen::MatrixXd::Identity(YY.rows(), YY.rows()) *
@@ -174,7 +165,7 @@ public:
   ::train::Vect getGradient() const final {
     auto result = subject.getHyperParametersGradient();
     if (std::nullopt != prior_distribution) {
-      result += prior_distribution->cov_inv *
+      result -= prior_distribution->cov_inv *
                 (subject.getHyperParameters() - prior_distribution->mean);
     }
     return result;
@@ -201,9 +192,10 @@ void train(
 
 std::vector<gauss::GaussianDistribution>
 GaussianProcess::predict(const Eigen::VectorXd &point,
+                         const VectorialPredictionTag &tag,
                          const bool accept_bad_covariance) const {
   double prediction_covariance;
-  Eigen::VectorXd prediction_mean = GaussianProcess::predict(
+  Eigen::VectorXd prediction_mean = GaussianProcess::predict_(
       point, prediction_covariance, accept_bad_covariance);
   Eigen::MatrixXd prediction_covariance_mat(1, 1);
   prediction_covariance_mat << prediction_covariance;
@@ -218,20 +210,22 @@ GaussianProcess::predict(const Eigen::VectorXd &point,
 }
 
 GaussianProcess::Prediction
-GaussianProcess::predict2(const Eigen::VectorXd &point,
-                          const bool accept_bad_covariance) const {
+GaussianProcess::predict(const Eigen::VectorXd &point,
+                         const RawValuesPredictionTag &tag,
+                         const bool accept_bad_covariance) const {
   double covariance;
   Eigen::VectorXd mean =
-      GaussianProcess::predict(point, covariance, accept_bad_covariance);
+      GaussianProcess::predict_(point, covariance, accept_bad_covariance);
   return Prediction{mean, covariance};
 }
 
 GaussianDistribution
-GaussianProcess::predict3(const Eigen::VectorXd &point,
-                          const bool accept_bad_covariance) const {
+GaussianProcess::predict(const Eigen::VectorXd &point,
+                         const SinglePredictiveDistributionTag &tag,
+                         const bool accept_bad_covariance) const {
   double covariance;
   Eigen::VectorXd mean =
-      GaussianProcess::predict(point, covariance, accept_bad_covariance);
+      GaussianProcess::predict_(point, covariance, accept_bad_covariance);
   Eigen::MatrixXd big_cov(mean.size(), mean.size());
   big_cov.setZero();
   for (Eigen::Index i = 0; i < big_cov.size(); ++i) {

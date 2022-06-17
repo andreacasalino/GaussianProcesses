@@ -67,6 +67,11 @@ where $\Theta$ is a vector of hyperparameters that are typical of the chosen ker
 \Theta = \begin{bmatrix} \theta_1 & \hdots & \theta_m \end{bmatrix} ^ T
 \end{eqnarray}
 
+It is generally a good practice to add to the covariance $K$ an additional term modelling noise in the traning set. This is done by simply summing an isotropic standard deviation $\sigma_{noise}$:
+\begin{eqnarray}
+K^{'} = K + \sigma_{noise} I_{N \times N} 
+\end{eqnarray}
+
 \subsection{Predictions}
 \label{sec:predictions_scalar}
 
@@ -186,6 +191,8 @@ K^{-1} M_{YY}
 \end{eqnarray}
 
 Choosing your favourite gradient-based approach you can tune the model, byt computing the gradient as described by the above equation.
+
+Check Section \ref{sec:prior} to understand how priors about the hyperparameters $\Theta$ can be handled.
 
 \section{Vectorial case}
 \label{sec:vectorial}
@@ -315,7 +322,35 @@ K^{-1}\big (\Theta \big ) M^o_{YY}
 The gradient can be computed with the same steps that led to 
 eq. (\ref{eq:L_grad}), leading to:
 \begin{eqnarray}
-\frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg (K^{-1} M^o_{YY} - o I_{N \times N} \bigg ) \bigg ]
+\frac{\partial \mathcal{L}}{\partial \theta_t} = \frac{1}{2} Tr \bigg [ K^{-1} \frac{\partial K}{\partial \theta_t} \bigg (K^{-1} M^o_{YY} - o I_{N \times N} \bigg ) \bigg ]
+\end{eqnarray}
+
+\subsubsection{Hyperparameters prior knowledge}
+\label{sec:prior}
+
+It is possible to also take into account an a-priori knowledge of the process, in terms of a prior distribution describing the hyperparameters values. Such priors modify the likelihood function to optimize in this way:
+\begin{eqnarray}
+L^{'}(\Theta) = L(\Theta) L(\Theta)_{prior} 
+\label{eq:prior_likelihood}
+\end{eqnarray}
+
+In principle, any distribution can be used as a prior for the hyperparameters. Without loss of generality, assume the prior is modelled with a multivariate gaussian distribution defined by a certain mean $\mu_{prior}$ and covariance $\Sigma_{prior}$. 
+In such a case, equation (\ref{eq:prior_likelihood}) became:
+\begin{eqnarray}
+L^{'}(\Theta) \propto L(\Theta) 
+exp \bigg ( -\frac{1}{2} \big(\Theta - \mu_{prior}\big)^T \Sigma^{-1}_{prior} \big(\Theta - \mu_{prior}\big) \bigg )
+\end{eqnarray}
+
+passing to the logarithm and neglecting constant values we get:
+\begin{eqnarray}
+\mathcal{L}^{'}(\Theta) = \mathcal{L}(\Theta)
+-\frac{1}{2} \big(\Theta - \mu_{prior}\big)^T \Sigma^{-1}_{prior} \big(\Theta - \mu_{prior}\big) 
+\end{eqnarray}
+
+Clearly, the gradient of the complete likelihood $\mathcal{L}^{'}(\Theta)$ can be computed as follows:
+\begin{eqnarray}
+\frac{\partial \mathcal{L}^{'}}{\partial \Theta}^T = 
+\frac{\partial \mathcal{L}}{\partial \Theta}^T - \Sigma^{-1}_{prior} \big( \Theta - \mu_{prior} \big)
 \end{eqnarray}
 
 \section{Kernel functions}

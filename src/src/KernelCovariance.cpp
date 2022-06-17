@@ -12,6 +12,13 @@
 #include <GaussianUtils/Utils.h>
 
 namespace gauss::gp {
+NotPositiveDefiniteKernelCovarianceError::
+    NotPositiveDefiniteKernelCovarianceError()
+    : Error("Kernel covariance matrix is not positive definite" +
+            BAD_KERNEL_FUNCTION_ERROR_MESSAGE) {}
+
+const double NotPositiveDefiniteKernelCovarianceError::TOLLERANCE = 1e-6;
+
 KernelCovariance::KernelCovariance(KernelFunctionPtr new_kernel)
     : kernelFunction(std::move(new_kernel)) {
   if (nullptr == kernelFunction) {
@@ -102,9 +109,8 @@ KernelCovariance::accessKernelRepresentation() const {
       val = 1.0 / val;
     }
     for (const auto &eig : decomposition.eigenValues) {
-      if (eig < SuspiciousCovarianceError::COVARIANCE_TOLLERANCE) {
-        throw SuspiciousCovarianceError{
-            "Kernel covariance is not positive definite"};
+      if (eig < NotPositiveDefiniteKernelCovarianceError::TOLLERANCE) {
+        throw NotPositiveDefiniteKernelCovarianceError{};
       }
     }
     // compute inverse

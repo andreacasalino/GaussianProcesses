@@ -77,7 +77,8 @@ int main() {
       auto &prediction_means_row = prediction_means.emplace_back();
       auto &expected_means_row = expected_means.emplace_back();
       for (const auto point : row) {
-        auto prediction = gauss_proc.predict2(point);
+        auto prediction =
+            gauss_proc.predict(point, gauss::gp::RAW_VALUES_PREDICTION_TAG);
         prediction_uncertainties_row.push_back(sqrt(prediction.covariance));
         prediction_means_row.push_back(prediction.mean(0));
         expected_means_row.push_back(function(point));

@@ -27,27 +27,31 @@ public:
   KernelFunction(const KernelFunction &) = delete;
   KernelFunction &operator==(const KernelFunction &) = delete;
 
+  /**
+   * @return the number of hyperparameters pertaining to this kernel function
+   */
   virtual std::size_t numberOfParameters() const = 0;
 
   /**
-   * @return the collection of tunable parameters, i.e. the ones that can be
-   * tuned through training.
+   * @return the current values of the hyperparameters
    */
   virtual std::vector<double> getParameters() const = 0;
 
+  /**
+   * @brief sets the hyperparameters values.
+   */
   virtual void setParameters(const std::vector<double> &values) = 0;
 
   /**
-   * @brief evaluation should be reflexive: evaluate(a,b) = evaluate(b,a)
+   * @brief evaluation is expected be reflexive: evaluate(a,b) = evaluate(b,a)
    *
    */
   virtual double evaluate(const Eigen::VectorXd &a,
                           const Eigen::VectorXd &b) const = 0;
 
   /**
-   * @param a
-   * @param b
-   * @return The gradient of the kernel activation function
+   * @return The gradient of the kernel activation function w.r.t. the
+   * hyperparameters
    */
   virtual std::vector<double> getGradient(const Eigen::VectorXd &a,
                                           const Eigen::VectorXd &b) const = 0;

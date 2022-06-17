@@ -27,15 +27,21 @@ public:
 
   /**
    * @return The covariance matrix characterizing the process.
+   * @throw NotPositiveDefiniteKernelCovarianceError in case the kernel matrix
+   * is ill. This is typically due to a bad defined kernel function.
    */
   Eigen::MatrixXd getCovariance() const override;
   /**
    * @return The inverse of the covariance matrix characterizing the process.
+   * @throw NotPositiveDefiniteKernelCovarianceError in case the kernel matrix
+   * is ill. This is typically due to a bad defined kernel function.
    */
   Eigen::MatrixXd getCovarianceInv() const override;
   /**
    * @return The determinant of the covariance matrix characterizing the
    * process.
+   * @throw NotPositiveDefiniteKernelCovarianceError in case the kernel matrix
+   * is ill. This is typically due to a bad defined kernel function.
    */
   double getCovarianceDeterminant() const override;
 
@@ -47,6 +53,8 @@ public:
   /**
    * @return The decomposition of the covariance matrix characterizing the
    * process.
+   * @throw NotPositiveDefiniteKernelCovarianceError in case the kernel matrix
+   * is ill. This is typically due to a bad defined kernel function.
    */
   Decomposition getCovarianceDecomposition() const;
 

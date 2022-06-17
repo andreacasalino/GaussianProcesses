@@ -73,8 +73,9 @@ public:
    * predicted output. Notice that all the returned distributions have the same
    * covariance value (refer also to the pdf documentation to understand why).
    * @param accept_bad_covariance when true, too low or negative value for the
-   * prediction covariance are accepted. Otherwise an error is thrown in case of
-   * getting bas values for the covariance.
+   * prediction covariance are accepted. Otherwise a
+   * NegativeCovariancePredictionError is thrown in case of getting bad values
+   * for the covariance.
    */
   std::vector<gauss::GaussianDistribution>
   predict(const Eigen::VectorXd &point,

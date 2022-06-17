@@ -165,7 +165,7 @@ public:
   ::train::Vect getGradient() const final {
     auto result = subject.getHyperParametersGradient();
     if (std::nullopt != prior_distribution) {
-      result += prior_distribution->cov_inv *
+      result -= prior_distribution->cov_inv *
                 (subject.getHyperParameters() - prior_distribution->mean);
     }
     return result;

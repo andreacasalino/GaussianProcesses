@@ -21,7 +21,7 @@ If you believe to be not really familiar with this kind of models, it is strongl
 
 Scalar and Vectorial multivariate functions can be both approximated using the kind of **GP**s implemented in this package.
 
-This library uses [**Eigen**](https://gitlab.com/libeigen/eigen) as internal linear algebra engine. Check METTERE CMAKE SECTION for more details.
+This library uses [**Eigen**](https://gitlab.com/libeigen/eigen) as internal linear algebra engine. Check [here](#cmake-support) for more details.
 
 ## USAGE
 

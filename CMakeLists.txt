@@ -14,6 +14,7 @@ set(WITH_SOURCE_TREE ON)
 include(GroupSources)
 include(AutoCollect)
 include(MakeLibrary)
+include(FecthJSONlib)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
@@ -24,6 +25,12 @@ option(BUILD_GaussianProcess_SAMPLES "Build the samples showing how to use the p
 if(BUILD_GaussianProcess_SAMPLES)
 	project(GaussianProcess-Samples)
     add_subdirectory(samples)
+endif()
+
+option(BUILD_GaussianProcess_KERNEL_VIZ "Build applications that visualizes kernel functions shape" ON)
+if(BUILD_GaussianProcess_KERNEL_VIZ)
+    project(GaussianProcessKernel-Visualizations)
+    add_subdirectory(kernels_viz)
 endif()
 
 option(BUILD_GaussianProcess_TESTS "" OFF)

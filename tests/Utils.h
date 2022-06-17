@@ -1,54 +1,80 @@
-#include <GaussianProcess/components/GaussianProcessBase.h>
-#include <GaussianProcess/kernel/Linear.h>
-#include <gtest/gtest.h>
+/**
+ * Author:    Andrea Casalino
+ * Created:   29.11.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
+#pragma once
+
+#include <GaussianProcess/kernel/KernelFunction.h>
+
+#include "../samples/Ranges.h"
 
 namespace gauss::gp::test {
-template <std::size_t InputSize, std::size_t OutputSize>
-class GaussianProcessTest : public GaussianProcessBase, public ::testing::Test {
+std::vector<Eigen::VectorXd> make_samples(const std::size_t samples_numb,
+                                          const double lenght,
+                                          const Eigen::Index sample_size);
+
+static constexpr double DEFAULT_TOLL = 1e-4;
+
+bool is_zeros(const Eigen::MatrixXd &subject, const double toll = DEFAULT_TOLL);
+
+bool is_equal(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b,
+              const double toll = DEFAULT_TOLL);
+
+bool is_equal_vec(const Eigen::VectorXd &a, const Eigen::VectorXd &b,
+                  const double toll = DEFAULT_TOLL);
+
+bool is_symmetric(const Eigen::MatrixXd &subject,
+                  const double toll = DEFAULT_TOLL);
+
+bool is_inverse(const Eigen::MatrixXd &subject,
+                const Eigen::MatrixXd &candidate,
+                const double toll = DEFAULT_TOLL);
+
+class GridMultiDimensional {
 public:
-  GaussianProcessTest()
-      : GaussianProcessBase(std::make_unique<LinearFunction>(1, 1, InputSize),
-                            InputSize, OutputSize){};
+  template <typename... Intervals>
+  GridMultiDimensional(const std::size_t size,
+                       const std::array<double, 2> &first,
+                       const std::array<double, 2> &second,
+                       Intervals... intervals) {
+    addAxis(size, first, second, std::forward<Intervals>(intervals)...);
+  }
 
-  GaussianProcessTest(KernelFunctionPtr kernel_function)
-      : GaussianProcessBase(std::move(kernel_function), InputSize,
-                            OutputSize){};
+  GridMultiDimensional(const std::size_t size,
+                       const std::vector<std::array<double, 2>> &intervals);
 
-protected:
-  Eigen::VectorXd make_sample_input() const {
-    Eigen::VectorXd result(InputSize);
-    result.setRandom();
-    return result;
-  };
-  Eigen::VectorXd make_sample_output() const {
-    Eigen::VectorXd result(OutputSize);
-    result.setRandom();
-    return result;
-  };
+  bool operator()() const { return (*axis_ranges.front())(); }
+  Eigen::VectorXd eval() const;
+  std::vector<std::size_t> indices() const;
 
-  std::vector<Eigen::VectorXd>
-  make_samples_input(const std::size_t samples_numb) const {
-    std::vector<Eigen::VectorXd> input_samples;
-    input_samples.reserve(samples_numb);
-    for (std::size_t s = 0; s < samples_numb; ++s) {
-      input_samples.emplace_back(make_sample_input());
-    }
-    return input_samples;
-  };
+  std::size_t getSize() const { return axis_ranges.front()->getSize(); }
 
-  std::vector<Eigen::VectorXd>
-  make_samples_output(const std::size_t samples_numb) const {
-    std::vector<Eigen::VectorXd> output_samples;
-    output_samples.reserve(samples_numb);
-    for (std::size_t s = 0; s < samples_numb; ++s) {
-      output_samples.emplace_back(make_sample_output());
-    }
-    return output_samples;
-  };
+  GridMultiDimensional &operator++();
 
-  TrainSet make_samples(const std::size_t samples_numb) const {
-    return gauss::gp::TrainSet{make_samples_input(samples_numb),
-                               make_samples_output(samples_numb)};
-  };
+  Eigen::VectorXd getDeltas() const;
+
+private:
+  void addAxis(const std::size_t size, const std::array<double, 2> &inteval) {
+
+    axis_ranges.emplace_back(
+        std::make_unique<samples::Linspace>(inteval[0], inteval[1], size));
+  }
+
+  template <typename... Intervals>
+  void addAxis(const std::size_t size, const std::array<double, 2> &inteval,
+               Intervals... intervals) {
+    addAxis(size, inteval);
+    addAxis(size, std::forward<Intervals>(intervals)...);
+  }
+
+  using LinspacePtr = std::unique_ptr<samples::Linspace>;
+  std::vector<LinspacePtr> axis_ranges;
 };
+
+std::vector<std::array<double, 2>>
+make_intervals(const Eigen::VectorXd &min_corner,
+               const Eigen::VectorXd &max_corner);
 } // namespace gauss::gp::test

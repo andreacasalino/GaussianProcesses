@@ -5,13 +5,15 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#include <GaussianProcess/Error.h>
 #include <GaussianProcess/GaussianProcessFactory.h>
 
 namespace gauss::gp {
 GaussianProcessFactory::GaussianProcessFactory(
     const std::size_t input_space_size, const std::size_t output_space_size,
     KernelFunctionPtr kernel_function)
-    : input_samples_center(input_space_size),
+    : SpaceSizesAware{input_space_size, output_space_size},
+      input_samples_center(input_space_size),
       input_samples_scale(input_space_size),
       output_samples_center(output_space_size),
       output_samples_scale(output_space_size) {
@@ -19,9 +21,6 @@ GaussianProcessFactory::GaussianProcessFactory(
     throw gauss::gp::Error("empty kernel function");
   }
   this->kernel_function = std::move(kernel_function);
-  if ((0 == input_space_size) || (0 == output_space_size)) {
-    throw gauss::gp::Error("Invalid space size");
-  }
   input_samples_center.setZero();
   input_samples_scale.setOnes();
   output_samples_center.setZero();
@@ -47,21 +46,21 @@ std::vector<Eigen::VectorXd> get_samples(const Eigen::VectorXd &center,
 }
 } // namespace
 
-std::unique_ptr<GaussianProcessVectorial>
+std::unique_ptr<GaussianProcess>
 GaussianProcessFactory::makeRandomModel() const {
   gauss::gp::TrainSet samples{
       get_samples(input_samples_center, input_samples_scale, samples_numb),
       get_samples(output_samples_center, output_samples_scale, samples_numb)};
 
-  return std::make_unique<GaussianProcessVectorial>(kernel_function->copy(),
-                                                    std::move(samples));
+  return std::make_unique<GaussianProcess>(kernel_function->copy(),
+                                           std::move(samples));
 };
 
 namespace {
 void check_and_assign(Eigen::VectorXd &recipient,
                       const Eigen::VectorXd &new_val) {
   if (new_val.size() != recipient.size()) {
-    throw gauss::gp::Error("invalid size");
+    throw gauss::gp::Error("Invalid size");
   }
   recipient = new_val;
 }

@@ -31,19 +31,13 @@ jobs:
     - name: Checkout submodules
       run:  git submodule update --init --recursive
     - name: CMake configure
-      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_GaussianProcess_SAMPLES=OFF -DBUILD_GaussianProcess_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }}     
+      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_GaussianProcess_KERNEL_VIZ=OFF -DBUILD_GaussianProcess_SAMPLES=OFF -DBUILD_GaussianProcess_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }}     
     - name: Build
       run:  cmake --build ./build --config Release
     - name: Install
       run:  cmake --install ./build --config Release
-    - name: Test-01
-      run: ./artifacts/bin/Test01-construction
-    - name: Test-02
-      run: ./artifacts/bin/Test02-reset-update
-    - name: Test-03
-      run: ./artifacts/bin/Test03-predict
-    - name: Test-04
-      run: ./artifacts/bin/Test04-train
+    - name: Tests
+      run: ./artifacts/bin/Tests
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts

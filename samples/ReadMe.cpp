@@ -36,15 +36,16 @@ int main() {
     std::vector<gauss::GaussianDistribution>
         predicted_output // each component is a scalar guassian distribution
                          // with a certain mean and covariance matrix
-        = gauss_process.predict(input_to_predict);
+        = gauss_process.predict(input_to_predict,
+                                gauss::gp::VECTORIAL_PREDICTION_TAG);
   }
 
   {
     Eigen::VectorXd input_to_predict = ...;
     // access the prediction as a unique multivariate vectorial guassian
     // distribution
-    gauss::GaussianDistribution predicted_output =
-        gauss_process.predict3(input_to_predict);
+    gauss::GaussianDistribution predicted_output = gauss_process.predict(
+        input_to_predict, gauss::gp::SINGLE_PREDICTIVE_DISTRIBUTION_TAG);
   }
 
   // optimize the hyperparameters through training in order to improve

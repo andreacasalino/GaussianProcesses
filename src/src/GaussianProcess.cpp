@@ -192,6 +192,7 @@ void train(
 
 std::vector<gauss::GaussianDistribution>
 GaussianProcess::predict(const Eigen::VectorXd &point,
+                         const VectorialPredictionTag &tag,
                          const bool accept_bad_covariance) const {
   double prediction_covariance;
   Eigen::VectorXd prediction_mean = GaussianProcess::predict_(

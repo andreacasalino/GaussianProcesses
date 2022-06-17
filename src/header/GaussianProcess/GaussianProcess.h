@@ -24,6 +24,10 @@ public:
   static const double TOLLERANCE;
 };
 
+struct VectorialPredictionTag {};
+static constexpr VectorialPredictionTag VECTORIAL_PREDICTION_TAG =
+    VectorialPredictionTag{};
+
 struct RawValuesPredictionTag {};
 static constexpr RawValuesPredictionTag RAW_VALUES_PREDICTION_TAG =
     RawValuesPredictionTag{};
@@ -87,6 +91,7 @@ public:
    */
   std::vector<gauss::GaussianDistribution>
   predict(const Eigen::VectorXd &point,
+          const VectorialPredictionTag &tag = VECTORIAL_PREDICTION_TAG,
           const bool accept_bad_covariance = true) const;
 
   struct Prediction {

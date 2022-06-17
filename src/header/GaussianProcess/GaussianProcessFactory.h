@@ -10,32 +10,64 @@
 #include <GaussianProcess/GaussianProcess.h>
 #include <GaussianUtils/components/RandomModelFactory.h>
 
+#include <functional>
+
 namespace gauss::gp {
-class GaussianProcessFactory : public RandomModelFactory<GaussianProcess>,
-                               public SpaceSizesAware {
+/**
+ * @brief If tou never call setFirstCorner or setSecondCorner, corners are
+ * default assumed equal to (-1, ..., -1) and (1, ..., 1)
+ *
+ */
+class BoundingBoxTrainSet {
 public:
-  GaussianProcessFactory(const std::size_t input_space_size,
-                         const std::size_t output_space_size,
+  void setFirstCorner(const Eigen::VectorXd &corner);
+  void setSecondCorner(const Eigen::VectorXd &corner);
+
+protected:
+  BoundingBoxTrainSet(const std::size_t space_size);
+
+  Eigen::VectorXd getSample() const;
+
+  void updateRepresentation_();
+
+private:
+  Eigen::VectorXd first_corner;
+  Eigen::VectorXd second_corner;
+
+  struct BoxRepresentation {
+    Eigen::VectorXd deltas;
+    Eigen::VectorXd traslation;
+  };
+  BoxRepresentation representation;
+};
+
+using FunctionToApproximate =
+    std::function<Eigen::VectorXd(const Eigen::VectorXd &)>;
+
+/**
+ * @brief Builds a GP, creating the training set by sampling points in an hyper
+ * bounding box region.
+ */
+class GaussianProcessFactory : public RandomModelFactory<GaussianProcess>,
+                               public SpaceSizesAware,
+                               public BoundingBoxTrainSet {
+public:
+  GaussianProcessFactory(const std::size_t input_size,
+                         const FunctionToApproximate &to_approximate,
                          KernelFunctionPtr kernel_function);
 
   std::unique_ptr<GaussianProcess> makeRandomModel() const override;
 
-  void setSamplesNumb(const std::size_t samples) { samples_numb = samples; };
-
-  void setInputMeanCenter(const Eigen::VectorXd &center);
-  void setInputMeanScale(const Eigen::VectorXd &scale);
-
-  void setOutputMeanCenter(const Eigen::VectorXd &center);
-  void setOutputMeanScale(const Eigen::VectorXd &scale);
+  void setTrainSetSize(const std::size_t size) { train_set_size = size; };
+  void setTrainSetNoise(const double white_noise_standard_deviation);
 
 private:
-  std::size_t samples_numb = 500;
+  const FunctionToApproximate function_to_approximate;
+
   KernelFunctionPtr kernel_function;
 
-  Eigen::VectorXd input_samples_center;
-  Eigen::VectorXd input_samples_scale;
+  std::size_t train_set_size = 100;
 
-  Eigen::VectorXd output_samples_center;
-  Eigen::VectorXd output_samples_scale;
+  std::unique_ptr<GaussianDistribution> train_set_noise;
 };
 } // namespace gauss::gp

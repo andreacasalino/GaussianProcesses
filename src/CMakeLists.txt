@@ -1,15 +1,17 @@
+message("Fetching dependencies")
+
 include(FetchContent)
 FetchContent_Declare(
   guass_utils
   GIT_REPOSITORY https://github.com/andreacasalino/Gaussian-Utils.git
-  GIT_TAG        main
+  GIT_TAG        BetterEigenSupport
 )
 FetchContent_MakeAvailable(guass_utils)
 
 FetchContent_Declare(
   trainers
   GIT_REPOSITORY https://github.com/andreacasalino/TrainingTools.git
-  GIT_TAG        main
+  GIT_TAG        BetterEigenSupport
 )
 FetchContent_MakeAvailable(trainers)
 

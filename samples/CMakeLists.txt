@@ -24,5 +24,6 @@ MAKE_SAMPLE(Sample02-2D-functions Visualize-2D)
 MAKE_SAMPLE(Sample03-training Visualize-train)
 
 
-add_executable(ReadMe ReadMe.cpp)
-target_link_libraries(ReadMe PUBLIC GaussianProcess)
+# add_executable(ReadMe ReadMe.cpp)
+# target_link_libraries(ReadMe PUBLIC GaussianProcess)
+

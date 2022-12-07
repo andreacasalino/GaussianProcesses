@@ -118,7 +118,7 @@ include(FetchContent)
 FetchContent_Declare(
 gauss_process
 GIT_REPOSITORY https://github.com/andreacasalino/GaussianProcesses
-GIT_TAG        master
+GIT_TAG        main
 )
 FetchContent_MakeAvailable(gauss_process)
 ```
